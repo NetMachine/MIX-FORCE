@@ -44,24 +44,6 @@
         }
 
         /* ============================================================
-                   TYPOGRAPHY
-                   ============================================================ */
-        .stencil {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        .tech {
-            font-family: 'Inter', monospace;
-            font-weight: 400;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-        }
-
-        /* ============================================================
                    HEADER / NAV
                    ============================================================ */
         .navbar {
@@ -71,7 +53,7 @@
             right: 0;
             z-index: 1000;
             padding: 16px 48px;
-            background: rgba(11, 11, 14, 0.8);
+            background: rgba(11, 11, 14, 0.85);
             backdrop-filter: blur(14px) saturate(1.2);
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
@@ -181,6 +163,7 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            justify-content: center;
             position: relative;
             padding-top: 80px;
             background: #0b0b0e;
@@ -284,7 +267,6 @@
             font-size: 1rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            text-decoration: none;
             transition: 0.25s;
             box-shadow: 0 4px 20px rgba(75, 83, 32, 0.3);
             position: relative;
@@ -430,16 +412,22 @@
             box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
+        .specs-section .container {
+            text-align: center;
+        }
+
         .specs-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 40px;
+            margin-top: 32px;
         }
 
         .spec-item {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
+            text-align: center;
             gap: 12px;
             padding: 28px 24px;
             border-left: 1.5px solid rgba(160, 176, 128, 0.15);
@@ -452,7 +440,7 @@
         }
 
         .spec-icon {
-            font-size: 2.4rem;
+            font-size: 2.8rem;
             line-height: 1;
             filter: drop-shadow(0 0 12px rgba(160, 176, 128, 0.08));
             color: #a0b080;
@@ -491,6 +479,10 @@
             background: #0f0f12;
         }
 
+        #tienda .container {
+            text-align: center;
+        }
+
         #tienda .section-header {
             display: flex;
             justify-content: space-between;
@@ -498,6 +490,7 @@
             margin-bottom: 48px;
             flex-wrap: wrap;
             gap: 16px;
+            text-align: left;
         }
 
         #tienda .section-header h2 {
@@ -525,6 +518,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 32px;
+            text-align: left;
         }
 
         .producto-card {
@@ -770,6 +764,10 @@
             border-top: 1px solid rgba(255, 255, 255, 0.02);
         }
 
+        #testimonios .container {
+            text-align: center;
+        }
+
         #testimonios h2 {
             font-family: 'Inter', 'Arial Black', sans-serif;
             font-weight: 800;
@@ -777,7 +775,6 @@
             letter-spacing: 0.04em;
             text-transform: uppercase;
             color: #f0efe8;
-            text-align: center;
             margin-bottom: 48px;
         }
 
@@ -789,6 +786,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 32px;
+            text-align: left;
         }
 
         .testimonio-card {
@@ -843,6 +841,7 @@
             grid-template-columns: 2fr 1fr 1fr;
             gap: 48px;
             margin-bottom: 40px;
+            text-align: left;
         }
 
         .footer-grid .col h4 {
@@ -928,12 +927,9 @@
             }
             .navbar {
                 padding: 14px 24px;
-                flex-wrap: wrap;
-                gap: 12px;
             }
             .nav-right {
                 gap: 18px;
-                flex-wrap: wrap;
             }
             .container {
                 padding: 0 24px;
@@ -975,15 +971,33 @@
             .specs-grid {
                 grid-template-columns: 1fr;
             }
+            .spec-item {
+                border-left: none;
+                border-bottom: 1px solid rgba(160, 176, 128, 0.1);
+                padding: 20px 0;
+            }
+            .spec-item:last-child {
+                border-bottom: none;
+            }
             .productos-grid {
                 grid-template-columns: 1fr 1fr;
             }
             .footer-grid {
                 grid-template-columns: 1fr;
                 gap: 32px;
+                text-align: center;
             }
             .cart-panel {
                 max-width: 100%;
+            }
+            #tienda .section-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
             }
         }
 
@@ -1010,6 +1024,12 @@
             .hero-badge {
                 font-size: 0.55rem;
                 padding: 4px 10px;
+            }
+            .hero-cta {
+                justify-content: center;
+            }
+            .spec-item h3 {
+                font-size: 1.2rem;
             }
         }
 
@@ -1048,11 +1068,21 @@
             transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .toast.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .toast {
+                white-space: normal;
+                max-width: 90%;
+                font-size: 0.7rem;
+                padding: 12px 20px;
+            }
         }
     </style>
 </head>
@@ -1138,22 +1168,22 @@
     ============================================================ -->
     <section class="specs-section" id="specs">
         <div class="container">
-            <div style="margin-bottom:32px; font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.2em; color:#5a5a52; text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:12px;">
+            <div style="font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.2em; color:#5a5a52; text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:12px; display:inline-block;">
                 ESPECIFICACIONES TÁCTICAS
             </div>
             <div class="specs-grid">
                 <div class="spec-item">
-                    
+                    <div class="spec-icon">⏱️</div>
                     <h3>3 <span style="font-weight:300; font-size:1rem;">MIN</span></h3>
                     <p><span class="highlight-num">Listo en 3 Minutos</span><br />preparación rápida, sin complicaciones</p>
                 </div>
                 <div class="spec-item">
-                    
+                    <div class="spec-icon">🛡️</div>
                     <h3>9 <span style="font-weight:300; font-size:1rem;">M</span></h3>
                     <p><span class="highlight-num">Sin Refrigeración</span><br />9 meses de vida útil estable</p>
                 </div>
                 <div class="spec-item">
-                    
+                    <div class="spec-icon">📦</div>
                     <h3>CAMPO</h3>
                     <p><span class="highlight-num">Porción Compacta</span><br />kit ligero, listo para cualquier misión</p>
                 </div>
@@ -1285,9 +1315,9 @@
             <div class="footer-bottom">
                 <span>© 2026 MIX FORCE · Todos los derechos reservados</span>
                 <div class="socials">
-                    <a href="#" aria-label="Instagram"></a>
-                    <a href="#" aria-label="Twitter"></a>
-                    <a href="#" aria-label="WhatsApp"></a>
+                    <a href="#" aria-label="Instagram">📸</a>
+                    <a href="#" aria-label="Twitter">🐦</a>
+                    <a href="#" aria-label="WhatsApp">📱</a>
                 </div>
             </div>
         </div>
@@ -1340,12 +1370,10 @@
             // FUNCIONES DEL CARRITO
             // ============================================================
             function actualizarCarrito() {
-                // Actualizar contadores
                 const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
                 cartCount.textContent = totalItems;
                 tiendaCount.textContent = totalItems;
 
-                // Renderizar items
                 if (carrito.length === 0) {
                     cartItems.innerHTML = '<div class="cart-empty">El carrito está vacío</div>';
                     cartTotal.style.display = 'none';
@@ -1377,7 +1405,6 @@
                 cartTotalNum.textContent = `$${total.toFixed(2)}`;
                 checkoutBtn.style.display = 'block';
 
-                // Eventos de eliminar
                 document.querySelectorAll('.btn-remove').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const idx = parseInt(this.dataset.index);
@@ -1439,7 +1466,6 @@
                     const precio = parseFloat(card.dataset.precio);
                     agregarAlCarrito(id, nombre, precio);
 
-                    // feedback visual
                     this.textContent = '✓ Añadido';
                     this.classList.add('added');
                     setTimeout(() => {
@@ -1454,7 +1480,6 @@
             // ============================================================
             document.getElementById('heroComprarBtn').addEventListener('click', function() {
                 document.getElementById('tienda').scrollIntoView({ behavior: 'smooth' });
-                // efecto de onda
                 this.textContent = '✓ LISTO';
                 setTimeout(() => {
                     this.textContent = 'COMPRA TU RACIÓN';
@@ -1489,19 +1514,19 @@
                 if (carrito.length === 0) return;
                 const total = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
                 const items = carrito.map(i => `${i.nombre} x${i.cantidad}`).join(', ');
-                alert(`Pedido confirmado:\n${items}\n\nTotal: $${total.toFixed(2)} USD\n\n Tu kit de campaña está en preparación.`);
+                alert(`🧾 Pedido confirmado:\n${items}\n\nTotal: $${total.toFixed(2)} USD\n\n📦 Tu kit de campaña está en preparación.`);
                 carrito = [];
                 actualizarCarrito();
                 guardarCarrito();
                 cartOverlay.classList.remove('open');
                 document.body.style.overflow = 'auto';
-                mostrarToast('¡Pedido completado! Gracias por confiar en MIX FORCE.');
+                mostrarToast('🎉 ¡Pedido completado! Gracias por confiar en MIX FORCE.');
             });
 
             // ============================================================
-            // CONTARLIGO
+            // CONTARLIGO (doble clic en el logo)
             // ============================================================
-            document.getElementById('contarligoBtn').addEventListener('click', function() {
+            document.querySelector('.brand').addEventListener('dblclick', function() {
                 const fecha = prompt('📅 Ingresa tu fecha de nacimiento (YYYY-MM-DD) para calcular tus ciclos de frescura:');
                 if (fecha) {
                     const nac = new Date(fecha);
@@ -1523,7 +1548,6 @@
                 document.getElementById('navMenu').classList.toggle('open');
             });
 
-            // Cerrar menú al hacer clic en enlace
             document.querySelectorAll('#navMenu a').forEach(link => {
                 link.addEventListener('click', () => {
                     document.getElementById('navMenu').classList.remove('open');
@@ -1548,9 +1572,9 @@
             // ============================================================
             cargarCarrito();
 
-            // Pequeña bienvenida
             console.log('⚔️ MIX FORCE -- La revolución del trago');
             console.log('📦 Kits de campaña listos para tu misión.');
+            console.log('💡 Doble clic en el logo MIX FORCE para calcular tus ciclos de frescura.');
 
             // Efecto sutil en el pouch al cargar
             const pouch = document.querySelector('.product-pouch');
