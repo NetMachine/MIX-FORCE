@@ -84,6 +84,7 @@
             letter-spacing: 0.12em;
             color: #f0efe8;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            cursor: pointer;
         }
 
         .nav-right {
@@ -1084,6 +1085,268 @@
                 padding: 12px 20px;
             }
         }
+
+        /* ============================================================
+                   GALERÍA DE IMÁGENES
+                   ============================================================ */
+        #galeria {
+            padding: 80px 0;
+            background: #0f0f12;
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        #galeria .container {
+            text-align: center;
+        }
+
+        #galeria h2 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 4vw, 3rem);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #f0efe8;
+            margin-bottom: 12px;
+        }
+
+        #galeria h2 span {
+            color: #a0b080;
+        }
+
+        #galeria .subtitle {
+            font-family: 'Inter', monospace;
+            font-size: 0.8rem;
+            color: #7a7a72;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 48px;
+        }
+
+        .galeria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+        }
+
+        .galeria-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: 0.3s;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .galeria-item:hover {
+            border-color: rgba(160, 176, 128, 0.25);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .galeria-item .product-image {
+            width: 100%;
+            max-width: 140px;
+            height: auto;
+            aspect-ratio: 1 / 1.2;
+            background: radial-gradient(ellipse at 40% 30%, #3a3a32, #1f1f1a);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border: 1px solid rgba(160, 176, 128, 0.08);
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .galeria-item .product-image .emoji-big {
+            font-size: 3.5rem;
+            filter: drop-shadow(0 0 20px rgba(160, 176, 128, 0.1));
+        }
+
+        .galeria-item .product-image .label {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
+            color: #d4c9a8;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        .galeria-item .product-image .sub-label {
+            font-family: 'Inter', monospace;
+            font-size: 0.45rem;
+            letter-spacing: 0.06em;
+            color: #7a7a72;
+            text-transform: uppercase;
+        }
+
+        .galeria-item .nombre-producto {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            color: #e8e6e0;
+            text-transform: uppercase;
+        }
+
+        .galeria-item .detalle-producto {
+            font-family: 'Inter', monospace;
+            font-size: 0.6rem;
+            color: #7a7a72;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* ============================================================
+                   KIT COMPONENTS SECTION
+                   ============================================================ */
+        #kit-components {
+            padding: 80px 0;
+            background: #121215;
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        #kit-components .container {
+            text-align: center;
+        }
+
+        #kit-components h2 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 4vw, 3rem);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #f0efe8;
+            margin-bottom: 12px;
+        }
+
+        #kit-components h2 span {
+            color: #a0b080;
+        }
+
+        #kit-components .subtitle {
+            font-family: 'Inter', monospace;
+            font-size: 0.8rem;
+            color: #7a7a72;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 48px;
+        }
+
+        .kit-components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .kit-component-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 24px 16px;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .kit-component-card:hover {
+            border-color: rgba(160, 176, 128, 0.2);
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .kit-component-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 12px rgba(160, 176, 128, 0.05));
+        }
+
+        .kit-component-card h4 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            color: #d4c9a8;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .kit-component-card p {
+            font-family: 'Inter', monospace;
+            font-size: 0.65rem;
+            color: #7a7a72;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .kit-component-card .badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 2px 12px;
+            border: 1px solid rgba(160, 176, 128, 0.15);
+            border-radius: 20px;
+            font-family: 'Inter', monospace;
+            font-size: 0.5rem;
+            color: #a0b080;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        /* ============================================================
+                   RESPONSIVE GALERIA
+                   ============================================================ */
+        @media (max-width: 768px) {
+            .galeria-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 16px;
+            }
+            .galeria-item .product-image .emoji-big {
+                font-size: 2.5rem;
+            }
+            .kit-components-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 480px) {
+            .galeria-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .galeria-item {
+                padding: 12px;
+            }
+            .galeria-item .product-image {
+                max-width: 100px;
+                padding: 10px;
+            }
+            .galeria-item .product-image .emoji-big {
+                font-size: 2rem;
+            }
+            .galeria-item .nombre-producto {
+                font-size: 0.7rem;
+            }
+            .kit-components-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .kit-component-card {
+                padding: 16px 10px;
+            }
+            .kit-component-card .icon {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1105,7 +1368,8 @@
         <div class="nav-right" id="navMenu">
             <a href="#hero">Inicio</a>
             <a href="#tienda">Productos</a>
-            <a href="#specs">Especificaciones</a>
+            <a href="#galeria">Galería</a>
+            <a href="#kit-components">Kit</a>
             <a href="#testimonios">Testimonios</a>
             <a href="#footer">Contacto</a>
             <button class="btn-outline" id="cartToggle">🛒(<span id="cartCount">0</span>)</button>
@@ -1120,7 +1384,7 @@
         <div class="container">
             <div class="hero-grid">
                 <div class="hero-left">
-                    <div class="hero-tag">Kit de Campaña para Coctelería</div>
+                    <div class="hero-tag">⚔️ Sin cadena de frío. Sin excusas.</div>
                     <h1 class="hero-title">
                         <span class="highlight">LA REVOLUCIÓN</span><br />
                         DEL TRAGO
@@ -1263,6 +1527,131 @@
     </section>
 
     <!-- ============================================================
+    GALERÍA DE IMÁGENES
+    ============================================================ -->
+    <section id="galeria">
+        <div class="container">
+            <h2>Nuestros <span>Kits</span></h2>
+            <p class="subtitle">Cada kit incluye ingredientes liofilizados de alta calidad</p>
+            <div class="galeria-grid">
+                <!-- Mojito -->
+                <div class="galeria-item">
+                    <div class="product-image">
+                        <div class="emoji-big">🍹</div>
+                        <div class="label">MIX FORCE</div>
+                        <div class="sub-label">Mojito Cubano</div>
+                    </div>
+                    <div class="nombre-producto">Mojito Cubano</div>
+                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
+                </div>
+
+                <!-- Pisco Sour -->
+                <div class="galeria-item">
+                    <div class="product-image">
+                        <div class="emoji-big">🥃</div>
+                        <div class="label">MIX FORCE</div>
+                        <div class="sub-label">Pisco Sour</div>
+                    </div>
+                    <div class="nombre-producto">Pisco Sour</div>
+                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
+                </div>
+
+                <!-- Margarita -->
+                <div class="galeria-item">
+                    <div class="product-image">
+                        <div class="emoji-big">🍸</div>
+                        <div class="label">MIX FORCE</div>
+                        <div class="sub-label">Margarita</div>
+                    </div>
+                    <div class="nombre-producto">Margarita</div>
+                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
+                </div>
+
+                <!-- Piña Colada -->
+                <div class="galeria-item">
+                    <div class="product-image">
+                        <div class="emoji-big">🍍</div>
+                        <div class="label">MIX FORCE</div>
+                        <div class="sub-label">Piña Colada</div>
+                    </div>
+                    <div class="nombre-producto">Piña Colada</div>
+                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
+                </div>
+
+                <!-- Gin Tonic -->
+                <div class="galeria-item">
+                    <div class="product-image">
+                        <div class="emoji-big">🍋</div>
+                        <div class="label">MIX FORCE</div>
+                        <div class="sub-label">Gin Tonic</div>
+                    </div>
+                    <div class="nombre-producto">Gin Tonic</div>
+                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
+                </div>
+
+                <!-- Espresso Martini -->
+                <div class="galeria-item">
+                    <div class="product-image">
+                        <div class="emoji-big">☕</div>
+                        <div class="label">MIX FORCE</div>
+                        <div class="sub-label">Espresso Martini</div>
+                    </div>
+                    <div class="nombre-producto">Espresso Martini</div>
+                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+    KIT COMPONENTS
+    ============================================================ -->
+    <section id="kit-components">
+        <div class="container">
+            <h2>Componentes del <span>Kit</span></h2>
+            <p class="subtitle">Todo lo que necesitas para tu cóctel en un solo paquete</p>
+            <div class="kit-components-grid">
+                <div class="kit-component-card">
+                    <div class="icon">🌿</div>
+                    <h4>Menta Liofilizada</h4>
+                    <p>3 hojas · 1 porción</p>
+                    <span class="badge">Duración 9 meses</span>
+                </div>
+                <div class="kit-component-card">
+                    <div class="icon">💧</div>
+                    <h4>Tableta de Agua con Gas</h4>
+                    <p>200ml · Efervescencia 60s</p>
+                    <span class="badge">Disolver en agua fría</span>
+                </div>
+                <div class="kit-component-card">
+                    <div class="icon">🍬</div>
+                    <h4>Azúcar</h4>
+                    <p>5g · Dosis exacta</p>
+                    <span class="badge">Para 1 porción</span>
+                </div>
+                <div class="kit-component-card">
+                    <div class="icon">🍯</div>
+                    <h4>Jarabe de Goma</h4>
+                    <p>1oz (30ml) · Dosis exacta</p>
+                    <span class="badge">Agregar al shaker</span>
+                </div>
+                <div class="kit-component-card">
+                    <div class="icon">🥚</div>
+                    <h4>Clara de Huevo Liofilizada</h4>
+                    <p>10g · Equivale a 1 clara</p>
+                    <span class="badge">Rehidratar en 30ml agua</span>
+                </div>
+                <div class="kit-component-card">
+                    <div class="icon">🍋</div>
+                    <h4>Jugo de Limón de Pica</h4>
+                    <p>1oz (30ml) · Peso neto 5g</p>
+                    <span class="badge">Agitar 10 segundos</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
     TESTIMONIOS
     ============================================================ -->
     <section id="testimonios">
@@ -1302,7 +1691,8 @@
                     <h4>Enlaces rápidos</h4>
                     <a href="#hero">Inicio</a>
                     <a href="#tienda">Productos</a>
-                    <a href="#specs">Especificaciones</a>
+                    <a href="#galeria">Galería</a>
+                    <a href="#kit-components">Kit</a>
                     <a href="#testimonios">Testimonios</a>
                 </div>
                 <div class="col">
