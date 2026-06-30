@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MIX FORCE · Campaign Kit</title>
+    <title>MIX FORCE · Campaign Kit Store</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>" />
     <style>
-        /* ===== RESET + BASE ===== */
+        /* ============================================================
+                   RESET + BASE
+                   ============================================================ */
         * {
             margin: 0;
             padding: 0;
@@ -19,22 +21,31 @@
             color: #f0f0f0;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
+            scroll-behavior: smooth;
         }
 
-        /* ===== 12-COLUMN GRID ===== */
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            cursor: pointer;
+            font-family: inherit;
+            border: none;
+            background: none;
+            color: inherit;
+        }
+
         .container {
             max-width: 1440px;
             margin: 0 auto;
             padding: 0 48px;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 24px;
-        }
-
-        /* ===== TYPOGRAPHY ===== */
+        /* ============================================================
+                   TYPOGRAPHY
+                   ============================================================ */
         .stencil {
             font-family: 'Inter', 'Arial Black', sans-serif;
             font-weight: 700;
@@ -50,15 +61,17 @@
             font-size: 0.8rem;
         }
 
-        /* ===== HEADER / NAV ===== */
+        /* ============================================================
+                   HEADER / NAV
+                   ============================================================ */
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            z-index: 100;
-            padding: 18px 48px;
-            background: rgba(11, 11, 14, 0.65);
+            z-index: 1000;
+            padding: 16px 48px;
+            background: rgba(11, 11, 14, 0.8);
             backdrop-filter: blur(14px) saturate(1.2);
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
@@ -79,6 +92,7 @@
             background: #e8e6e0;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             box-shadow: 0 0 12px rgba(200, 200, 180, 0.15);
+            flex-shrink: 0;
         }
 
         .brand {
@@ -93,7 +107,7 @@
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 32px;
+            gap: 28px;
         }
 
         .nav-right a {
@@ -101,11 +115,12 @@
             text-decoration: none;
             font-family: 'Inter', monospace;
             font-weight: 400;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             transition: color 0.2s, text-shadow 0.2s;
             position: relative;
+            cursor: pointer;
         }
 
         .nav-right a:hover {
@@ -129,18 +144,18 @@
         }
 
         .btn-outline {
-            border: 1.2px solid rgba(255, 255, 255, 0.25);
+            border: 1.2px solid rgba(255, 255, 255, 0.2);
             padding: 6px 18px;
             border-radius: 0;
             background: transparent;
             color: #e0e0e0;
             font-family: 'Inter', monospace;
             font-weight: 500;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             transition: 0.25s;
-            cursor: default;
+            cursor: pointer;
         }
 
         .btn-outline:hover {
@@ -150,7 +165,18 @@
             box-shadow: 0 0 20px rgba(160, 176, 128, 0.05);
         }
 
-        /* ===== HERO ===== */
+        .menu-hamburguesa {
+            display: none;
+            font-size: 1.8rem;
+            color: #e0e0e0;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* ============================================================
+                   HERO
+                   ============================================================ */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -172,7 +198,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" opacity="0.15"><path d="M0 400 Q200 300 400 380 T800 350 L800 600 L0 600 Z" fill="%23b87c4b"/><path d="M0 450 Q300 380 500 430 T800 400 L800 600 L0 600 Z" fill="%238a5a2e" opacity="0.6"/></svg>') no-repeat bottom / 100% 60%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" opacity="0.12"><path d="M0 400 Q200 300 400 380 T800 350 L800 600 L0 600 Z" fill="%23b87c4b"/><path d="M0 450 Q300 380 500 430 T800 400 L800 600 L0 600 Z" fill="%238a5a2e" opacity="0.5"/></svg>') no-repeat bottom / 100% 60%;
             pointer-events: none;
         }
 
@@ -190,7 +216,6 @@
             min-height: 70vh;
         }
 
-        /* left side */
         .hero-left {
             display: flex;
             flex-direction: column;
@@ -245,6 +270,7 @@
             display: flex;
             align-items: center;
             gap: 24px;
+            flex-wrap: wrap;
         }
 
         .btn-primary {
@@ -262,6 +288,7 @@
             transition: 0.25s;
             box-shadow: 0 4px 20px rgba(75, 83, 32, 0.3);
             position: relative;
+            cursor: pointer;
         }
 
         .btn-primary:hover {
@@ -288,7 +315,6 @@
             background: rgba(0, 0, 0, 0.3);
         }
 
-        /* right side - product visual */
         .hero-right {
             display: flex;
             justify-content: flex-end;
@@ -311,6 +337,12 @@
             border-left: 2px solid #5f6b2e;
             border-right: 2px solid #2f3320;
             background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 6px);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s;
+        }
+
+        .product-pouch:hover {
+            transform: scale(1.01) translateY(-4px);
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(160, 176, 128, 0.15);
         }
 
         .product-pouch::before {
@@ -363,21 +395,6 @@
             padding: 2px 8px;
         }
 
-        .pouch-ammo {
-            position: absolute;
-            bottom: -20px;
-            right: -20px;
-            width: 100px;
-            height: 40px;
-            background: #2f2a20;
-            border-radius: 4px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-            border-left: 6px solid #4b5320;
-            opacity: 0.25;
-            transform: rotate(-6deg);
-            pointer-events: none;
-        }
-
         .wood-texture {
             position: absolute;
             bottom: -40px;
@@ -393,7 +410,19 @@
             pointer-events: none;
         }
 
-        /* ===== SPECS GRID ===== */
+        .crate-shadow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(0deg, rgba(30, 25, 18, 0.6), transparent);
+            pointer-events: none;
+        }
+
+        /* ============================================================
+                   SPECS SECTION
+                   ============================================================ */
         .specs-section {
             background: #1c1c1c;
             padding: 72px 0 80px;
@@ -454,7 +483,425 @@
             font-weight: 600;
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* ============================================================
+                   TIENDA / PRODUCTOS
+                   ============================================================ */
+        #tienda {
+            padding: 80px 0;
+            background: #0f0f12;
+        }
+
+        #tienda .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 48px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        #tienda .section-header h2 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 4vw, 3rem);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #f0efe8;
+        }
+
+        #tienda .section-header h2 span {
+            color: #a0b080;
+        }
+
+        #tienda .section-header p {
+            font-family: 'Inter', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            color: #7a7a72;
+            text-transform: uppercase;
+        }
+
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .producto-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 28px 24px 24px;
+            border-radius: 8px;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .producto-card:hover {
+            border-color: rgba(160, 176, 128, 0.25);
+            background: rgba(255, 255, 255, 0.035);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .producto-card .emoji {
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+
+        .producto-card h3 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 0.04em;
+            color: #e8e6e0;
+            text-transform: uppercase;
+        }
+
+        .producto-card .detalle {
+            font-family: 'Inter', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            color: #888880;
+            text-transform: uppercase;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            padding-top: 10px;
+            margin-top: 4px;
+        }
+
+        .producto-card .precio {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #d4c9a8;
+        }
+
+        .producto-card .precio small {
+            font-weight: 400;
+            font-size: 0.8rem;
+            color: #7a7a72;
+        }
+
+        .btn-comprar {
+            display: inline-block;
+            padding: 12px 24px;
+            background: transparent;
+            border: 1.2px solid #4b5320;
+            color: #d4c9a8;
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: 0.25s;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .btn-comprar:hover {
+            background: #4b5320;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(75, 83, 32, 0.2);
+        }
+
+        .btn-comprar.added {
+            background: #5a6428;
+            color: #fff;
+            border-color: #5a6428;
+        }
+
+        /* ============================================================
+                   CARRITO (sidebar)
+                   ============================================================ */
+        .cart-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: flex-end;
+        }
+
+        .cart-overlay.open {
+            display: flex;
+        }
+
+        .cart-panel {
+            background: #141416;
+            width: 100%;
+            max-width: 420px;
+            padding: 32px 28px;
+            border-left: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .cart-panel .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 20px;
+        }
+
+        .cart-panel .cart-header h2 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #f0efe8;
+        }
+
+        .cart-panel .cart-header button {
+            font-size: 1.8rem;
+            color: #888880;
+            transition: 0.3s;
+        }
+
+        .cart-panel .cart-header button:hover {
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .cart-item .info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .cart-item .info .nombre {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #e8e6e0;
+        }
+
+        .cart-item .info .cantidad {
+            font-family: 'Inter', monospace;
+            font-size: 0.7rem;
+            color: #7a7a72;
+        }
+
+        .cart-item .subtotal {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            color: #d4c9a8;
+        }
+
+        .cart-item .btn-remove {
+            color: #6a4a4a;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            padding: 0 8px;
+        }
+
+        .cart-item .btn-remove:hover {
+            color: #ff6a6a;
+        }
+
+        .cart-total {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-size: 1.2rem;
+            color: #f0efe8;
+        }
+
+        .cart-total .total-num {
+            color: #d4c9a8;
+        }
+
+        .cart-checkout {
+            margin-top: 16px;
+            padding: 16px;
+            background: #4b5320;
+            color: #fff;
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 4px;
+            transition: 0.3s;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .cart-checkout:hover {
+            background: #5a6428;
+            box-shadow: 0 0 40px rgba(75, 83, 32, 0.3);
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 40px 0;
+            color: #7a7a72;
+            font-family: 'Inter', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+        }
+
+        /* ============================================================
+                   TESTIMONIOS
+                   ============================================================ */
+        #testimonios {
+            padding: 80px 0;
+            background: #121215;
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        #testimonios h2 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 4vw, 3rem);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #f0efe8;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        #testimonios h2 span {
+            color: #a0b080;
+        }
+
+        .testimonios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .testimonio-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 28px 24px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .testimonio-card:hover {
+            border-color: rgba(160, 176, 128, 0.15);
+        }
+
+        .testimonio-card .texto {
+            font-family: 'Inter', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #c8c8c0;
+            font-style: italic;
+        }
+
+        .testimonio-card .autor {
+            margin-top: 16px;
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #d4c9a8;
+        }
+
+        .testimonio-card .cargo {
+            font-family: 'Inter', monospace;
+            font-size: 0.7rem;
+            color: #7a7a72;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* ============================================================
+                   FOOTER
+                   ============================================================ */
+        .footer-main {
+            background: #0b0b0e;
+            padding: 60px 0 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 40px;
+        }
+
+        .footer-grid .col h4 {
+            font-family: 'Inter', 'Arial Black', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #a0b080;
+            margin-bottom: 16px;
+        }
+
+        .footer-grid .col p,
+        .footer-grid .col a {
+            font-family: 'Inter', monospace;
+            font-size: 0.8rem;
+            color: #7a7a72;
+            line-height: 2;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .footer-grid .col a:hover {
+            color: #d4c9a8;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-family: 'Inter', monospace;
+            font-size: 0.7rem;
+            color: #5a5a52;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .footer-bottom .socials {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-bottom .socials a {
+            color: #7a7a72;
+            transition: 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .footer-bottom .socials a:hover {
+            color: #d4c9a8;
+        }
+
+        /* ============================================================
+                   RESPONSIVE
+                   ============================================================ */
         @media (max-width: 1024px) {
             .hero-grid {
                 grid-template-columns: 1fr;
@@ -491,21 +938,58 @@
             .container {
                 padding: 0 24px;
             }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
+            .nav-right {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 16px;
+                right: 16px;
+                background: rgba(11, 11, 14, 0.96);
+                backdrop-filter: blur(16px);
+                padding: 24px;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.04);
+                gap: 16px;
+                align-items: stretch;
+            }
+            .nav-right.open {
+                display: flex;
+            }
+            .nav-right a {
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            }
+            .menu-hamburguesa {
+                display: block;
+            }
+            .btn-outline {
+                text-align: center;
+            }
             .specs-grid {
                 grid-template-columns: 1fr;
             }
-            .nav-right a {
-                font-size: 0.65rem;
+            .productos-grid {
+                grid-template-columns: 1fr 1fr;
             }
-            .btn-outline {
-                padding: 4px 12px;
-                font-size: 0.6rem;
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 32px;
             }
-            .brand {
-                font-size: 1.2rem;
+            .cart-panel {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .productos-grid {
+                grid-template-columns: 1fr;
             }
             .hero-title {
                 font-size: 2.4rem;
@@ -523,9 +1007,15 @@
             .product-pouch {
                 max-width: 240px;
             }
+            .hero-badge {
+                font-size: 0.55rem;
+                padding: 4px 10px;
+            }
         }
 
-        /* ===== SCROLLBAR ===== */
+        /* ============================================================
+                   SCROLLBAR
+                   ============================================================ */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -537,90 +1027,89 @@
             border-radius: 0;
         }
 
-        /* ===== UTILITY ===== */
-        .text-muted {
-            color: #7a7a72;
-            font-size: 0.75rem;
-            letter-spacing: 0.06em;
-        }
-
-        .border-glow {
-            box-shadow: 0 0 40px rgba(160, 176, 128, 0.02);
-        }
-
-        /* ===== FOOTER MINI ===== */
-        .footer-mini {
-            background: #141416;
-            padding: 28px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-            text-align: center;
+        /* ============================================================
+                   NOTIFICACIONES
+                   ============================================================ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1c1c1c;
+            border: 1px solid #4b5320;
+            padding: 14px 32px;
+            border-radius: 4px;
             font-family: 'Inter', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.12em;
-            color: #5a5a52;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            color: #d4c9a8;
+            z-index: 3000;
+            opacity: 0;
+            transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
             text-transform: uppercase;
         }
 
-        /* ===== SIMULATED AMMO CRATE TEXTURE (decorative) ===== */
-        .crate-shadow {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 120px;
-            background: linear-gradient(0deg, rgba(30, 25, 18, 0.6), transparent);
-            pointer-events: none;
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== NAVBAR ===== -->
+    <!-- ============================================================
+    TOAST NOTIFICACIÓN
+    ============================================================ -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ============================================================
+    NAVBAR
+    ============================================================ -->
     <header class="navbar">
         <div class="nav-left">
             <div class="compass-logo" aria-hidden="true"></div>
             <span class="brand">MIX FORCE</span>
         </div>
-        <div class="nav-right">
-            <a href="#">Home</a>
-            <a href="#">Products</a>
-            <a href="#">Specs</a>
-            <a href="#">Favorites</a>
-            <a href="#">Contact</a>
-            <span class="btn-outline">CONTARLIGO</span>
+        <button class="menu-hamburguesa" id="menuHamburguesa" aria-label="Menú">☰</button>
+        <div class="nav-right" id="navMenu">
+            <a href="#hero">Inicio</a>
+            <a href="#tienda">Productos</a>
+            <a href="#specs">Especificaciones</a>
+            <a href="#testimonios">Testimonios</a>
+            <a href="#footer">Contacto</a>
+            <button class="btn-outline" id="cartToggle">🛒 Carrito (<span id="cartCount">0</span>)</button>
+            <button class="btn-outline" id="contarligoBtn">CONTARLIGO</button>
         </div>
     </header>
 
-    <!-- ===== HERO ===== -->
-    <section class="hero">
+    <!-- ============================================================
+    HERO
+    ============================================================ -->
+    <section class="hero" id="hero">
         <div class="hero-backdrop"></div>
-
         <div class="container">
             <div class="hero-grid">
-
-                <!-- left content -->
                 <div class="hero-left">
-                    <div class="hero-tag">⚔️ Campaign Kit · Field Edition</div>
+                    <div class="hero-tag">⚔️ Kit de Campaña · Edición de Campo</div>
                     <h1 class="hero-title">
                         <span class="highlight">LA REVOLUCIÓN</span><br />
                         DEL TRAGO
                     </h1>
                     <p class="hero-sub">
-                        Cocteles, Malteadas y Jugos en 3 Minutos<br />
+                        Cócteles, Malteadas y Jugos en 3 Minutos<br />
                         <span style="color:#a0b080;">Dura 9 Meses Sin Refrigeración.</span>
                     </p>
                     <div class="hero-cta">
-                        <a href="#" class="btn-primary">COMPRA TU RACIÓN</a>
+                        <button class="btn-primary" id="heroComprarBtn">COMPRA TU RACIÓN</button>
                         <span class="hero-badge">KIT DE CAMPAÑA · 1 PORCIÓN</span>
                     </div>
-                    <div style="margin-top:8px; display:flex; gap:24px; font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.1em; color:#5a5a52; text-transform:uppercase;">
-                        <span>⏳ 9M shelf life</span>
-                        <span>📦 mil-spec pouch</span>
-                        <span>⚡ 3 min prep</span>
+                    <div style="margin-top:8px; display:flex; gap:24px; font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.1em; color:#5a5a52; text-transform:uppercase; flex-wrap:wrap;">
+                        <span>⏳ 9M de vida útil</span>
+                        <span>📦 empaque mil-spec</span>
+                        <span>⚡ 3 min de preparación</span>
                     </div>
                 </div>
-
-                <!-- right product visual -->
                 <div class="hero-right">
                     <div class="product-pouch">
                         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding-bottom:10px;">
@@ -629,7 +1118,7 @@
                                 <span class="sub">MOJITO CUBANO</span>
                             </div>
                             <div style="margin:12px 0 8px; font-family:'Inter',monospace; font-size:0.55rem; letter-spacing:0.15em; color:#7a7a6a; text-transform:uppercase; border-top:1px solid rgba(255,255,255,0.04); padding-top:10px;">
-                                CAMPAIGN KIT · 1 PORCIÓN
+                                KIT DE CAMPAÑA · 1 PORCIÓN
                             </div>
                             <div class="pouch-stencil">
                                 <span>DURACIÓN 9M</span>
@@ -637,88 +1126,445 @@
                                 <span>H₂O 200ml</span>
                             </div>
                         </div>
-                        <!-- simulated ammo crate wood texture -->
                         <div class="wood-texture"></div>
-                        <div class="pouch-ammo"></div>
                         <div class="crate-shadow"></div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- ===== SPECS GRID ===== -->
-    <section class="specs-section">
+    <!-- ============================================================
+    SPECS SECTION
+    ============================================================ -->
+    <section class="specs-section" id="specs">
         <div class="container">
             <div style="margin-bottom:32px; font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.2em; color:#5a5a52; text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:12px;">
-                ⚙️ TACTICAL SPECIFICATIONS
+                ⚙️ ESPECIFICACIONES TÁCTICAS
             </div>
             <div class="specs-grid">
-
-                <!-- item 1 -->
                 <div class="spec-item">
                     <div class="spec-icon">⏱️</div>
                     <h3>3 <span style="font-weight:300; font-size:1rem;">MIN</span></h3>
-                    <p><span class="highlight-num">Ready in 3 Minutes</span><br />preparación rápida, sin complicaciones</p>
+                    <p><span class="highlight-num">Listo en 3 Minutos</span><br />preparación rápida, sin complicaciones</p>
                 </div>
-
-                <!-- item 2 -->
                 <div class="spec-item">
                     <div class="spec-icon">🛡️</div>
                     <h3>9 <span style="font-weight:300; font-size:1rem;">M</span></h3>
-                    <p><span class="highlight-num">No Refrigeration Required</span><br />9 meses de shelf life estable</p>
+                    <p><span class="highlight-num">Sin Refrigeración</span><br />9 meses de vida útil estable</p>
                 </div>
-
-                <!-- item 3 -->
                 <div class="spec-item">
                     <div class="spec-icon">📦</div>
-                    <h3>FIELD</h3>
-                    <p><span class="highlight-num">Compact Field Portion</span><br />kit ligero, listo para cualquier misión</p>
+                    <h3>CAMPO</h3>
+                    <p><span class="highlight-num">Porción Compacta</span><br />kit ligero, listo para cualquier misión</p>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- ===== FOOTER ===== -->
-    <div class="footer-mini">
-        <div class="container" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <span>© 2026 MIX FORCE · TACTICAL MIXOLOGY</span>
-            <span style="letter-spacing:0.2em;">⚡ KIT DE CAMPAÑA · MOJITO CUBANO</span>
+    <!-- ============================================================
+    TIENDA / PRODUCTOS
+    ============================================================ -->
+    <section id="tienda">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <h2>KITS DE <span>CAMPAÑA</span></h2>
+                    <p style="font-family:'Inter',monospace; font-size:0.7rem; color:#7a7a72; letter-spacing:0.06em; margin-top:4px;">Selecciona tu kit · 1 porción · 9 meses de duración</p>
+                </div>
+                <p style="font-family:'Inter',monospace; font-size:0.7rem; color:#7a7a72;">🛒 <span id="tiendaCount">0</span> productos en carrito</p>
+            </div>
+
+            <div class="productos-grid" id="productosGrid">
+                <!-- Mojito -->
+                <div class="producto-card" data-id="mojito" data-nombre="Mojito Cubano" data-precio="12.90">
+                    <div class="emoji">🍹</div>
+                    <h3>Mojito Cubano</h3>
+                    <div class="detalle">Kit de Campaña · 1 porción</div>
+                    <div class="precio">$12.90 <small>USD</small></div>
+                    <button class="btn-comprar" data-id="mojito">Añadir al carrito</button>
+                </div>
+
+                <!-- Pisco Sour -->
+                <div class="producto-card" data-id="pisco" data-nombre="Pisco Sour" data-precio="14.50">
+                    <div class="emoji">🥃</div>
+                    <h3>Pisco Sour</h3>
+                    <div class="detalle">Kit de Campaña · 1 porción</div>
+                    <div class="precio">$14.50 <small>USD</small></div>
+                    <button class="btn-comprar" data-id="pisco">Añadir al carrito</button>
+                </div>
+
+                <!-- Margarita -->
+                <div class="producto-card" data-id="margarita" data-nombre="Margarita" data-precio="11.90">
+                    <div class="emoji">🍸</div>
+                    <h3>Margarita</h3>
+                    <div class="detalle">Kit de Campaña · 1 porción</div>
+                    <div class="precio">$11.90 <small>USD</small></div>
+                    <button class="btn-comprar" data-id="margarita">Añadir al carrito</button>
+                </div>
+
+                <!-- Piña Colada -->
+                <div class="producto-card" data-id="pina" data-nombre="Piña Colada" data-precio="13.20">
+                    <div class="emoji">🍍</div>
+                    <h3>Piña Colada</h3>
+                    <div class="detalle">Kit de Campaña · 1 porción</div>
+                    <div class="precio">$13.20 <small>USD</small></div>
+                    <button class="btn-comprar" data-id="pina">Añadir al carrito</button>
+                </div>
+
+                <!-- Gin Tonic -->
+                <div class="producto-card" data-id="gin" data-nombre="Gin Tonic" data-precio="12.30">
+                    <div class="emoji">🍋</div>
+                    <h3>Gin Tonic</h3>
+                    <div class="detalle">Kit de Campaña · 1 porción</div>
+                    <div class="precio">$12.30 <small>USD</small></div>
+                    <button class="btn-comprar" data-id="gin">Añadir al carrito</button>
+                </div>
+
+                <!-- Espresso Martini -->
+                <div class="producto-card" data-id="espresso" data-nombre="Espresso Martini" data-precio="15.00">
+                    <div class="emoji">☕</div>
+                    <h3>Espresso Martini</h3>
+                    <div class="detalle">Kit de Campaña · 1 porción</div>
+                    <div class="precio">$15.00 <small>USD</small></div>
+                    <button class="btn-comprar" data-id="espresso">Añadir al carrito</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+    TESTIMONIOS
+    ============================================================ -->
+    <section id="testimonios">
+        <div class="container">
+            <h2>Lo que dice la <span>tropa</span></h2>
+            <div class="testimonios-grid">
+                <div class="testimonio-card">
+                    <p class="texto">"MIX FORCE ha cambiado la forma en que preparo cócteles. En 3 minutos tengo un trago perfecto, sin complicaciones. La revolución del trago es real."</p>
+                    <p class="autor">-- Carlos Méndez</p>
+                    <p class="cargo">Bartender, Lima</p>
+                </div>
+                <div class="testimonio-card">
+                    <p class="texto">"La calidad de los ingredientes liofilizados es impresionante. El Pisco Sour queda con una espuma cremosa que no envidia a un cóctel tradicional."</p>
+                    <p class="autor">-- Sofía Ramírez</p>
+                    <p class="cargo">Mixóloga, Santiago</p>
+                </div>
+                <div class="testimonio-card">
+                    <p class="texto">"Ideal para llevar de campamento o a la playa. 9 meses de frescura sin refrigeración, es un game changer total."</p>
+                    <p class="autor">-- Javier Torres</p>
+                    <p class="cargo">Aventurero y foodie</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+    FOOTER
+    ============================================================ -->
+    <footer class="footer-main" id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="col">
+                    <h4>MIX FORCE</h4>
+                    <p>Kits de cócteles liofilizados con tecnología de campaña. 9 meses de frescura sin refrigeración. Prepara tu trago en 3 minutos donde sea.</p>
+                </div>
+                <div class="col">
+                    <h4>Enlaces rápidos</h4>
+                    <a href="#hero">Inicio</a>
+                    <a href="#tienda">Productos</a>
+                    <a href="#specs">Especificaciones</a>
+                    <a href="#testimonios">Testimonios</a>
+                </div>
+                <div class="col">
+                    <h4>Contacto</h4>
+                    <a href="mailto:info@mixforce.com">info@mixforce.com</a>
+                    <a href="#">+56 9 1234 5678</a>
+                    <a href="#">Santiago, Chile</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 MIX FORCE · Todos los derechos reservados</span>
+                <div class="socials">
+                    <a href="#" aria-label="Instagram">📸</a>
+                    <a href="#" aria-label="Twitter">🐦</a>
+                    <a href="#" aria-label="WhatsApp">📱</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================
+    CARRITO (sidebar)
+    ============================================================ -->
+    <div class="cart-overlay" id="cartOverlay">
+        <div class="cart-panel">
+            <div class="cart-header">
+                <h2>🛒 Carrito</h2>
+                <button id="cartClose">✕</button>
+            </div>
+            <div id="cartItems">
+                <div class="cart-empty">El carrito está vacío</div>
+            </div>
+            <div class="cart-total" id="cartTotal" style="display:none;">
+                <span>Total</span>
+                <span class="total-num" id="cartTotalNum">$0.00</span>
+            </div>
+            <button class="cart-checkout" id="checkoutBtn" style="display:none;">Proceder al pago</button>
         </div>
     </div>
 
-    <!-- ===== MICRO INTERACTION: HOVER ON POUCH ===== -->
+    <!-- ============================================================
+    JAVASCRIPT - TODA LA LÓGICA
+    ============================================================ -->
     <script>
         (function() {
-            const pouch = document.querySelector('.product-pouch');
-            if (pouch) {
-                pouch.addEventListener('mouseenter', () => {
-                    pouch.style.transition = 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s';
-                    pouch.style.transform = 'scale(1.01) translateY(-4px)';
-                    pouch.style.boxShadow = '0 40px 100px rgba(0,0,0,0.9), 0 0 0 1px rgba(160,176,128,0.15)';
+            'use strict';
+
+            // ============================================================
+            // ESTADO DEL CARRITO
+            // ============================================================
+            let carrito = [];
+
+            // DOM refs
+            const cartOverlay = document.getElementById('cartOverlay');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const cartTotalNum = document.getElementById('cartTotalNum');
+            const cartCount = document.getElementById('cartCount');
+            const tiendaCount = document.getElementById('tiendaCount');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            const toast = document.getElementById('toast');
+            let toastTimeout = null;
+
+            // ============================================================
+            // FUNCIONES DEL CARRITO
+            // ============================================================
+            function actualizarCarrito() {
+                // Actualizar contadores
+                const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+                cartCount.textContent = totalItems;
+                tiendaCount.textContent = totalItems;
+
+                // Renderizar items
+                if (carrito.length === 0) {
+                    cartItems.innerHTML = '<div class="cart-empty">El carrito está vacío</div>';
+                    cartTotal.style.display = 'none';
+                    checkoutBtn.style.display = 'none';
+                    return;
+                }
+
+                let html = '';
+                let total = 0;
+                carrito.forEach((item, index) => {
+                    const subtotal = item.precio * item.cantidad;
+                    total += subtotal;
+                    html += `
+                                <div class="cart-item" data-index="${index}">
+                                    <div class="info">
+                                        <span class="nombre">${item.nombre}</span>
+                                        <span class="cantidad">${item.cantidad} x $${item.precio.toFixed(2)}</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:12px;">
+                                        <span class="subtotal">$${subtotal.toFixed(2)}</span>
+                                        <button class="btn-remove" data-index="${index}">✕</button>
+                                    </div>
+                                </div>
+                            `;
                 });
-                pouch.addEventListener('mouseleave', () => {
-                    pouch.style.transform = 'scale(1) translateY(0)';
-                    pouch.style.boxShadow = '0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)';
+
+                cartItems.innerHTML = html;
+                cartTotal.style.display = 'flex';
+                cartTotalNum.textContent = `$${total.toFixed(2)}`;
+                checkoutBtn.style.display = 'block';
+
+                // Eventos de eliminar
+                document.querySelectorAll('.btn-remove').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const idx = parseInt(this.dataset.index);
+                        const nombre = carrito[idx].nombre;
+                        carrito.splice(idx, 1);
+                        actualizarCarrito();
+                        mostrarToast(`❌ ${nombre} eliminado del carrito`);
+                        guardarCarrito();
+                    });
                 });
             }
 
-            // simple click feedback on CTA
-            const cta = document.querySelector('.btn-primary');
-            if (cta) {
-                cta.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const orig = cta.textContent;
-                    cta.textContent = '✓ LISTO';
-                    cta.style.background = '#5a6428';
-                    setTimeout(() => {
-                        cta.textContent = orig;
-                        cta.style.background = '#4b5320';
-                    }, 1200);
-                });
+            function agregarAlCarrito(id, nombre, precio) {
+                const existente = carrito.find(item => item.id === id);
+                if (existente) {
+                    existente.cantidad += 1;
+                } else {
+                    carrito.push({ id, nombre, precio, cantidad: 1 });
+                }
+                actualizarCarrito();
+                guardarCarrito();
+                mostrarToast(`✅ ${nombre} añadido al carrito`);
             }
+
+            function guardarCarrito() {
+                try {
+                    localStorage.setItem('mixforce_carrito', JSON.stringify(carrito));
+                } catch (e) { /* ignore */ }
+            }
+
+            function cargarCarrito() {
+                try {
+                    const data = localStorage.getItem('mixforce_carrito');
+                    if (data) {
+                        carrito = JSON.parse(data);
+                        if (!Array.isArray(carrito)) carrito = [];
+                        actualizarCarrito();
+                    }
+                } catch (e) { carrito = []; }
+            }
+
+            function mostrarToast(mensaje) {
+                toast.textContent = mensaje;
+                toast.classList.add('show');
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2800);
+            }
+
+            // ============================================================
+            // EVENTOS: BOTONES DE COMPRAR
+            // ============================================================
+            document.querySelectorAll('.btn-comprar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.producto-card');
+                    const id = card.dataset.id;
+                    const nombre = card.dataset.nombre;
+                    const precio = parseFloat(card.dataset.precio);
+                    agregarAlCarrito(id, nombre, precio);
+
+                    // feedback visual
+                    this.textContent = '✓ Añadido';
+                    this.classList.add('added');
+                    setTimeout(() => {
+                        this.textContent = 'Añadir al carrito';
+                        this.classList.remove('added');
+                    }, 1800);
+                });
+            });
+
+            // ============================================================
+            // HERO - BOTÓN COMPRAR
+            // ============================================================
+            document.getElementById('heroComprarBtn').addEventListener('click', function() {
+                document.getElementById('tienda').scrollIntoView({ behavior: 'smooth' });
+                // efecto de onda
+                this.textContent = '✓ LISTO';
+                setTimeout(() => {
+                    this.textContent = 'COMPRA TU RACIÓN';
+                }, 1200);
+            });
+
+            // ============================================================
+            // CARRITO - ABRIR / CERRAR
+            // ============================================================
+            document.getElementById('cartToggle').addEventListener('click', function(e) {
+                e.preventDefault();
+                cartOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            });
+
+            document.getElementById('cartClose').addEventListener('click', function() {
+                cartOverlay.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            });
+
+            cartOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cartOverlay.classList.remove('open');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // ============================================================
+            // CHECKOUT
+            // ============================================================
+            checkoutBtn.addEventListener('click', function() {
+                if (carrito.length === 0) return;
+                const total = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+                const items = carrito.map(i => `${i.nombre} x${i.cantidad}`).join(', ');
+                alert(`🧾 Pedido confirmado:\n${items}\n\nTotal: $${total.toFixed(2)} USD\n\n📦 Tu kit de campaña está en preparación.`);
+                carrito = [];
+                actualizarCarrito();
+                guardarCarrito();
+                cartOverlay.classList.remove('open');
+                document.body.style.overflow = 'auto';
+                mostrarToast('🎉 ¡Pedido completado! Gracias por confiar en MIX FORCE.');
+            });
+
+            // ============================================================
+            // CONTARLIGO
+            // ============================================================
+            document.getElementById('contarligoBtn').addEventListener('click', function() {
+                const fecha = prompt('📅 Ingresa tu fecha de nacimiento (YYYY-MM-DD) para calcular tus ciclos de frescura:');
+                if (fecha) {
+                    const nac = new Date(fecha);
+                    if (!isNaN(nac)) {
+                        const ahora = new Date();
+                        const diffMeses = (ahora - nac) / (1000 * 60 * 60 * 24 * 30.44);
+                        const ciclos = Math.floor(diffMeses / 9);
+                        mostrarToast(`🎯 ¡Has vivido ${ciclos} ciclos de frescura MIX FORCE! (${Math.floor(diffMeses)} meses)`);
+                    } else {
+                        mostrarToast('⚠️ Fecha inválida. Usa formato YYYY-MM-DD');
+                    }
+                }
+            });
+
+            // ============================================================
+            // MENÚ HAMBURGUESA
+            // ============================================================
+            document.getElementById('menuHamburguesa').addEventListener('click', function() {
+                document.getElementById('navMenu').classList.toggle('open');
+            });
+
+            // Cerrar menú al hacer clic en enlace
+            document.querySelectorAll('#navMenu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.getElementById('navMenu').classList.remove('open');
+                });
+            });
+
+            // ============================================================
+            // SCROLL SUAVE PARA ENLACES
+            // ============================================================
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        e.preventDefault();
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // ============================================================
+            // INICIALIZAR
+            // ============================================================
+            cargarCarrito();
+
+            // Pequeña bienvenida
+            console.log('⚔️ MIX FORCE -- La revolución del trago');
+            console.log('📦 Kits de campaña listos para tu misión.');
+
+            // Efecto sutil en el pouch al cargar
+            const pouch = document.querySelector('.product-pouch');
+            if (pouch) {
+                setTimeout(() => {
+                    pouch.style.transition = 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s';
+                    pouch.style.transform = 'scale(1.01) translateY(-6px)';
+                    setTimeout(() => {
+                        pouch.style.transform = 'scale(1) translateY(0)';
+                    }, 800);
+                }, 500);
+            }
+
         })();
     </script>
 
