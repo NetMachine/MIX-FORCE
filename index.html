@@ -1,2346 +1,372 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <title>MIX FORCE · Campaign Kit Store</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚔%3C/text%3E%3C/svg%3E" />
-    <style>
-        /* ============================================================
-                   RESET + BASE - Compatible con navegadores antiguos
-                   ============================================================ */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #0b0b0e;
-            color: #f0f0f0;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            scroll-behavior: smooth;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        button {
-            cursor: pointer;
-            font-family: inherit;
-            border: none;
-            background: none;
-            color: inherit;
-        }
-
-        .container {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 0 48px;
-        }
-
-        /* ============================================================
-                   HEADER / NAV - Con fallback para blur
-                   ============================================================ */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            padding: 16px 48px;
-            background: rgba(11, 11, 14, 0.85);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            transition: background 0.3s;
-        }
-
-        /* Fallback para blur en navegadores antiguos */
-        .navbar {
-            background: rgba(11, 11, 14, 0.92);
-        }
-        /* Blur para navegadores modernos */
-        @supports (backdrop-filter: blur(14px)) or (-webkit-backdrop-filter: blur(14px)) {
-            .navbar {
-                background: rgba(11, 11, 14, 0.75);
-                -webkit-backdrop-filter: blur(14px) saturate(1.2);
-                backdrop-filter: blur(14px) saturate(1.2);
-            }
-        }
-
-        .nav-left {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .compass-logo {
-            width: 32px;
-            height: 32px;
-            background: #e8e6e0;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            -webkit-clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            flex-shrink: 0;
-            -webkit-flex-shrink: 0;
-        }
-
-        .brand {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            letter-spacing: 0.12em;
-            color: #f0efe8;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-            cursor: pointer;
-        }
-
-        .nav-right {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            gap: 28px;
-        }
-
-        .nav-right a {
-            color: #cacaca;
-            text-decoration: none;
-            font-family: 'Inter', monospace;
-            font-weight: 400;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            transition: color 0.2s, text-shadow 0.2s;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .nav-right a:hover {
-            color: #ffffff;
-            text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
-        }
-
-        .nav-right a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 1.5px;
-            background: #a0b080;
-            transition: width 0.25s;
-        }
-
-        .nav-right a:hover::after {
-            width: 100%;
-        }
-
-        .btn-outline {
-            border: 1.2px solid rgba(255, 255, 255, 0.2);
-            padding: 6px 18px;
-            border-radius: 0;
-            background: transparent;
-            color: #e0e0e0;
-            font-family: 'Inter', monospace;
-            font-weight: 500;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            transition: 0.25s;
-            cursor: pointer;
-        }
-
-        .btn-outline:hover {
-            border-color: #a0b080;
-            color: #ffffff;
-            background: rgba(160, 176, 128, 0.08);
-            box-shadow: 0 0 20px rgba(160, 176, 128, 0.05);
-        }
-
-        .menu-hamburguesa {
-            display: none;
-            font-size: 1.8rem;
-            color: #e0e0e0;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* ============================================================
-                   HERO
-                   ============================================================ */
-        .hero {
-            min-height: 100vh;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            -webkit-box-pack: center;
-            -webkit-justify-content: center;
-            -ms-flex-pack: center;
-            justify-content: center;
-            position: relative;
-            padding-top: 80px;
-            background: #0b0b0e;
-            overflow: hidden;
-        }
-
-        .hero-backdrop {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            background: radial-gradient(ellipse at 70% 30%, #2a281e 0%, #0b0b0e 70%);
-        }
-
-        .hero-backdrop::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" opacity="0.12"><path d="M0 400 Q200 300 400 380 T800 350 L800 600 L0 600 Z" fill="%23b87c4b"/><path d="M0 450 Q300 380 500 430 T800 400 L800 600 L0 600 Z" fill="%238a5a2e" opacity="0.5"/></svg>') no-repeat bottom / 100% 60%;
-            pointer-events: none;
-        }
-
-        .hero .container {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-        }
-
-        .hero-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: 1fr 60px 1fr;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            min-height: 70vh;
-        }
-
-        .hero-left {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .hero-tag {
-            font-family: 'Inter', monospace;
-            font-weight: 400;
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            color: #a0b080;
-            text-transform: uppercase;
-            border-left: 3px solid #a0b080;
-            padding-left: 14px;
-        }
-
-        .hero-title {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: clamp(3.2rem, 8vw, 5.6rem);
-            line-height: 1.02;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #f0efe8;
-            text-shadow: 0 4px 40px rgba(0, 0, 0, 0.6);
-            max-width: 800px;
-        }
-
-        .hero-title .highlight {
-            background: linear-gradient(135deg, #d4c9a8, #b8a87a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-sub {
-            font-family: 'Inter', monospace;
-            font-weight: 300;
-            font-size: 1rem;
-            letter-spacing: 0.06em;
-            color: #b0b0a8;
-            text-transform: uppercase;
-            max-width: 480px;
-            line-height: 1.6;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 16px;
-        }
-
-        .hero-cta {
-            margin-top: 12px;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            gap: 24px;
-            -webkit-flex-wrap: wrap;
-            -ms-flex-wrap: wrap;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            display: inline-block;
-            padding: 16px 48px;
-            background: #4b5320;
-            border: 1.5px solid #5f6b2e;
-            color: #f0efe8;
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            transition: 0.25s;
-            box-shadow: 0 4px 20px rgba(75, 83, 32, 0.3);
-            position: relative;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background: #5a6428;
-            box-shadow: 0 8px 40px rgba(75, 83, 32, 0.5);
-            -webkit-transform: translateY(-2px);
-            -ms-transform: translateY(-2px);
-            transform: translateY(-2px);
-        }
-
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            inset: -3px;
-            border: 1px solid rgba(160, 176, 128, 0.2);
-            pointer-events: none;
-        }
-
-        .hero-badge {
-            font-family: 'Inter', monospace;
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
-            color: #888880;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 6px 14px;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .hero-right {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: end;
-            -webkit-justify-content: flex-end;
-            -ms-flex-pack: end;
-            justify-content: flex-end;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            position: relative;
-        }
-
-        .product-pouch {
-            width: 100%;
-            max-width: 460px;
-            aspect-ratio: 0.8 / 1;
-            background: radial-gradient(ellipse at 40% 30%, #3a3a32, #1f1f1a);
-            border-radius: 18px 18px 8px 8px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
-            position: relative;
-            padding: 30px 24px 24px;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            -webkit-box-pack: end;
-            -webkit-justify-content: flex-end;
-            -ms-flex-pack: end;
-            justify-content: flex-end;
-            border-left: 2px solid #5f6b2e;
-            border-right: 2px solid #2f3320;
-            background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 6px);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s;
-        }
-
-        .product-pouch:hover {
-            -webkit-transform: scale(1.01) translateY(-4px);
-            -ms-transform: scale(1.01) translateY(-4px);
-            transform: scale(1.01) translateY(-4px);
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(160, 176, 128, 0.15);
-        }
-
-        .product-pouch::before {
-            content: '';
-            position: absolute;
-            top: 18px;
-            left: 18px;
-            right: 18px;
-            height: 40%;
-            background: linear-gradient(180deg, rgba(160, 176, 128, 0.06), transparent);
-            border-bottom: 1px solid rgba(160, 176, 128, 0.08);
-        }
-
-        .pouch-label {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: 1.8rem;
-            letter-spacing: 0.08em;
-            color: #d4c9a8;
-            text-transform: uppercase;
-            line-height: 1.1;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
-        }
-
-        .pouch-label .sub {
-            font-weight: 400;
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            color: #a0a090;
-            display: block;
-            margin-top: 4px;
-        }
-
-        .pouch-stencil {
-            font-family: 'Inter', monospace;
-            font-weight: 400;
-            font-size: 0.6rem;
-            letter-spacing: 0.15em;
-            color: #7a7a6a;
-            text-transform: uppercase;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            padding-top: 12px;
-            margin-top: 12px;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-        }
-
-        .pouch-stencil span {
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            padding: 2px 8px;
-        }
-
-        .wood-texture {
-            position: absolute;
-            bottom: -40px;
-            left: -30px;
-            right: -30px;
-            height: 80px;
-            background: repeating-linear-gradient(90deg,
-                    #3d2e1e 0px, #4d3a26 2px, #3d2e1e 4px, #5a432a 6px, #3d2e1e 8px);
-            opacity: 0.15;
-            border-radius: 4px;
-            -webkit-transform: perspective(400px) rotateX(8deg);
-            -ms-transform: perspective(400px) rotateX(8deg);
-            transform: perspective(400px) rotateX(8deg);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            pointer-events: none;
-        }
-
-        .crate-shadow {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 120px;
-            background: linear-gradient(0deg, rgba(30, 25, 18, 0.6), transparent);
-            pointer-events: none;
-        }
-
-        /* ============================================================
-                   SPECS SECTION
-                   ============================================================ */
-        .specs-section {
-            background: #1c1c1c;
-            padding: 72px 0 80px;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            box-shadow: inset 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .specs-section .container {
-            text-align: center;
-        }
-
-        .specs-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: 1fr 40px 1fr 40px 1fr;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 40px;
-            margin-top: 32px;
-        }
-
-        .spec-item {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            text-align: center;
-            gap: 12px;
-            padding: 28px 24px;
-            border-left: 1.5px solid rgba(160, 176, 128, 0.15);
-            transition: 0.3s;
-        }
-
-        .spec-item:hover {
-            border-left-color: #a0b080;
-            background: rgba(160, 176, 128, 0.02);
-        }
-
-        .spec-icon {
-            font-size: 2.8rem;
-            line-height: 1;
-            filter: drop-shadow(0 0 12px rgba(160, 176, 128, 0.08));
-            color: #a0b080;
-        }
-
-        .spec-item h3 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 1.4rem;
-            letter-spacing: 0.04em;
-            color: #e8e6e0;
-            text-transform: uppercase;
-        }
-
-        .spec-item p {
-            font-family: 'Inter', monospace;
-            font-weight: 300;
-            font-size: 0.85rem;
-            letter-spacing: 0.04em;
-            color: #a0a098;
-            max-width: 280px;
-            line-height: 1.6;
-            text-transform: uppercase;
-        }
-
-        .spec-item .highlight-num {
-            color: #d4c9a8;
-            font-weight: 600;
-        }
-
-        /* ============================================================
-                   TIENDA / PRODUCTOS
-                   ============================================================ */
-        #tienda {
-            padding: 80px 0;
-            background: #0f0f12;
-        }
-
-        #tienda .container {
-            text-align: center;
-        }
-
-        #tienda .section-header {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-            -webkit-box-align: end;
-            -webkit-align-items: flex-end;
-            -ms-flex-align: end;
-            align-items: flex-end;
-            margin-bottom: 48px;
-            -webkit-flex-wrap: wrap;
-            -ms-flex-wrap: wrap;
-            flex-wrap: wrap;
-            gap: 16px;
-            text-align: left;
-        }
-
-        #tienda .section-header h2 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: clamp(2rem, 4vw, 3rem);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #f0efe8;
-        }
-
-        #tienda .section-header h2 span {
-            color: #a0b080;
-        }
-
-        #tienda .section-header p {
-            font-family: 'Inter', monospace;
-            font-size: 0.8rem;
-            letter-spacing: 0.06em;
-            color: #7a7a72;
-            text-transform: uppercase;
-        }
-
-        .productos-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: (1fr)[auto-fill];
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 32px;
-            text-align: left;
-        }
-
-        .producto-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            padding: 28px 24px 24px;
-            border-radius: 8px;
-            transition: 0.3s;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            gap: 12px;
-            position: relative;
-        }
-
-        .producto-card:hover {
-            border-color: rgba(160, 176, 128, 0.25);
-            background: rgba(255, 255, 255, 0.035);
-            -webkit-transform: translateY(-4px);
-            -ms-transform: translateY(-4px);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .producto-card .emoji {
-            font-size: 2.8rem;
-            line-height: 1;
-        }
-
-        .producto-card h3 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 1.2rem;
-            letter-spacing: 0.04em;
-            color: #e8e6e0;
-            text-transform: uppercase;
-        }
-
-        .producto-card .detalle {
-            font-family: 'Inter', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.06em;
-            color: #888880;
-            text-transform: uppercase;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            padding-top: 10px;
-            margin-top: 4px;
-        }
-
-        .producto-card .precio {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: #d4c9a8;
-        }
-
-        .producto-card .precio small {
-            font-weight: 400;
-            font-size: 0.8rem;
-            color: #7a7a72;
-        }
-
-        .btn-comprar {
-            display: inline-block;
-            padding: 12px 24px;
-            background: transparent;
-            border: 1.2px solid #4b5320;
-            color: #d4c9a8;
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 600;
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            transition: 0.25s;
-            cursor: pointer;
-            text-align: center;
-            margin-top: 4px;
-        }
-
-        .btn-comprar:hover {
-            background: #4b5320;
-            color: #fff;
-            box-shadow: 0 0 30px rgba(75, 83, 32, 0.2);
-        }
-
-        .btn-comprar.added {
-            background: #5a6428;
-            color: #fff;
-            border-color: #5a6428;
-        }
-
-        /* ============================================================
-                   CARRITO (sidebar)
-                   ============================================================ */
-        .cart-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            -webkit-box-pack: end;
-            -webkit-justify-content: flex-end;
-            -ms-flex-pack: end;
-            justify-content: flex-end;
-        }
-
-        .cart-overlay.open {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-        }
-
-        .cart-panel {
-            background: #141416;
-            width: 100%;
-            max-width: 420px;
-            padding: 32px 28px;
-            border-left: 1px solid rgba(255, 255, 255, 0.04);
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .cart-panel .cart-header {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 20px;
-        }
-
-        .cart-panel .cart-header h2 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 1.4rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #f0efe8;
-        }
-
-        .cart-panel .cart-header button {
-            font-size: 1.8rem;
-            color: #888880;
-            transition: 0.3s;
-        }
-
-        .cart-panel .cart-header button:hover {
-            color: #fff;
-            -webkit-transform: rotate(90deg);
-            -ms-transform: rotate(90deg);
-            transform: rotate(90deg);
-        }
-
-        .cart-item {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .cart-item .info {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .cart-item .info .nombre {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #e8e6e0;
-        }
-
-        .cart-item .info .cantidad {
-            font-family: 'Inter', monospace;
-            font-size: 0.7rem;
-            color: #7a7a72;
-        }
-
-        .cart-item .subtotal {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            color: #d4c9a8;
-        }
-
-        .cart-item .btn-remove {
-            color: #6a4a4a;
-            font-size: 1.2rem;
-            transition: 0.3s;
-            padding: 0 8px;
-        }
-
-        .cart-item .btn-remove:hover {
-            color: #ff6a6a;
-        }
-
-        .cart-total {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-size: 1.2rem;
-            color: #f0efe8;
-        }
-
-        .cart-total .total-num {
-            color: #d4c9a8;
-        }
-
-        .cart-checkout {
-            margin-top: 16px;
-            padding: 16px;
-            background: #4b5320;
-            color: #fff;
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            border: none;
-            border-radius: 4px;
-            transition: 0.3s;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .cart-checkout:hover {
-            background: #5a6428;
-            box-shadow: 0 0 40px rgba(75, 83, 32, 0.3);
-        }
-
-        .cart-empty {
-            text-align: center;
-            padding: 40px 0;
-            color: #7a7a72;
-            font-family: 'Inter', monospace;
-            font-size: 0.9rem;
-            letter-spacing: 0.06em;
-        }
-
-        /* ============================================================
-                   TESTIMONIOS
-                   ============================================================ */
-        #testimonios {
-            padding: 80px 0;
-            background: #121215;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        #testimonios .container {
-            text-align: center;
-        }
-
-        #testimonios h2 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: clamp(2rem, 4vw, 3rem);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #f0efe8;
-            margin-bottom: 48px;
-        }
-
-        #testimonios h2 span {
-            color: #a0b080;
-        }
-
-        .testimonios-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: (1fr)[auto-fit];
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 32px;
-            text-align: left;
-        }
-
-        .testimonio-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            padding: 28px 24px;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-
-        .testimonio-card:hover {
-            border-color: rgba(160, 176, 128, 0.15);
-        }
-
-        .testimonio-card .texto {
-            font-family: 'Inter', monospace;
-            font-size: 0.95rem;
-            line-height: 1.7;
-            color: #c8c8c0;
-            font-style: italic;
-        }
-
-        .testimonio-card .autor {
-            margin-top: 16px;
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 0.8rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #d4c9a8;
-        }
-
-        .testimonio-card .cargo {
-            font-family: 'Inter', monospace;
-            font-size: 0.7rem;
-            color: #7a7a72;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        /* ============================================================
-                   FOOTER
-                   ============================================================ */
-        .footer-main {
-            background: #0b0b0e;
-            padding: 60px 0 32px;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        .footer-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: 2fr 48px 1fr 48px 1fr;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 48px;
-            margin-bottom: 40px;
-            text-align: left;
-        }
-
-        .footer-grid .col h4 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 0.8rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #a0b080;
-            margin-bottom: 16px;
-        }
-
-        .footer-grid .col p,
-        .footer-grid .col a {
-            font-family: 'Inter', monospace;
-            font-size: 0.8rem;
-            color: #7a7a72;
-            line-height: 2;
-            display: block;
-            transition: 0.3s;
-        }
-
-        .footer-grid .col a:hover {
-            color: #d4c9a8;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-            padding-top: 24px;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-pack: justify;
-            -webkit-justify-content: space-between;
-            -ms-flex-pack: justify;
-            justify-content: space-between;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            -webkit-flex-wrap: wrap;
-            -ms-flex-wrap: wrap;
-            flex-wrap: wrap;
-            gap: 16px;
-            font-family: 'Inter', monospace;
-            font-size: 0.7rem;
-            color: #5a5a52;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .footer-bottom .socials {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            gap: 20px;
-        }
-
-        .footer-bottom .socials a {
-            color: #7a7a72;
-            transition: 0.3s;
-            font-size: 1.2rem;
-        }
-
-        .footer-bottom .socials a:hover {
-            color: #d4c9a8;
-        }
-
-        /* ============================================================
-                   GALERÍA DE IMÁGENES
-                   ============================================================ */
-        #galeria {
-            padding: 80px 0;
-            background: #0f0f12;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        #galeria .container {
-            text-align: center;
-        }
-
-        #galeria h2 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: clamp(2rem, 4vw, 3rem);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #f0efe8;
-            margin-bottom: 12px;
-        }
-
-        #galeria h2 span {
-            color: #a0b080;
-        }
-
-        #galeria .subtitle {
-            font-family: 'Inter', monospace;
-            font-size: 0.8rem;
-            color: #7a7a72;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 48px;
-        }
-
-        .galeria-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: (1fr)[auto-fill];
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 24px;
-        }
-
-        .galeria-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: 0.3s;
-            aspect-ratio: 1 / 1;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            -webkit-box-pack: center;
-            -webkit-justify-content: center;
-            -ms-flex-pack: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-        }
-
-        .galeria-item:hover {
-            border-color: rgba(160, 176, 128, 0.25);
-            -webkit-transform: translateY(-4px);
-            -ms-transform: translateY(-4px);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .galeria-item .product-image {
-            width: 100%;
-            max-width: 140px;
-            height: auto;
-            aspect-ratio: 1 / 1.2;
-            background: radial-gradient(ellipse at 40% 30%, #3a3a32, #1f1f1a);
-            border-radius: 8px;
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-            -webkit-box-align: center;
-            -webkit-align-items: center;
-            -ms-flex-align: center;
-            align-items: center;
-            -webkit-box-pack: center;
-            -webkit-justify-content: center;
-            -ms-flex-pack: center;
-            justify-content: center;
-            padding: 16px;
-            border: 1px solid rgba(160, 176, 128, 0.08);
-            margin-bottom: 12px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .galeria-item .product-image .emoji-big {
-            font-size: 3.5rem;
-            filter: drop-shadow(0 0 20px rgba(160, 176, 128, 0.1));
-        }
-
-        .galeria-item .product-image .label {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 0.6rem;
-            letter-spacing: 0.08em;
-            color: #d4c9a8;
-            text-transform: uppercase;
-            margin-top: 6px;
-        }
-
-        .galeria-item .product-image .sub-label {
-            font-family: 'Inter', monospace;
-            font-size: 0.45rem;
-            letter-spacing: 0.06em;
-            color: #7a7a72;
-            text-transform: uppercase;
-        }
-
-        .galeria-item .nombre-producto {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 0.85rem;
-            letter-spacing: 0.04em;
-            color: #e8e6e0;
-            text-transform: uppercase;
-        }
-
-        .galeria-item .detalle-producto {
-            font-family: 'Inter', monospace;
-            font-size: 0.6rem;
-            color: #7a7a72;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        /* ============================================================
-                   KIT COMPONENTS SECTION
-                   ============================================================ */
-        #kit-components {
-            padding: 80px 0;
-            background: #121215;
-            border-top: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        #kit-components .container {
-            text-align: center;
-        }
-
-        #kit-components h2 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 800;
-            font-size: clamp(2rem, 4vw, 3rem);
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: #f0efe8;
-            margin-bottom: 12px;
-        }
-
-        #kit-components h2 span {
-            color: #a0b080;
-        }
-
-        #kit-components .subtitle {
-            font-family: 'Inter', monospace;
-            font-size: 0.8rem;
-            color: #7a7a72;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-bottom: 48px;
-        }
-
-        .kit-components-grid {
-            display: -ms-grid;
-            display: grid;
-            -ms-grid-columns: (1fr)[auto-fill];
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 24px;
-        }
-
-        .kit-component-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-            padding: 24px 16px;
-            transition: 0.3s;
-            text-align: center;
-        }
-
-        .kit-component-card:hover {
-            border-color: rgba(160, 176, 128, 0.2);
-            -webkit-transform: translateY(-4px);
-            -ms-transform: translateY(-4px);
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.035);
-        }
-
-        .kit-component-card .icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            filter: drop-shadow(0 0 12px rgba(160, 176, 128, 0.05));
-        }
-
-        .kit-component-card h4 {
-            font-family: 'Inter', 'Arial Black', sans-serif;
-            font-weight: 700;
-            font-size: 0.85rem;
-            letter-spacing: 0.04em;
-            color: #d4c9a8;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .kit-component-card p {
-            font-family: 'Inter', monospace;
-            font-size: 0.65rem;
-            color: #7a7a72;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-
-        .kit-component-card .badge {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 2px 12px;
-            border: 1px solid rgba(160, 176, 128, 0.15);
-            border-radius: 20px;
-            font-family: 'Inter', monospace;
-            font-size: 0.5rem;
-            color: #a0b080;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        /* ============================================================
-                   RESPONSIVE
-                   ============================================================ */
-        @media (max-width: 1024px) {
-            .hero-grid {
-                -ms-grid-columns: 1fr;
-                grid-template-columns: 1fr;
-                gap: 40px;
-                text-align: center;
-            }
-            .hero-left {
-                -webkit-box-align: center;
-                -webkit-align-items: center;
-                -ms-flex-align: center;
-                align-items: center;
-            }
-            .hero-title {
-                font-size: clamp(2.8rem, 10vw, 4rem);
-            }
-            .hero-sub {
-                max-width: 100%;
-            }
-            .hero-right {
-                -webkit-box-pack: center;
-                -webkit-justify-content: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-            }
-            .product-pouch {
-                max-width: 320px;
-            }
-            .specs-grid {
-                -ms-grid-columns: 1fr 1fr;
-                grid-template-columns: 1fr 1fr;
-            }
-            .navbar {
-                padding: 14px 24px;
-            }
-            .nav-right {
-                gap: 18px;
-            }
-            .container {
-                padding: 0 24px;
-            }
-            .footer-grid {
-                -ms-grid-columns: 1fr 1fr;
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-right {
-                display: none;
-                -webkit-box-orient: vertical;
-                -webkit-box-direction: normal;
-                -webkit-flex-direction: column;
-                -ms-flex-direction: column;
-                flex-direction: column;
-                position: absolute;
-                top: 70px;
-                left: 16px;
-                right: 16px;
-                background: rgba(11, 11, 14, 0.96);
-                padding: 24px;
-                border-radius: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.04);
-                gap: 16px;
-                -webkit-box-align: stretch;
-                -webkit-align-items: stretch;
-                -ms-flex-align: stretch;
-                align-items: stretch;
-            }
-            .nav-right.open {
-                display: -webkit-box;
-                display: -webkit-flex;
-                display: -ms-flexbox;
-                display: flex;
-            }
-            .nav-right a {
-                padding: 8px 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            }
-            .menu-hamburguesa {
-                display: block;
-            }
-            .btn-outline {
-                text-align: center;
-            }
-            .specs-grid {
-                -ms-grid-columns: 1fr;
-                grid-template-columns: 1fr;
-            }
-            .spec-item {
-                border-left: none;
-                border-bottom: 1px solid rgba(160, 176, 128, 0.1);
-                padding: 20px 0;
-            }
-            .spec-item:last-child {
-                border-bottom: none;
-            }
-            .productos-grid {
-                -ms-grid-columns: 1fr 1fr;
-                grid-template-columns: 1fr 1fr;
-            }
-            .footer-grid {
-                -ms-grid-columns: 1fr;
-                grid-template-columns: 1fr;
-                gap: 32px;
-                text-align: center;
-            }
-            .cart-panel {
-                max-width: 100%;
-            }
-            #tienda .section-header {
-                -webkit-box-orient: vertical;
-                -webkit-box-direction: normal;
-                -webkit-flex-direction: column;
-                -ms-flex-direction: column;
-                flex-direction: column;
-                -webkit-box-align: center;
-                -webkit-align-items: center;
-                -ms-flex-align: center;
-                align-items: center;
-                text-align: center;
-            }
-            .footer-bottom {
-                -webkit-box-orient: vertical;
-                -webkit-box-direction: normal;
-                -webkit-flex-direction: column;
-                -ms-flex-direction: column;
-                flex-direction: column;
-                text-align: center;
-            }
-            .galeria-grid {
-                -ms-grid-columns: (1fr)[auto-fill];
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 16px;
-            }
-            .galeria-item .product-image .emoji-big {
-                font-size: 2.5rem;
-            }
-            .kit-components-grid {
-                -ms-grid-columns: (1fr)[auto-fill];
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-        }
-
-        @media (max-width: 480px) {
-            .productos-grid {
-                -ms-grid-columns: 1fr;
-                grid-template-columns: 1fr;
-            }
-            .hero-title {
-                font-size: 2.4rem;
-            }
-            .btn-primary {
-                padding: 14px 32px;
-                font-size: 0.85rem;
-            }
-            .container {
-                padding: 0 16px;
-            }
-            .navbar {
-                padding: 12px 16px;
-            }
-            .product-pouch {
-                max-width: 240px;
-            }
-            .hero-badge {
-                font-size: 0.55rem;
-                padding: 4px 10px;
-            }
-            .hero-cta {
-                -webkit-box-pack: center;
-                -webkit-justify-content: center;
-                -ms-flex-pack: center;
-                justify-content: center;
-            }
-            .spec-item h3 {
-                font-size: 1.2rem;
-            }
-            .galeria-grid {
-                -ms-grid-columns: 1fr 1fr;
-                grid-template-columns: 1fr 1fr;
-                gap: 12px;
-            }
-            .galeria-item {
-                padding: 12px;
-            }
-            .galeria-item .product-image {
-                max-width: 100px;
-                padding: 10px;
-            }
-            .galeria-item .product-image .emoji-big {
-                font-size: 2rem;
-            }
-            .galeria-item .nombre-producto {
-                font-size: 0.7rem;
-            }
-            .kit-components-grid {
-                -ms-grid-columns: 1fr 1fr;
-                grid-template-columns: 1fr 1fr;
-            }
-            .kit-component-card {
-                padding: 16px 10px;
-            }
-            .kit-component-card .icon {
-                font-size: 1.8rem;
-            }
-        }
-
-        /* ============================================================
-                   SCROLLBAR
-                   ============================================================ */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0b0b0e;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4b5320;
-            border-radius: 0;
-        }
-
-        /* ============================================================
-                   NOTIFICACIONES
-                   ============================================================ */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            -webkit-transform: translateX(-50%) translateY(100px);
-            -ms-transform: translateX(-50%) translateY(100px);
-            transform: translateX(-50%) translateY(100px);
-            background: #1c1c1c;
-            border: 1px solid #4b5320;
-            padding: 14px 32px;
-            border-radius: 4px;
-            font-family: 'Inter', monospace;
-            font-size: 0.8rem;
-            letter-spacing: 0.06em;
-            color: #d4c9a8;
-            z-index: 3000;
-            opacity: 0;
-            transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), -webkit-transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1), -webkit-transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .toast.show {
-            opacity: 1;
-            -webkit-transform: translateX(-50%) translateY(0);
-            -ms-transform: translateX(-50%) translateY(0);
-            transform: translateX(-50%) translateY(0);
-        }
-
-        @media (max-width: 600px) {
-            .toast {
-                white-space: normal;
-                max-width: 90%;
-                font-size: 0.7rem;
-                padding: 12px 20px;
-            }
-        }
-
-        /* ============================================================
-                   FALLBACKS PARA NAVEGADORES ANTIGUOS
-                   ============================================================ */
-        .clearfix::after {
-            content: '';
-            display: table;
-            clear: both;
-        }
-
-        .flex-row {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: horizontal;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: row;
-            -ms-flex-direction: row;
-            flex-direction: row;
-        }
-
-        .flex-col {
-            display: -webkit-box;
-            display: -webkit-flex;
-            display: -ms-flexbox;
-            display: flex;
-            -webkit-box-orient: vertical;
-            -webkit-box-direction: normal;
-            -webkit-flex-direction: column;
-            -ms-flex-direction: column;
-            flex-direction: column;
-        }
-
-        /* Fallback para grid en navegadores muy antiguos */
-        @media not all and (min-width: 768px) {
-            .productos-grid {
-                display: block;
-            }
-            .producto-card {
-                margin-bottom: 20px;
-            }
-            .specs-grid {
-                display: block;
-            }
-            .spec-item {
-                margin-bottom: 20px;
-                border-left: none;
-                border-bottom: 1px solid rgba(160, 176, 128, 0.1);
-                padding: 20px 0;
-            }
-            .galeria-grid {
-                display: block;
-            }
-            .galeria-item {
-                float: left;
-                width: 50%;
-                padding: 10px;
-            }
-            .kit-components-grid {
-                display: block;
-            }
-            .kit-component-card {
-                float: left;
-                width: 50%;
-                padding: 10px;
-            }
-            .footer-grid {
-                display: block;
-            }
-            .footer-grid .col {
-                margin-bottom: 30px;
-            }
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mix Force -- Kits de coctelería listos para preparar</title>
+<meta name="description" content="Kits de coctelería premium: Mojito, Pisco Sour, Piña Colada, Strawberry Daiquiri y Margarita. Ingredientes reales, solo agrega tu licor." />
+<meta property="og:title" content="Mix Force -- Coctelería en un sobre" />
+<meta property="og:description" content="Cinco clásicos, ingredientes reales, listos en segundos." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4efe4; --ink:#1a1a1a; --muted:#6b6659; --line:#dcd4c2; --card:#faf6ec;
+    --mojito:#6b7a3a; --pisco:#d4a017; --pina:#f0e6c8; --strawberry:#c73659; --margarita:#f0d500;
+    --display:"Archivo Black","Arial Black",sans-serif;
+    --sans:"Inter",ui-sans-serif,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;line-height:.9}
+  a{color:inherit;text-decoration:none}
+  img,svg{display:block;max-width:100%}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  ::selection{background:var(--ink);color:var(--bg)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* Header */
+  header.site{position:sticky;top:0;z-index:40;backdrop-filter:blur(8px);background:rgba(244,239,228,.85);border-bottom:1px solid rgba(0,0,0,.08)}
+  header.site .inner{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .logo{font-family:var(--display);font-size:20px;letter-spacing:-.02em}
+  .logo span{opacity:.4}
+  nav.main{display:none;gap:28px;font-size:14px;font-weight:500}
+  @media(min-width:768px){nav.main{display:flex}}
+  nav.main a.active{text-decoration:underline;text-underline-offset:8px}
+  .cart-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ink);border-radius:999px;padding:8px 16px;font-size:14px;font-weight:500;transition:.15s}
+  .cart-btn:hover{background:var(--ink);color:var(--bg)}
+  .cart-btn svg{width:16px;height:16px}
+
+  /* Hero */
+  .hero{padding:64px 0 24px}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-bottom:14px}
+  .hero h1{font-size:clamp(56px,12vw,148px)}
+  .hero .sub{max-width:520px;margin-top:22px;color:var(--muted);font-size:17px;line-height:1.5}
+  .hero .cta{margin-top:34px;display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border-radius:999px;padding:14px 24px;font-size:14px;font-weight:500;transition:.15s}
+  .btn:hover{opacity:.9}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+
+  /* Section */
+  section{padding:64px 0}
+  .section-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:34px;gap:24px}
+  .section-head h2{font-size:clamp(40px,7vw,72px)}
+  .rule{border-top:2px solid var(--ink);padding-top:12px}
+
+  /* Grid */
+  .grid{display:grid;grid-template-columns:repeat(1,1fr);gap:22px}
+  @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
+  .card:hover{transform:translateY(-3px)}
+  .card .pouch-wrap{aspect-ratio:1/1;padding:26px;display:flex;align-items:center;justify-content:center}
+  .card .body{padding:18px 20px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+  .card h3{font-size:24px}
+  .card .tag{color:var(--muted);font-size:13px}
+  .card .row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  .price{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+  .add{background:var(--ink);color:var(--bg);border-radius:999px;padding:9px 16px;font-size:13px;font-weight:500}
+
+  /* How */
+  .how{display:grid;gap:22px;grid-template-columns:repeat(1,1fr)}
+  @media(min-width:768px){.how{grid-template-columns:repeat(3,1fr)}}
+  .step{padding:24px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .step .n{font-family:var(--display);font-size:44px;color:var(--muted)}
+  .step h4{margin-top:8px;font-size:20px}
+  .step p{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.5}
+
+  /* Nosotros */
+  .about{display:grid;gap:32px;grid-template-columns:1fr}
+  @media(min-width:900px){.about{grid-template-columns:1.1fr .9fr;align-items:center}}
+  .about p{color:var(--muted);font-size:16px;line-height:1.6;margin-top:14px;max-width:52ch}
+  .about .visual{aspect-ratio:4/5;border-radius:8px;background:linear-gradient(135deg,#d4a017,#c73659 55%,#6b7a3a);position:relative;overflow:hidden;border:1px solid var(--line)}
+  .about .visual::after{content:"MIX FORCE";position:absolute;inset:auto 24px 24px auto;font-family:var(--display);color:rgba(255,255,255,.85);font-size:40px;letter-spacing:-.02em}
+
+  /* Footer */
+  footer.site{border-top:1px solid var(--line);padding:40px 0;margin-top:40px}
+  footer.site .inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;color:var(--muted);font-size:13px}
+
+  /* Cart drawer */
+  .drawer-back{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.2s;z-index:60}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--bg);z-index:61;transform:translateX(100%);transition:.25s cubic-bezier(.2,.7,.2,1);display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.08)}
+  body.cart-open .drawer{transform:translateX(0)}
+  body.cart-open .drawer-back{opacity:1;pointer-events:auto}
+  .drawer header{display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid var(--line)}
+  .drawer header h3{font-size:22px}
+  .drawer .items{flex:1;overflow:auto;padding:8px 20px}
+  .drawer .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+  .line{display:grid;grid-template-columns:64px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+  .line .sw{width:64px;height:64px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+  .line .name{font-weight:600;font-size:14px}
+  .line .qty{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+  .line .qty button{width:22px;height:22px;font-size:14px}
+  .line .rm{font-size:11px;color:var(--muted);text-decoration:underline;margin-left:10px}
+  .line .lt{font-family:var(--display);font-size:15px}
+  .drawer footer{border-top:1px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:12px}
+  .drawer .sub{display:flex;justify-content:space-between;font-family:var(--display);font-size:20px}
+  .checkout-btn{background:var(--ink);color:var(--bg);border-radius:999px;padding:14px;text-align:center;font-weight:500;font-size:14px}
+  .checkout-btn[disabled]{opacity:.4;cursor:not-allowed}
+
+  /* Checkout dialog */
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
+  body.checkout-open .modal-back{display:flex}
+  .modal{background:var(--bg);border-radius:10px;max-width:520px;width:100%;padding:28px;max-height:90vh;overflow:auto}
+  .modal h3{font-size:28px;margin-bottom:6px}
+  .modal p{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .field label{font-size:12px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted)}
+  .field input,.field textarea{border:1px solid var(--line);border-radius:6px;padding:11px 12px;font:inherit;background:var(--card)}
+  .field input:focus,.field textarea:focus{outline:2px solid var(--ink);outline-offset:1px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
 </head>
 <body>
 
-    <!-- ============================================================
-    TOAST NOTIFICACIÓN
-    ============================================================ -->
-    <div class="toast" id="toast"></div>
+<header class="site">
+  <div class="wrap inner">
+    <a href="#top" class="logo">MIX<span>·</span>FORCE</a>
+    <nav class="main">
+      <a href="#top">Inicio</a>
+      <a href="#sabores">Sabores</a>
+      <a href="#como">Cómo funciona</a>
+      <a href="#nosotros">Nosotros</a>
+    </nav>
+    <button class="cart-btn" id="openCart" aria-label="Abrir carrito">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span>Carrito</span><span id="cartCount">(0)</span>
+    </button>
+  </div>
+</header>
 
-    <!-- ============================================================
-    NAVBAR
-    ============================================================ -->
-    <header class="navbar">
-        <div class="nav-left">
-            <div class="compass-logo" aria-hidden="true"></div>
-            <span class="brand">MIX FORCE</span>
-        </div>
-        <button class="menu-hamburguesa" id="menuHamburguesa" aria-label="Menú">☰</button>
-        <div class="nav-right" id="navMenu">
-            <a href="#hero">Inicio</a>
-            <a href="#tienda">Productos</a>
-            <a href="#galeria">Galería</a>
-            <a href="#kit-components">Kit</a>
-            <a href="#testimonios">Testimonios</a>
-            <a href="#footer">Contacto</a>
-            <button class="btn-outline" id="cartToggle">Carrito (<span id="cartCount">0</span>)</button>
-        </div>
-    </header>
-
-    <!-- ============================================================
-    HERO
-    ============================================================ -->
-    <section class="hero" id="hero">
-        <div class="hero-backdrop"></div>
-        <div class="container">
-            <div class="hero-grid">
-                <div class="hero-left">
-                    <div class="hero-tag">Sin cadena de frío. Sin excusas.</div>
-                    <h1 class="hero-title">
-                        <span class="highlight">LA REVOLUCIÓN</span><br />
-                        DEL TRAGO
-                    </h1>
-                    <p class="hero-sub">
-                        Cócteles, Malteadas y Jugos en 3 Minutos<br />
-                        <span style="color:#a0b080;">Dura 9 Meses Sin Refrigeración.</span>
-                    </p>
-                    <div class="hero-cta">
-                        <button class="btn-primary" id="heroComprarBtn">COMPRA TU RACIÓN</button>
-                        <span class="hero-badge">KIT DE CAMPAÑA · 1 PORCIÓN</span>
-                    </div>
-                    <div style="margin-top:8px; display:flex; gap:24px; font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.1em; color:#5a5a52; text-transform:uppercase; flex-wrap:wrap;">
-                        <span>9M de vida útil</span>
-                        <span>empaque mil-spec</span>
-                        <span>3 min de preparación</span>
-                    </div>
-                </div>
-                <div class="hero-right">
-                    <div class="product-pouch">
-                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding-bottom:10px;">
-                            <div class="pouch-label">
-                                MIX FORCE
-                                <span class="sub">MOJITO CUBANO</span>
-                            </div>
-                            <div style="margin:12px 0 8px; font-family:'Inter',monospace; font-size:0.55rem; letter-spacing:0.15em; color:#7a7a6a; text-transform:uppercase; border-top:1px solid rgba(255,255,255,0.04); padding-top:10px;">
-                                KIT DE CAMPAÑA · 1 PORCIÓN
-                            </div>
-                            <div class="pouch-stencil">
-                                <span>DURACIÓN 9M</span>
-                                <span>LOTE #042</span>
-                                <span>H₂O 200ml</span>
-                            </div>
-                        </div>
-                        <div class="wood-texture"></div>
-                        <div class="crate-shadow"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-    SPECS SECTION
-    ============================================================ -->
-    <section class="specs-section" id="specs">
-        <div class="container">
-            <div style="font-family:'Inter',monospace; font-size:0.6rem; letter-spacing:0.2em; color:#5a5a52; text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:12px; display:inline-block;">
-                ESPECIFICACIONES TÁCTICAS
-            </div>
-            <div class="specs-grid">
-                <div class="spec-item">
-                    <div class="spec-icon">⏱</div>
-                    <h3>3 <span style="font-weight:300; font-size:1rem;">MIN</span></h3>
-                    <p><span class="highlight-num">Listo en 3 Minutos</span><br />preparación rápida, sin complicaciones</p>
-                </div>
-                <div class="spec-item">
-                    <div class="spec-icon">🛡</div>
-                    <h3>9 <span style="font-weight:300; font-size:1rem;">M</span></h3>
-                    <p><span class="highlight-num">Sin Refrigeración</span><br />9 meses de vida útil estable</p>
-                </div>
-                <div class="spec-item">
-                    <div class="spec-icon">📦</div>
-                    <h3>CAMPO</h3>
-                    <p><span class="highlight-num">Porción Compacta</span><br />kit ligero, listo para cualquier misión</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-    TIENDA / PRODUCTOS
-    ============================================================ -->
-    <section id="tienda">
-        <div class="container">
-            <div class="section-header">
-                <div>
-                    <h2>KITS DE <span>CAMPAÑA</span></h2>
-                    <p style="font-family:'Inter',monospace; font-size:0.7rem; color:#7a7a72; letter-spacing:0.06em; margin-top:4px;">Selecciona tu kit · 1 porción · 9 meses de duración</p>
-                </div>
-                <p style="font-family:'Inter',monospace; font-size:0.7rem; color:#7a7a72;">Carrito: <span id="tiendaCount">0</span> productos</p>
-            </div>
-
-            <div class="productos-grid" id="productosGrid">
-                <!-- Mojito -->
-                <div class="producto-card" data-id="mojito" data-nombre="Mojito Cubano" data-precio="12.90">
-                    <div class="emoji">🍹</div>
-                    <h3>Mojito Cubano</h3>
-                    <div class="detalle">Kit de Campaña · 1 porción</div>
-                    <div class="precio">$12.90 <small>USD</small></div>
-                    <button class="btn-comprar" data-id="mojito">Añadir al carrito</button>
-                </div>
-
-                <!-- Pisco Sour -->
-                <div class="producto-card" data-id="pisco" data-nombre="Pisco Sour" data-precio="14.50">
-                    <div class="emoji">🥃</div>
-                    <h3>Pisco Sour</h3>
-                    <div class="detalle">Kit de Campaña · 1 porción</div>
-                    <div class="precio">$14.50 <small>USD</small></div>
-                    <button class="btn-comprar" data-id="pisco">Añadir al carrito</button>
-                </div>
-
-                <!-- Margarita -->
-                <div class="producto-card" data-id="margarita" data-nombre="Margarita" data-precio="11.90">
-                    <div class="emoji">🍸</div>
-                    <h3>Margarita</h3>
-                    <div class="detalle">Kit de Campaña · 1 porción</div>
-                    <div class="precio">$11.90 <small>USD</small></div>
-                    <button class="btn-comprar" data-id="margarita">Añadir al carrito</button>
-                </div>
-
-                <!-- Piña Colada -->
-                <div class="producto-card" data-id="pina" data-nombre="Piña Colada" data-precio="13.20">
-                    <div class="emoji">🍍</div>
-                    <h3>Piña Colada</h3>
-                    <div class="detalle">Kit de Campaña · 1 porción</div>
-                    <div class="precio">$13.20 <small>USD</small></div>
-                    <button class="btn-comprar" data-id="pina">Añadir al carrito</button>
-                </div>
-
-                <!-- Gin Tonic -->
-                <div class="producto-card" data-id="gin" data-nombre="Gin Tonic" data-precio="12.30">
-                    <div class="emoji">🍋</div>
-                    <h3>Gin Tonic</h3>
-                    <div class="detalle">Kit de Campaña · 1 porción</div>
-                    <div class="precio">$12.30 <small>USD</small></div>
-                    <button class="btn-comprar" data-id="gin">Añadir al carrito</button>
-                </div>
-
-                <!-- Espresso Martini -->
-                <div class="producto-card" data-id="espresso" data-nombre="Espresso Martini" data-precio="15.00">
-                    <div class="emoji">☕</div>
-                    <h3>Espresso Martini</h3>
-                    <div class="detalle">Kit de Campaña · 1 porción</div>
-                    <div class="precio">$15.00 <small>USD</small></div>
-                    <button class="btn-comprar" data-id="espresso">Añadir al carrito</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-    GALERÍA DE IMÁGENES - Con rutas de imágenes
-    ============================================================ -->
-    <section id="galeria">
-        <div class="container">
-            <h2>Nuestros <span>Kits</span></h2>
-            <p class="subtitle">Cada kit incluye ingredientes liofilizados de alta calidad</p>
-            <div class="galeria-grid">
-                <!-- Mojito - Imagen: images/mojito-kit.jpg -->
-                <div class="galeria-item">
-                    <div class="product-image">
-                        <div class="emoji-big">🍹</div>
-                        <div class="label">MIX FORCE</div>
-                        <div class="sub-label">Mojito Cubano</div>
-                    </div>
-                    <div class="nombre-producto">Mojito Cubano</div>
-                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
-                </div>
-
-                <!-- Pisco Sour - Imagen: images/pisco-kit.jpg -->
-                <div class="galeria-item">
-                    <div class="product-image">
-                        <div class="emoji-big">🥃</div>
-                        <div class="label">MIX FORCE</div>
-                        <div class="sub-label">Pisco Sour</div>
-                    </div>
-                    <div class="nombre-producto">Pisco Sour</div>
-                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
-                </div>
-
-                <!-- Margarita - Imagen: images/margarita-kit.jpg -->
-                <div class="galeria-item">
-                    <div class="product-image">
-                        <div class="emoji-big">🍸</div>
-                        <div class="label">MIX FORCE</div>
-                        <div class="sub-label">Margarita</div>
-                    </div>
-                    <div class="nombre-producto">Margarita</div>
-                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
-                </div>
-
-                <!-- Piña Colada - Imagen: images/pina-kit.jpg -->
-                <div class="galeria-item">
-                    <div class="product-image">
-                        <div class="emoji-big">🍍</div>
-                        <div class="label">MIX FORCE</div>
-                        <div class="sub-label">Piña Colada</div>
-                    </div>
-                    <div class="nombre-producto">Piña Colada</div>
-                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
-                </div>
-
-                <!-- Gin Tonic - Imagen: images/gin-kit.jpg -->
-                <div class="galeria-item">
-                    <div class="product-image">
-                        <div class="emoji-big">🍋</div>
-                        <div class="label">MIX FORCE</div>
-                        <div class="sub-label">Gin Tonic</div>
-                    </div>
-                    <div class="nombre-producto">Gin Tonic</div>
-                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
-                </div>
-
-                <!-- Espresso Martini - Imagen: images/espresso-kit.jpg -->
-                <div class="galeria-item">
-                    <div class="product-image">
-                        <div class="emoji-big">☕</div>
-                        <div class="label">MIX FORCE</div>
-                        <div class="sub-label">Espresso Martini</div>
-                    </div>
-                    <div class="nombre-producto">Espresso Martini</div>
-                    <div class="detalle-producto">Kit de Campaña · 1 porción</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-    KIT COMPONENTS
-    ============================================================ -->
-    <section id="kit-components">
-        <div class="container">
-            <h2>Componentes del <span>Kit</span></h2>
-            <p class="subtitle">Todo lo que necesitas para tu cóctel en un solo paquete</p>
-            <div class="kit-components-grid">
-                <div class="kit-component-card">
-                    <div class="icon">🌿</div>
-                    <h4>Menta Liofilizada</h4>
-                    <p>3 hojas · 1 porción</p>
-                    <span class="badge">Duración 9 meses</span>
-                </div>
-                <div class="kit-component-card">
-                    <div class="icon">💧</div>
-                    <h4>Tableta de Agua con Gas</h4>
-                    <p>200ml · Efervescencia 60s</p>
-                    <span class="badge">Disolver en agua fría</span>
-                </div>
-                <div class="kit-component-card">
-                    <div class="icon">🍬</div>
-                    <h4>Azúcar</h4>
-                    <p>5g · Dosis exacta</p>
-                    <span class="badge">Para 1 porción</span>
-                </div>
-                <div class="kit-component-card">
-                    <div class="icon">🍯</div>
-                    <h4>Jarabe de Goma</h4>
-                    <p>1oz (30ml) · Dosis exacta</p>
-                    <span class="badge">Agregar al shaker</span>
-                </div>
-                <div class="kit-component-card">
-                    <div class="icon">🥚</div>
-                    <h4>Clara de Huevo Liofilizada</h4>
-                    <p>10g · Equivale a 1 clara</p>
-                    <span class="badge">Rehidratar en 30ml agua</span>
-                </div>
-                <div class="kit-component-card">
-                    <div class="icon">🍋</div>
-                    <h4>Jugo de Limón de Pica</h4>
-                    <p>1oz (30ml) · Peso neto 5g</p>
-                    <span class="badge">Agitar 10 segundos</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-    TESTIMONIOS
-    ============================================================ -->
-    <section id="testimonios">
-        <div class="container">
-            <h2>Lo que dice la <span>tropa</span></h2>
-            <div class="testimonios-grid">
-                <div class="testimonio-card">
-                    <p class="texto">"MIX FORCE ha cambiado la forma en que preparo cócteles. En 3 minutos tengo un trago perfecto, sin complicaciones. La revolución del trago es real."</p>
-                    <p class="autor">-- Carlos Méndez</p>
-                    <p class="cargo">Bartender, Lima</p>
-                </div>
-                <div class="testimonio-card">
-                    <p class="texto">"La calidad de los ingredientes liofilizados es impresionante. El Pisco Sour queda con una espuma cremosa que no envidia a un cóctel tradicional."</p>
-                    <p class="autor">-- Sofía Ramírez</p>
-                    <p class="cargo">Mixóloga, Santiago</p>
-                </div>
-                <div class="testimonio-card">
-                    <p class="texto">"Ideal para llevar de campamento o a la playa. 9 meses de frescura sin refrigeración, es un game changer total."</p>
-                    <p class="autor">-- Javier Torres</p>
-                    <p class="cargo">Aventurero y foodie</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============================================================
-    FOOTER
-    ============================================================ -->
-    <footer class="footer-main" id="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="col">
-                    <h4>MIX FORCE</h4>
-                    <p>Kits de cócteles liofilizados con tecnología de campaña. 9 meses de frescura sin refrigeración. Prepara tu trago en 3 minutos donde sea.</p>
-                </div>
-                <div class="col">
-                    <h4>Enlaces rápidos</h4>
-                    <a href="#hero">Inicio</a>
-                    <a href="#tienda">Productos</a>
-                    <a href="#galeria">Galería</a>
-                    <a href="#kit-components">Kit</a>
-                    <a href="#testimonios">Testimonios</a>
-                </div>
-                <div class="col">
-                    <h4>Contacto</h4>
-                    <a href="mailto:info@mixforce.com">info@mixforce.com</a>
-                    <a href="#">+56 9 1234 5678</a>
-                    <a href="#">Santiago, Chile</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <span>© 2026 MIX FORCE · Todos los derechos reservados</span>
-                <div class="socials">
-                    <a href="#" aria-label="Instagram">📸</a>
-                    <a href="#" aria-label="Twitter">🐦</a>
-                    <a href="#" aria-label="WhatsApp">📱</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- ============================================================
-    CARRITO (sidebar)
-    ============================================================ -->
-    <div class="cart-overlay" id="cartOverlay">
-        <div class="cart-panel">
-            <div class="cart-header">
-                <h2>Carrito</h2>
-                <button id="cartClose">✕</button>
-            </div>
-            <div id="cartItems">
-                <div class="cart-empty">El carrito está vacío</div>
-            </div>
-            <div class="cart-total" id="cartTotal" style="display:none;">
-                <span>Total</span>
-                <span class="total-num" id="cartTotalNum">$0.00</span>
-            </div>
-            <button class="cart-checkout" id="checkoutBtn" style="display:none;">Proceder al pago</button>
-        </div>
+<main id="top">
+  <section class="hero wrap">
+    <div class="eyebrow">Kits de coctelería · 5 sabores</div>
+    <h1>Un sobre.<br>Un clásico.<br>Sin excusas.</h1>
+    <p class="sub">Ingredientes reales, deshidratados en su punto, listos para preparar el cóctel en segundos. Solo agrega tu licor favorito.</p>
+    <div class="cta">
+      <a class="btn" href="#sabores">Ver sabores</a>
+      <a class="btn ghost" href="#como">Cómo se prepara</a>
     </div>
+  </section>
 
-    <!-- ============================================================
-    JAVASCRIPT - TODA LA LÓGICA
-    ============================================================ -->
-    <script>
-        (function() {
-            'use strict';
+  <section class="wrap" id="sabores">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Catálogo</div>
+        <h2>Sabores.</h2>
+      </div>
+      <div class="rule" style="min-width:120px;text-align:right;color:var(--muted);font-size:12px">05 REFERENCIAS</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
 
-            // ============================================================
-            // ESTADO DEL CARRITO
-            // ============================================================
-            var carrito = [];
+  <section class="wrap" id="como">
+    <div class="section-head">
+      <div><div class="eyebrow">Preparación</div><h2>Cómo funciona.</h2></div>
+    </div>
+    <div class="how">
+      <div class="step"><div class="n">01</div><h4>Abre el sobre</h4><p>Contenido para 1 porción. Ingredientes reales, sin colorantes ni conservantes artificiales.</p></div>
+      <div class="step"><div class="n">02</div><h4>Agrega tu licor</h4><p>60 ml del licor que corresponde al sabor: ron, pisco, tequila. Añade hielo.</p></div>
+      <div class="step"><div class="n">03</div><h4>Mezcla y sirve</h4><p>Coctelera o vaso alto según la receta. Listo en menos de un minuto.</p></div>
+    </div>
+  </section>
 
-            // DOM refs
-            var cartOverlay = document.getElementById('cartOverlay');
-            var cartItems = document.getElementById('cartItems');
-            var cartTotal = document.getElementById('cartTotal');
-            var cartTotalNum = document.getElementById('cartTotalNum');
-            var cartCount = document.getElementById('cartCount');
-            var tiendaCount = document.getElementById('tiendaCount');
-            var checkoutBtn = document.getElementById('checkoutBtn');
-            var toast = document.getElementById('toast');
-            var toastTimeout = null;
+  <section class="wrap" id="nosotros">
+    <div class="about">
+      <div>
+        <div class="eyebrow">Nosotros</div>
+        <h2 style="font-size:clamp(40px,7vw,68px);margin-top:8px">Coctelería sin fricción.</h2>
+        <p>Mix Force nació para resolver una idea simple: preparar un buen cóctel en casa sin comprar diez ingredientes distintos. Trabajamos con frutas y hierbas reales, deshidratadas para conservar el sabor por 12 meses.</p>
+        <p>Cinco recetas clásicas, dosificadas con precisión, empacadas en un sobre. Nada más.</p>
+      </div>
+      <div class="visual" aria-hidden="true"></div>
+    </div>
+  </section>
+</main>
 
-            // ============================================================
-            // FUNCIONES DEL CARRITO
-            // ============================================================
-            function actualizarCarrito() {
-                var totalItems = 0;
-                for (var i = 0; i < carrito.length; i++) {
-                    totalItems += carrito[i].cantidad;
-                }
-                cartCount.textContent = totalItems;
-                tiendaCount.textContent = totalItems;
+<footer class="site">
+  <div class="wrap inner">
+    <div>© <span id="yr"></span> Mix Force. Todos los derechos reservados.</div>
+    <div>Bebe con responsabilidad · +18</div>
+  </div>
+</footer>
 
-                if (carrito.length === 0) {
-                    cartItems.innerHTML = '<div class="cart-empty">El carrito está vacío</div>';
-                    cartTotal.style.display = 'none';
-                    checkoutBtn.style.display = 'none';
-                    return;
-                }
+<!-- Cart drawer -->
+<div class="drawer-back" id="drawerBack"></div>
+<aside class="drawer" aria-label="Carrito de compra">
+  <header>
+    <h3>Tu carrito</h3>
+    <button id="closeCart" aria-label="Cerrar">✕</button>
+  </header>
+  <div class="items" id="cartItems"></div>
+  <footer>
+    <div class="sub"><span>Subtotal</span><span id="cartSubtotal">$0.00</span></div>
+    <button class="checkout-btn" id="checkoutBtn" disabled>Finalizar compra</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center">Envío calculado en el siguiente paso.</div>
+  </footer>
+</aside>
 
-                var html = '';
-                var total = 0;
-                for (var idx = 0; idx < carrito.length; idx++) {
-                    var item = carrito[idx];
-                    var subtotal = item.precio * item.cantidad;
-                    total += subtotal;
-                    html +=
-                        '<div class="cart-item" data-index="' + idx + '">' +
-                        '<div class="info">' +
-                        '<span class="nombre">' + item.nombre + '</span>' +
-                        '<span class="cantidad">' + item.cantidad + ' x $' + item.precio.toFixed(2) + '</span>' +
-                        '</div>' +
-                        '<div style="display:flex; align-items:center; gap:12px;">' +
-                        '<span class="subtotal">$' + subtotal.toFixed(2) + '</span>' +
-                        '<button class="btn-remove" data-index="' + idx + '">✕</button>' +
-                        '</div>' +
-                        '</div>';
-                }
+<!-- Checkout modal -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="eyebrow">Checkout · demo</div>
+    <h3>Casi listo.</h3>
+    <p>Completa tus datos. Este es un checkout de demostración -- cuando conectemos pagos reales (Shopify o Stripe), este formulario los procesará.</p>
+    <form id="checkoutForm">
+      <div class="row2">
+        <div class="field"><label>Nombre</label><input required name="nombre"></div>
+        <div class="field"><label>Apellido</label><input required name="apellido"></div>
+      </div>
+      <div class="field"><label>Email</label><input required type="email" name="email"></div>
+      <div class="field"><label>Dirección</label><input required name="direccion"></div>
+      <div class="row2">
+        <div class="field"><label>Ciudad</label><input required name="ciudad"></div>
+        <div class="field"><label>Teléfono</label><input required name="telefono"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button type="button" class="btn ghost" id="cancelCheckout" style="flex:1;justify-content:center">Cancelar</button>
+        <button type="submit" class="btn" style="flex:1;justify-content:center">Confirmar pedido</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-                cartItems.innerHTML = html;
-                cartTotal.style.display = 'flex';
-                cartTotalNum.textContent = '$' + total.toFixed(2);
-                checkoutBtn.style.display = 'block';
+<script>
+/* ---------- Products ---------- */
+const products = [
+  {slug:"mojito-cubano",name:"Mojito Cubano",tagline:"Menta fresca. Lima. Ron blanco.",price:8,bg:"#6b7a3a",ink:"#1a1a1a"},
+  {slug:"pisco-sour",name:"Pisco Sour",tagline:"Ácido. Sedoso. Peruano.",price:8,bg:"#d4a017",ink:"#1a1a1a"},
+  {slug:"pina-colada",name:"Piña Colada",tagline:"Tropical. Cremoso. Caribe.",price:8,bg:"#f0e6c8",ink:"#1a1a1a"},
+  {slug:"strawberry-daiquiri",name:"Strawberry Daiquiri",tagline:"Fresa. Lima. Frappé.",price:8,bg:"#c73659",ink:"#1a1a1a"},
+  {slug:"margarita",name:"Margarita",tagline:"Tequila. Lima. Sal.",price:8,bg:"#f0d500",ink:"#1a1a1a"},
+];
+const money = n => "$"+n.toFixed(2);
+const find = s => products.find(p=>p.slug===s);
 
-                var removeBtns = document.querySelectorAll('.btn-remove');
-                for (var r = 0; r < removeBtns.length; r++) {
-                    removeBtns[r].addEventListener('click', function() {
-                        var idx = parseInt(this.getAttribute('data-index'));
-                        var nombre = carrito[idx].nombre;
-                        carrito.splice(idx, 1);
-                        actualizarCarrito();
-                        mostrarToast('❌ ' + nombre + ' eliminado del carrito');
-                        guardarCarrito();
-                    });
-                }
-            }
+/* ---------- Pouch SVG ---------- */
+function pouch(p, size=200){
+  const words = p.name.toUpperCase().split(" ");
+  const mid = Math.ceil(words.length/2);
+  const l1 = words.slice(0,mid).join(" ");
+  const l2 = words.slice(mid).join(" ");
+  return `<svg viewBox="0 0 300 380" width="${size}" height="${size*1.26}" xmlns="http://www.w3.org/2000/svg" aria-label="${p.name}">
+    <defs><linearGradient id="sh-${p.slug}" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>
+    <path d="M135 6 h30 a8 8 0 0 1 8 8 v10 h-46 v-10 a8 8 0 0 1 8 -8z" fill="${p.bg}"/>
+    <ellipse cx="150" cy="18" rx="9" ry="4" fill="${p.ink}" opacity=".6"/>
+    <rect x="14" y="24" width="272" height="346" rx="10" fill="${p.bg}"/>
+    <rect x="14" y="24" width="272" height="346" rx="10" fill="url(#sh-${p.slug})"/>
+    <rect x="20" y="52" width="260" height="6" fill="${p.ink}" opacity=".12"/>
+    <rect x="34" y="74" width="232" height="240" rx="4" fill="#fff" opacity=".55"/>
+    <text x="50" y="118" fill="${p.ink}" font-family="Archivo Black,Arial Black,sans-serif" font-size="26">MIX FORCE</text>
+    <line x1="50" y1="128" x2="250" y2="128" stroke="${p.ink}" stroke-width="2.5"/>
+    <text x="50" y="168" fill="${p.ink}" font-family="Archivo Black,Arial Black,sans-serif" font-size="26">${l1}</text>
+    ${l2?`<text x="50" y="196" fill="${p.ink}" font-family="Archivo Black,Arial Black,sans-serif" font-size="26">${l2}</text>`:""}
+    <line x1="50" y1="230" x2="250" y2="230" stroke="${p.ink}" stroke-width="1.5"/>
+    <text x="50" y="252" fill="${p.ink}" font-family="Inter,sans-serif" font-size="12" letter-spacing="1">KIT DE CAMPAÑA</text>
+    <text x="50" y="278" fill="${p.ink}" font-family="Inter,sans-serif" font-size="11">1 PORCIÓN · DURACIÓN 12 MESES</text>
+  </svg>`;
+}
 
-            function agregarAlCarrito(id, nombre, precio) {
-                var existente = null;
-                for (var i = 0; i < carrito.length; i++) {
-                    if (carrito[i].id === id) {
-                        existente = carrito[i];
-                        break;
-                    }
-                }
-                if (existente) {
-                    existente.cantidad += 1;
-                } else {
-                    carrito.push({ id: id, nombre: nombre, precio: precio, cantidad: 1 });
-                }
-                actualizarCarrito();
-                guardarCarrito();
-                mostrarToast('✅ ' + nombre + ' añadido al carrito');
-            }
+/* ---------- Render grid ---------- */
+const grid = document.getElementById("grid");
+grid.innerHTML = products.map(p=>`
+  <article class="card">
+    <div class="pouch-wrap" style="background:${p.bg}22">${pouch(p,220)}</div>
+    <div class="body">
+      <h3>${p.name}</h3>
+      <div class="tag">${p.tagline}</div>
+      <div class="row">
+        <span class="price">${money(p.price)}</span>
+        <button class="add" data-add="${p.slug}">Agregar</button>
+      </div>
+    </div>
+  </article>
+`).join("");
 
-            function guardarCarrito() {
-                try {
-                    localStorage.setItem('mixforce_carrito', JSON.stringify(carrito));
-                } catch (e) { /* ignore */ }
-            }
+/* ---------- Cart ---------- */
+const KEY="mixforce.cart.v1";
+let cart = [];
+try{ cart = JSON.parse(localStorage.getItem(KEY)||"[]") }catch{}
+const save = ()=>localStorage.setItem(KEY,JSON.stringify(cart));
 
-            function cargarCarrito() {
-                try {
-                    var data = localStorage.getItem('mixforce_carrito');
-                    if (data) {
-                        carrito = JSON.parse(data);
-                        if (!Array.isArray(carrito)) carrito = [];
-                        actualizarCarrito();
-                    }
-                } catch (e) {
-                    carrito = [];
-                }
-            }
+function add(slug){
+  const f = cart.find(i=>i.slug===slug);
+  if(f) f.qty++; else cart.push({slug,qty:1});
+  save(); render(); openCart();
+}
+function setQty(slug,qty){
+  if(qty<=0) cart = cart.filter(i=>i.slug!==slug);
+  else cart = cart.map(i=>i.slug===slug?{...i,qty}:i);
+  save(); render();
+}
+function remove(slug){ cart = cart.filter(i=>i.slug!==slug); save(); render(); }
+function clear(){ cart=[]; save(); render(); }
 
-            function mostrarToast(mensaje) {
-                toast.textContent = mensaje;
-                toast.classList.add('show');
-                if (toastTimeout) clearTimeout(toastTimeout);
-                toastTimeout = setTimeout(function() {
-                    toast.classList.remove('show');
-                }, 2800);
-            }
+function render(){
+  const count = cart.reduce((a,i)=>a+i.qty,0);
+  const sub = cart.reduce((a,i)=>a+i.qty*find(i.slug).price,0);
+  document.getElementById("cartCount").textContent = `(${count})`;
+  document.getElementById("cartSubtotal").textContent = money(sub);
+  document.getElementById("checkoutBtn").disabled = count===0;
+  const box = document.getElementById("cartItems");
+  if(!cart.length){ box.innerHTML = `<div class="empty">Tu carrito está vacío.<br><br><button class="btn" id="closeEmpty">Ver sabores</button></div>`;
+    document.getElementById("closeEmpty").onclick=()=>{closeCart(); location.hash="#sabores"};
+    return;
+  }
+  box.innerHTML = cart.map(i=>{
+    const p = find(i.slug);
+    return `<div class="line">
+      <div class="sw" style="background:${p.bg}">${pouch(p,54).replace(/width="\d+" height="\d+"/,'width="54" height="68"')}</div>
+      <div>
+        <div class="name">${p.name}</div>
+        <div style="font-size:12px;color:var(--muted)">${money(p.price)}</div>
+        <div>
+          <span class="qty">
+            <button data-dec="${p.slug}">−</button><span>${i.qty}</span><button data-inc="${p.slug}">+</button>
+          </span>
+          <button class="rm" data-rm="${p.slug}">quitar</button>
+        </div>
+      </div>
+      <div class="lt">${money(p.price*i.qty)}</div>
+    </div>`;
+  }).join("");
+}
 
-            // ============================================================
-            // EVENTOS: BOTONES DE COMPRAR
-            // ============================================================
-            var comprarBtns = document.querySelectorAll('.btn-comprar');
-            for (var b = 0; b < comprarBtns.length; b++) {
-                comprarBtns[b].addEventListener('click', function() {
-                    var card = this.closest('.producto-card');
-                    var id = card.getAttribute('data-id');
-                    var nombre = card.getAttribute('data-nombre');
-                    var precio = parseFloat(card.getAttribute('data-precio'));
-                    agregarAlCarrito(id, nombre, precio);
+/* ---------- Wiring ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-add],[data-inc],[data-dec],[data-rm]");
+  if(!t) return;
+  if(t.dataset.add) add(t.dataset.add);
+  else if(t.dataset.inc){ const it=cart.find(i=>i.slug===t.dataset.inc); setQty(t.dataset.inc,(it?.qty||0)+1); }
+  else if(t.dataset.dec){ const it=cart.find(i=>i.slug===t.dataset.dec); setQty(t.dataset.dec,(it?.qty||1)-1); }
+  else if(t.dataset.rm) remove(t.dataset.rm);
+});
 
-                    this.textContent = '✓ Añadido';
-                    this.classList.add('added');
-                    var self = this;
-                    setTimeout(function() {
-                        self.textContent = 'Añadir al carrito';
-                        self.classList.remove('added');
-                    }, 1800);
-                });
-            }
+const openCart = ()=>document.body.classList.add("cart-open");
+const closeCart = ()=>document.body.classList.remove("cart-open");
+document.getElementById("openCart").onclick = openCart;
+document.getElementById("closeCart").onclick = closeCart;
+document.getElementById("drawerBack").onclick = closeCart;
 
-            // ============================================================
-            // HERO - BOTÓN COMPRAR
-            // ============================================================
-            document.getElementById('heroComprarBtn').addEventListener('click', function() {
-                document.getElementById('tienda').scrollIntoView({ behavior: 'smooth' });
-                this.textContent = '✓ LISTO';
-                var self = this;
-                setTimeout(function() {
-                    self.textContent = 'COMPRA TU RACIÓN';
-                }, 1200);
-            });
+document.getElementById("checkoutBtn").onclick = ()=>{
+  closeCart();
+  document.body.classList.add("checkout-open");
+};
+document.getElementById("cancelCheckout").onclick = ()=>document.body.classList.remove("checkout-open");
+document.getElementById("checkoutForm").onsubmit = e=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const nombre = fd.get("nombre");
+  alert(`¡Gracias ${nombre}! Recibimos tu pedido de demostración.\nCuando conectemos pagos reales (Shopify o Stripe), se procesará automáticamente.`);
+  clear();
+  e.target.reset();
+  document.body.classList.remove("checkout-open");
+};
 
-            // ============================================================
-            // CARRITO - ABRIR / CERRAR
-            // ============================================================
-            document.getElementById('cartToggle').addEventListener('click', function(e) {
-                e.preventDefault();
-                cartOverlay.classList.add('open');
-                document.body.style.overflow = 'hidden';
-            });
-
-            document.getElementById('cartClose').addEventListener('click', function() {
-                cartOverlay.classList.remove('open');
-                document.body.style.overflow = 'auto';
-            });
-
-            cartOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    cartOverlay.classList.remove('open');
-                    document.body.style.overflow = 'auto';
-                }
-            });
-
-            // ============================================================
-            // CHECKOUT
-            // ============================================================
-            checkoutBtn.addEventListener('click', function() {
-                if (carrito.length === 0) return;
-                var total = 0;
-                var itemsText = '';
-                for (var i = 0; i < carrito.length; i++) {
-                    total += carrito[i].precio * carrito[i].cantidad;
-                    itemsText += carrito[i].nombre + ' x' + carrito[i].cantidad;
-                    if (i < carrito.length - 1) itemsText += ', ';
-                }
-                alert('🧾 Pedido confirmado:\n' + itemsText + '\n\nTotal: $' + total.toFixed(2) +
-                    ' USD\n\n📦 Tu kit de campaña está en preparación.');
-                carrito = [];
-                actualizarCarrito();
-                guardarCarrito();
-                cartOverlay.classList.remove('open');
-                document.body.style.overflow = 'auto';
-                mostrarToast('🎉 ¡Pedido completado! Gracias por confiar en MIX FORCE.');
-            });
-
-            // ============================================================
-            // CONTARLIGO (doble clic en el logo)
-            // ============================================================
-            document.querySelector('.brand').addEventListener('dblclick', function() {
-                var fecha = prompt('📅 Ingresa tu fecha de nacimiento (YYYY-MM-DD) para calcular tus ciclos de frescura:');
-                if (fecha) {
-                    var nac = new Date(fecha);
-                    if (!isNaN(nac.getTime())) {
-                        var ahora = new Date();
-                        var diffMeses = (ahora - nac) / (1000 * 60 * 60 * 24 * 30.44);
-                        var ciclos = Math.floor(diffMeses / 9);
-                        mostrarToast('🎯 ¡Has vivido ' + ciclos +
-                            ' ciclos de frescura MIX FORCE! (' + Math.floor(diffMeses) + ' meses)');
-                    } else {
-                        mostrarToast('⚠️ Fecha inválida. Usa formato YYYY-MM-DD');
-                    }
-                }
-            });
-
-            // ============================================================
-            // MENÚ HAMBURGUESA
-            // ============================================================
-            document.getElementById('menuHamburguesa').addEventListener('click', function() {
-                document.getElementById('navMenu').classList.toggle('open');
-            });
-
-            var menuLinks = document.querySelectorAll('#navMenu a');
-            for (var l = 0; l < menuLinks.length; l++) {
-                menuLinks[l].addEventListener('click', function() {
-                    document.getElementById('navMenu').classList.remove('open');
-                });
-            }
-
-            // ============================================================
-            // SCROLL SUAVE PARA ENLACES
-            // ============================================================
-            var scrollLinks = document.querySelectorAll('a[href^="#"]');
-            for (var s = 0; s < scrollLinks.length; s++) {
-                scrollLinks[s].addEventListener('click', function(e) {
-                    var target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        e.preventDefault();
-                        target.scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-            }
-
-            // ============================================================
-            // INICIALIZAR
-            // ============================================================
-            cargarCarrito();
-
-            console.log('⚔️ MIX FORCE -- La revolución del trago');
-            console.log('📦 Kits de campaña listos para tu misión.');
-            console.log('💡 Doble clic en el logo MIX FORCE para calcular tus ciclos de frescura.');
-
-            // Efecto sutil en el pouch al cargar
-            var pouch = document.querySelector('.product-pouch');
-            if (pouch) {
-                setTimeout(function() {
-                    pouch.style.transition = 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s';
-                    pouch.style.transform = 'scale(1.01) translateY(-6px)';
-                    setTimeout(function() {
-                        pouch.style.transform = 'scale(1) translateY(0)';
-                    }, 800);
-                }, 500);
-            }
-
-        })();
-    </script>
-
+document.getElementById("yr").textContent = new Date().getFullYear();
+render();
+</script>
 </body>
 </html>
