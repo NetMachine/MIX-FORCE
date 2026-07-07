@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔮 OroPredictor - Tiempo Real (XAU/USD)</title>
+    <title>🔮 OroPredictor - XAU/USD en Tiempo Real</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
-        #chart-container { width: 100%; height: 450px; background: transparent; }
+        #chart-container { width: 100%; height: 450px; background: transparent; position: relative; }
         .stat-card { backdrop-filter: blur(4px); background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
         [data-theme="dark"] .stat-card { background: rgba(0,0,0,0.3); }
         .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .badge-success { background: #22c55e; }
         .badge-error { background: #ef4444; }
+        canvas#fallback-chart { width: 100%; height: 100%; display: block; background: transparent; }
     </style>
 </head>
 <body class="min-h-screen bg-base-200 text-base-content">
@@ -23,7 +24,7 @@
     <nav class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div class="flex-1">
             <a class="btn btn-ghost text-xl font-bold tracking-tight">
-                <i class="fas fa-coins text-warning"></i> OroPredictor <span class="text-xs font-normal opacity-70 ml-2">v3.0 (WebSocket)</span>
+                <i class="fas fa-coins text-warning"></i> OroPredictor <span class="text-xs font-normal opacity-70 ml-2">v3.1 (WebSocket)</span>
             </a>
         </div>
         <div class="flex-none gap-2">
@@ -74,7 +75,9 @@
                     </div>
                     <span class="badge badge-ghost"><i class="fas fa-chart-line"></i> Proyección</span>
                 </div>
-                <div id="chart-container"></div>
+                <div id="chart-container">
+                    <canvas id="fallback-chart"></canvas>
+                </div>
                 <div class="flex flex-wrap justify-between text-xs mt-2 px-2 opacity-60">
                     <span>Actualizado: <span id="update-time">--</span></span>
                     <span>Fuente: Binance WebSocket (PAXGUSDT)</span>
@@ -117,32 +120,166 @@
 
     <script>
         // ============================================================
-        // 1. CARGA DINÁMICA DE LA LIBRERÍA DE GRÁFICOS
+        // 1. CARGA DE LIBRERÍA DE GRÁFICOS CON MÚLTIPLES FALLBACKS
         // ============================================================
-        function loadChartLibrary(callback) {
-            if (typeof LightweightCharts !== 'undefined') {
-                callback();
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.min.js';
-            script.onload = callback;
-            script.onerror = function() {
-                // Fallback a otro CDN
-                const script2 = document.createElement('script');
-                script2.src = 'https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js';
-                script2.onload = callback;
-                script2.onerror = function() {
-                    document.getElementById('chart-container').innerHTML = 
-                        `<div class="alert alert-error shadow-lg"><div><i class="fas fa-exclamation-triangle"></i> <span>Error crítico: no se pudo cargar la librería de gráficos. Verifica tu conexión.</span></div></div>`;
+        let chartLibraryLoaded = false;
+        let useFallbackChart = true; // por defecto usamos canvas, luego si carga LW lo reemplazamos
+
+        function loadChartLibrary() {
+            const cdns = [
+                'https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/lightweight-charts/4.1.0/lightweight-charts.standalone.min.js',
+                'https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js'
+            ];
+            let index = 0;
+
+            function tryLoad() {
+                if (index >= cdns.length) {
+                    console.warn('Todos los CDNs fallaron. Usando gráfico de respaldo con Canvas.');
+                    useFallbackChart = true;
+                    initFallbackChart();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = cdns[index];
+                script.onload = function() {
+                    console.log('Lightweight Charts cargado desde:', cdns[index]);
+                    chartLibraryLoaded = true;
+                    useFallbackChart = false;
+                    // Reemplazar canvas por gráfico LW
+                    document.getElementById('chart-container').innerHTML = '';
+                    // Volver a crear el contenedor
+                    const container = document.createElement('div');
+                    container.id = 'chart-container';
+                    container.style.width = '100%';
+                    container.style.height = '450px';
+                    document.querySelector('.card-body').insertBefore(container, document.querySelector('.flex-wrap.justify-between.text-xs'));
+                    // Inicializar gráfico LW
+                    initLightweightChart();
                 };
-                document.head.appendChild(script2);
-            };
-            document.head.appendChild(script);
+                script.onerror = function() {
+                    console.warn('Falló CDN:', cdns[index]);
+                    index++;
+                    tryLoad();
+                };
+                document.head.appendChild(script);
+            }
+            tryLoad();
         }
 
         // ============================================================
-        // 2. INDICADORES (igual que antes)
+        // 2. GRÁFICO DE RESPALDO CON CANVAS (100% autónomo)
+        // ============================================================
+        function initFallbackChart() {
+            const canvas = document.getElementById('fallback-chart');
+            if (!canvas) return;
+            const container = document.getElementById('chart-container');
+            const resize = () => {
+                const rect = container.getBoundingClientRect();
+                canvas.width = rect.width || 800;
+                canvas.height = rect.height || 450;
+                drawFallbackChart(canvas);
+            };
+            window.addEventListener('resize', resize);
+            resize();
+            // Redibujar cada vez que se actualicen los datos
+            window.drawFallback = function() { drawFallbackChart(canvas); };
+        }
+
+        function drawFallbackChart(canvas) {
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width,
+                h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Si no hay velas, mostrar mensaje
+            const candles = getAllCandlesForDisplay();
+            if (!candles || candles.length < 2) {
+                ctx.fillStyle = '#888';
+                ctx.font = '16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Esperando datos...', w/2, h/2);
+                return;
+            }
+
+            // Encontrar mínimo y máximo
+            let minPrice = Infinity,
+                maxPrice = -Infinity;
+            candles.forEach(c => {
+                if (c.low < minPrice) minPrice = c.low;
+                if (c.high > maxPrice) maxPrice = c.high;
+            });
+            const padding = (maxPrice - minPrice) * 0.1;
+            minPrice -= padding;
+            maxPrice += padding;
+            const range = maxPrice - minPrice;
+
+            const xStep = w / (candles.length + 1);
+            const yScale = (h - 40) / range;
+
+            // Dibujar velas
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < candles.length; i++) {
+                const c = candles[i];
+                const x = xStep * (i + 1);
+                const yOpen = h - 20 - (c.open - minPrice) * yScale;
+                const yClose = h - 20 - (c.close - minPrice) * yScale;
+                const yHigh = h - 20 - (c.high - minPrice) * yScale;
+                const yLow = h - 20 - (c.low - minPrice) * yScale;
+                const isBull = c.close >= c.open;
+                ctx.fillStyle = isBull ? '#26a69a' : '#ef5350';
+                ctx.strokeStyle = isBull ? '#26a69a' : '#ef5350';
+                ctx.lineWidth = 1;
+
+                // Wick
+                ctx.beginPath();
+                ctx.moveTo(x, yHigh);
+                ctx.lineTo(x, yLow);
+                ctx.stroke();
+
+                // Cuerpo
+                const bodyTop = Math.min(yOpen, yClose);
+                const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
+                ctx.fillRect(x - 3, bodyTop, 6, bodyHeight);
+            }
+
+            // Línea de proyección (si existe predicción)
+            if (currentPredictionData && candles.length > 0) {
+                const last = candles[candles.length - 1];
+                const predPrice = currentPredictionData.predicted;
+                const x0 = xStep * candles.length;
+                const y0 = h - 20 - (last.close - minPrice) * yScale;
+                const x1 = xStep * (candles.length + 5);
+                const y1 = h - 20 - (predPrice - minPrice) * yScale;
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(x0, y0);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Precio actual
+            if (candles.length > 0) {
+                const last = candles[candles.length - 1];
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText('$' + last.close.toFixed(2), w - 10, 20);
+            }
+        }
+
+        function getAllCandlesForDisplay() {
+            const display = [...allCandles];
+            if (currentCandle) display.push({ ...currentCandle });
+            return display;
+        }
+
+        // ============================================================
+        // 3. INDICADORES (igual que antes)
         // ============================================================
         function calcEMA(data, period) {
             const k = 2 / (period + 1);
@@ -197,7 +334,7 @@
         }
 
         // ============================================================
-        // 3. PREDICTOR (Ensemble)
+        // 4. PREDICTOR (Ensemble)
         // ============================================================
         function predictPrice(candles, tf) {
             if (!candles || candles.length < 30) return null;
@@ -272,18 +409,18 @@
         }
 
         // ============================================================
-        // 4. GESTIÓN DE VELAS EN TIEMPO REAL
+        // 5. GESTIÓN DE VELAS EN TIEMPO REAL
         // ============================================================
-        let allCandles = [];           // velas de 1 minuto
-        let currentCandle = null;      // vela en construcción
+        let allCandles = [];
+        let currentCandle = null;
         let lastPrice = null;
-        let priceHistory = [];         // para cambios porcentuales
+        let currentPredictionData = null;
+        let currentTimeframe = '1h';
 
         function buildCandleFromTrade(price, timestamp) {
             if (!currentCandle) {
-                // Iniciar nueva vela
                 currentCandle = {
-                    time: Math.floor(timestamp / 60000) * 60, // minuto actual en segundos
+                    time: Math.floor(timestamp / 60000) * 60,
                     open: price,
                     high: price,
                     low: price,
@@ -292,16 +429,12 @@
                 };
                 return;
             }
-            // Si el timestamp supera el minuto actual, cerrar la vela y empezar otra
             const currentMinute = Math.floor(timestamp / 60000) * 60;
             if (currentCandle.time !== currentMinute) {
-                // Cerrar vela anterior
                 if (currentCandle) {
                     allCandles.push({ ...currentCandle });
-                    // Limitar a 500 velas para no saturar
                     if (allCandles.length > 500) allCandles.shift();
                 }
-                // Crear nueva
                 currentCandle = {
                     time: currentMinute,
                     open: price,
@@ -311,17 +444,13 @@
                     volume: 0
                 };
             } else {
-                // Actualizar vela actual
                 currentCandle.high = Math.max(currentCandle.high, price);
                 currentCandle.low = Math.min(currentCandle.low, price);
                 currentCandle.close = price;
-                currentCandle.volume += 1; // o volumen real si se tuviera
+                currentCandle.volume += 1;
             }
         }
 
-        // ============================================================
-        // 5. AGREGACIÓN PARA OTRAS TEMPORALIDADES
-        // ============================================================
         function aggregateCandles(candles, tf) {
             if (tf === '1m') return candles;
             const minutes = { '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 } [tf] || 60;
@@ -346,23 +475,11 @@
         // ============================================================
         // 6. ACTUALIZACIÓN DE UI Y GRÁFICO
         // ============================================================
-        let chart = null;
-        let series = null;
-        let predictionLine = null;
-        let currentTimeframe = '1h';
-
-        function getTimeframeLabel(tf) {
-            const map = { '1m': '1 Min', '5m': '5 Min', '15m': '15 Min', '1h': '1 Hora', '4h': '4 Horas', '1d': '1 Día' };
-            return map[tf] || tf;
-        }
-
         function updateUI() {
             if (allCandles.length < 2) return;
             const candles1m = [...allCandles];
             if (currentCandle) {
-                // Añadir la vela actual para cálculos (aunque no esté cerrada)
                 const extended = [...candles1m, { ...currentCandle }];
-                // Usamos extended para predicciones, pero no para el gráfico (mostramos solo cerradas)
                 const agg = aggregateCandles(extended, currentTimeframe);
                 if (agg.length < 10) return;
                 const pred = predictPrice(agg, currentTimeframe);
@@ -371,18 +488,14 @@
                 renderStats(extended, pred);
                 renderIndicators(pred);
                 renderTable(extended);
-                // Actualizar gráfico con velas cerradas + la actual (si existe)
-                updateChart(candles1m, pred);
+                updateChart();
             }
         }
-
-        let currentPredictionData = null;
 
         function renderStats(candles, pred) {
             const last = candles[candles.length - 1];
             const currentPrice = last.close;
             document.getElementById('current-price').innerText = `$${currentPrice.toFixed(2)}`;
-            // Cambio respecto a la vela anterior
             const prevClose = candles.length > 1 ? candles[candles.length - 2].close : currentPrice;
             const change = ((currentPrice - prevClose) / prevClose * 100);
             const chEl = document.getElementById('current-change');
@@ -396,7 +509,6 @@
             el1h.innerText = `${ch1h > 0 ? '+' : ''}${ch1h.toFixed(2)}%`;
             el1h.className = `text-sm ${ch1h >= 0 ? 'text-success' : 'text-error'}`;
 
-            // 24h extrapolación conservadora
             const factor24h = 1.2;
             const p24h = currentPrice + (p1h - currentPrice) * factor24h;
             document.getElementById('pred-24h').innerText = `$${p24h.toFixed(2)}`;
@@ -447,67 +559,82 @@
             }
         }
 
-        function updateChart(candles, pred) {
-            if (typeof LightweightCharts === 'undefined') {
-                document.getElementById('chart-container').innerHTML = 
-                    `<div class="alert alert-warning shadow-lg"><div><i class="fas fa-exclamation-triangle"></i> <span>Librería de gráficos no disponible. Reintentando...</span></div></div>`;
+        function getTimeframeLabel(tf) {
+            const map = { '1m': '1 Min', '5m': '5 Min', '15m': '15 Min', '1h': '1 Hora', '4h': '4 Horas', '1d': '1 Día' };
+            return map[tf] || tf;
+        }
+
+        // ============================================================
+        // 7. GRÁFICO (Lightweight Charts o Canvas)
+        // ============================================================
+        let lwChart = null;
+        let lwSeries = null;
+        let lwPredLine = null;
+
+        function initLightweightChart() {
+            if (typeof LightweightCharts === 'undefined' || useFallbackChart) {
                 return;
             }
             const container = document.getElementById('chart-container');
-            if (container.offsetWidth === 0) {
-                container.style.width = '100%';
-                container.style.minHeight = '450px';
-            }
+            if (!container) return;
             try {
-                if (!chart) {
-                    chart = LightweightCharts.createChart(container, {
-                        layout: { background: { color: 'transparent' }, textColor: '#d1d5db' },
-                        grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
-                        width: container.clientWidth || 800,
-                        height: 450,
-                        timeScale: { timeVisible: true, secondsVisible: currentTimeframe === '1m' || currentTimeframe === '5m' }
-                    });
-                    series = chart.addCandlestickSeries({
-                        upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
-                        wickUpColor: '#26a69a', wickDownColor: '#ef5350'
-                    });
-                    predictionLine = chart.addLineSeries({
-                        color: '#fbbf24', lineWidth: 2, lineStyle: 2,
-                        priceLineVisible: false, lastValueVisible: true
-                    });
-                }
-                // Mostrar velas cerradas + la actual (si existe)
-                const displayCandles = [...candles];
-                if (currentCandle) {
-                    // Si la vela actual tiene datos, la añadimos (aunque no esté cerrada)
-                    displayCandles.push({ ...currentCandle });
-                }
-                const chartData = displayCandles.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
-                series.setData(chartData);
-
-                // Línea de proyección (5 pasos)
-                const lastCandle = candles[candles.length - 1] || currentCandle;
-                if (lastCandle && pred) {
-                    const currentPrice = lastCandle.close;
-                    const predPrice = pred.predicted;
-                    const step = (predPrice - currentPrice) / 5;
-                    const interval = 60; // 1 minuto en segundos
-                    const future = [];
-                    for (let i = 1; i <= 5; i++) {
-                        future.push({ time: lastCandle.time + i * interval, value: currentPrice + step * i });
-                    }
-                    predictionLine.setData([{ time: lastCandle.time, value: currentPrice }, ...future]);
-                }
-                chart.resize(container.clientWidth || 800, 450);
-                chart.timeScale().fitContent();
+                lwChart = LightweightCharts.createChart(container, {
+                    layout: { background: { color: 'transparent' }, textColor: '#d1d5db' },
+                    grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
+                    width: container.clientWidth || 800,
+                    height: 450,
+                    timeScale: { timeVisible: true, secondsVisible: currentTimeframe === '1m' || currentTimeframe === '5m' }
+                });
+                lwSeries = lwChart.addCandlestickSeries({
+                    upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
+                    wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+                });
+                lwPredLine = lwChart.addLineSeries({
+                    color: '#fbbf24', lineWidth: 2, lineStyle: 2,
+                    priceLineVisible: false, lastValueVisible: true
+                });
+                updateLightweightChart();
             } catch(e) {
-                console.error('Error en gráfico:', e);
-                container.innerHTML = `<div class="alert alert-error">Error al dibujar gráfico: ${e.message}</div>`;
+                console.error('Error al inicializar Lightweight Charts:', e);
+                useFallbackChart = true;
+                initFallbackChart();
+            }
+        }
+
+        function updateLightweightChart() {
+            if (useFallbackChart || !lwChart) {
+                if (typeof window.drawFallback === 'function') window.drawFallback();
+                return;
+            }
+            const display = getAllCandlesForDisplay();
+            if (display.length < 2) return;
+            const data = display.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
+            lwSeries.setData(data);
+
+            if (currentPredictionData && display.length > 0) {
+                const last = display[display.length - 1];
+                const predPrice = currentPredictionData.predicted;
+                const step = (predPrice - last.close) / 5;
+                const interval = 60;
+                const future = [];
+                for (let i = 1; i <= 5; i++) {
+                    future.push({ time: last.time + i * interval, value: last.close + step * i });
+                }
+                lwPredLine.setData([{ time: last.time, value: last.close }, ...future]);
+            }
+            lwChart.timeScale().fitContent();
+        }
+
+        function updateChart() {
+            if (useFallbackChart) {
+                if (typeof window.drawFallback === 'function') window.drawFallback();
+            } else {
+                updateLightweightChart();
             }
         }
 
         // ============================================================
-        // 7. WEBSOCKET (TIEMPO REAL) + FALLBACK SINTÉTICO
+        // 8. WEBSOCKET (TIEMPO REAL) + FALLBACK SINTÉTICO
         // ============================================================
         let ws = null;
         let syntheticInterval = null;
@@ -519,14 +646,13 @@
                 ws.onopen = function() {
                     console.log('WebSocket conectado');
                     statusEl.innerHTML = `<span class="w-2 h-2 bg-green-400 rounded-full inline-block"></span> Conectado`;
-                    // Detener sintético si estaba corriendo
                     if (syntheticInterval) { clearInterval(syntheticInterval); syntheticInterval = null; }
                 };
                 ws.onmessage = function(event) {
                     const data = JSON.parse(event.data);
                     if (data.e === 'trade') {
                         const price = parseFloat(data.p);
-                        const timestamp = data.T; // ms
+                        const timestamp = data.T;
                         if (!isNaN(price)) {
                             processTrade(price, timestamp / 1000);
                         }
@@ -549,11 +675,8 @@
         }
 
         function processTrade(price, timestamp) {
-            // Almacenar precio para cambio porcentual
             if (!lastPrice) lastPrice = price;
-            // Construir vela
             buildCandleFromTrade(price, timestamp);
-            // Actualizar UI cada vez que llegue un trade (segundo a segundo)
             updateUI();
         }
 
@@ -562,58 +685,19 @@
             console.warn('Usando datos sintéticos en tiempo real');
             const statusEl = document.getElementById('live-status');
             statusEl.innerHTML = `<span class="w-2 h-2 bg-yellow-400 rounded-full inline-block"></span> Datos sintéticos`;
-            let price = 2900 + Math.random() * 50;
-            // Si ya hay un precio real, partir de ahí
-            if (lastPrice) price = lastPrice;
+            let price = lastPrice || 2900 + Math.random() * 50;
             syntheticInterval = setInterval(() => {
-                const change = (Math.random() - 0.5) * 0.5; // cambio pequeño
+                const change = (Math.random() - 0.5) * 0.5;
                 price = Math.max(2800, Math.min(3100, price + change));
                 const now = Date.now() / 1000;
                 processTrade(price, now);
-            }, 1000); // cada segundo
+            }, 1000);
         }
 
         // ============================================================
-        // 8. INICIALIZACIÓN
+        // 9. DATOS HISTÓRICOS (opcional)
         // ============================================================
-        function init() {
-            // Cargar librería de gráficos
-            loadChartLibrary(() => {
-                console.log('Lightweight Charts cargado correctamente');
-                // Si ya hay datos, actualizar gráfico
-                if (allCandles.length > 0) {
-                    const agg = aggregateCandles(allCandles, currentTimeframe);
-                    const pred = predictPrice(agg, currentTimeframe);
-                    if (pred) updateChart(allCandles, pred);
-                }
-            });
-
-            // Cargar datos históricos (opcional) para tener un punto de partida
-            // Podemos obtener algunas velas de Binance REST para iniciar
-            fetchCandlesHistorical();
-
-            // Conectar WebSocket
-            connectWebSocket();
-
-            // Configurar eventos de temporalidad
-            document.querySelectorAll('.timeframe-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
-                    this.classList.add('active', 'btn-primary');
-                    currentTimeframe = this.dataset.tf;
-                    if (allCandles.length > 0) {
-                        const agg = aggregateCandles(allCandles, currentTimeframe);
-                        const pred = predictPrice(agg, currentTimeframe);
-                        if (pred) {
-                            currentPredictionData = pred;
-                            updateUI();
-                        }
-                    }
-                });
-            });
-        }
-
-        async function fetchCandlesHistorical() {
+        async function fetchHistoricalCandles() {
             try {
                 const url = `https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=1m&limit=100`;
                 const resp = await fetch(url);
@@ -629,9 +713,6 @@
                         volume: parseFloat(k[5])
                     }));
                     allCandles = candles;
-                    // No hay vela actual, la primera vela real se construirá con el WebSocket
-                    console.log('Cargadas ' + candles.length + ' velas históricas');
-                    // Inicializar currentCandle con la última vela para continuar
                     if (candles.length > 0) {
                         const last = candles[candles.length - 1];
                         currentCandle = {
@@ -642,14 +723,61 @@
                             close: last.close,
                             volume: last.volume
                         };
-                        // Quitamos la última vela de allCandles para no duplicar
                         allCandles.pop();
                     }
+                    console.log('Cargadas ' + candles.length + ' velas históricas');
                     updateUI();
                 }
             } catch(e) {
                 console.warn('No se pudieron cargar datos históricos:', e);
             }
+        }
+
+        // ============================================================
+        // 10. INICIALIZACIÓN
+        // ============================================================
+        function init() {
+            // Cargar historial
+            fetchHistoricalCandles();
+
+            // Cargar librería de gráficos
+            loadChartLibrary();
+
+            // Conectar WebSocket
+            connectWebSocket();
+
+            // Eventos de temporalidad
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+                    this.classList.add('active', 'btn-primary');
+                    currentTimeframe = this.dataset.tf;
+                    if (allCandles.length > 0) {
+                        const agg = aggregateCandles(allCandles, currentTimeframe);
+                        const pred = predictPrice(agg, currentTimeframe);
+                        if (pred) {
+                            currentPredictionData = pred;
+                            updateUI();
+                        }
+                    }
+                });
+            });
+
+            // Redimensionar
+            window.addEventListener('resize', () => {
+                if (lwChart) {
+                    const w = document.getElementById('chart-container').clientWidth || 800;
+                    lwChart.resize(w, 450);
+                } else if (useFallbackChart && typeof window.drawFallback === 'function') {
+                    const canvas = document.getElementById('fallback-chart');
+                    if (canvas) {
+                        const rect = canvas.parentElement.getBoundingClientRect();
+                        canvas.width = rect.width || 800;
+                        canvas.height = rect.height || 450;
+                        window.drawFallback();
+                    }
+                }
+            });
         }
 
         // Tema
@@ -662,12 +790,6 @@
 
         // Iniciar
         window.addEventListener('load', init);
-        window.addEventListener('resize', () => {
-            if (chart) {
-                const w = document.getElementById('chart-container').clientWidth || 800;
-                chart.resize(w, 450);
-            }
-        });
     </script>
 </body>
 </html>
