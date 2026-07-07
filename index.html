@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔮 Predicción Oro en Tiempo Real</title>
+    <title>🔮 OroPredictor - XAU/USD en Tiempo Real</title>
     <!-- Tailwind + DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lightweight Charts desde UNPKG (más estable) -->
-    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js"></script>
+    <!-- Lightweight Charts desde Cloudflare (más fiable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightweight-charts/4.1.0/lightweight-charts.standalone.min.js" 
+            onerror="this.onerror=null; this.src='https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js';">
+    </script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -26,7 +28,7 @@
     <nav class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
         <div class="flex-1">
             <a class="btn btn-ghost text-xl font-bold tracking-tight">
-                <i class="fas fa-coins text-warning"></i> OroPredictor <span class="text-xs font-normal opacity-70 ml-2">v2.0</span>
+                <i class="fas fa-coins text-warning"></i> OroPredictor <span class="text-xs font-normal opacity-70 ml-2">v2.1</span>
             </a>
         </div>
         <div class="flex-none gap-2">
@@ -137,7 +139,7 @@
         // ============================================================
         // 1. CONFIGURACIÓN
         // ============================================================
-        const SYMBOL = 'XAUUSDT'; // PAR CORRECTO EN BINANCE
+        const SYMBOL = 'XAUUSDT';
         const BASE_URL = 'https://api.binance.com/api/v3';
         let currentTimeframe = '1h';
         let chart = null;
@@ -147,7 +149,7 @@
         let currentPredictionData = null;
 
         // ============================================================
-        // 2. UTILIDADES E INDICADORES
+        // 2. UTILIDADES E INDICADORES (sin cambios, pero se ajustan pesos)
         // ============================================================
         function calcEMA(data, period) {
             const k = 2 / (period + 1);
@@ -209,7 +211,7 @@
         }
 
         // ============================================================
-        // 3. PREDICTOR (ENSEMBLE)
+        // 3. PREDICTOR (ENSEMBLE con pesos ajustados para no disparar)
         // ============================================================
         function predictPrice(candles, tf) {
             if (!candles || candles.length < 30) return null;
@@ -246,47 +248,51 @@
             const intercept = (sumY - slope * sumX) / n;
             const linearProjection = intercept + slope * (n + 1);
 
-            // Ajustes
-            const macdMomentum = lastMacdHist * 0.15;
+            // Ajustes con límites para evitar desbordes
+            const macdMomentum = Math.min(Math.max(lastMacdHist * 0.1, -5), 5);
             let rsiAdjust = 0;
-            if (lastRsi > 70) rsiAdjust = (100 - lastRsi) * 0.1;
-            else if (lastRsi < 30) rsiAdjust = (30 - lastRsi) * 0.1;
+            if (lastRsi > 70) rsiAdjust = (100 - lastRsi) * 0.05;
+            else if (lastRsi < 30) rsiAdjust = (30 - lastRsi) * 0.05;
             let bbAdjust = 0;
-            if (currentPrice > lastBbUp) bbAdjust = (lastBbUp - currentPrice) * 0.2;
-            else if (currentPrice < lastBbLow) bbAdjust = (lastBbLow - currentPrice) * 0.2;
+            if (currentPrice > lastBbUp) bbAdjust = (lastBbUp - currentPrice) * 0.1;
+            else if (currentPrice < lastBbLow) bbAdjust = (lastBbLow - currentPrice) * 0.1;
 
-            // Pesos dinámicos
-            let wTrend = 0.4,
-                wReg = 0.35,
-                wMacd = 0.15,
+            // Pesos dinámicos más conservadores
+            let wTrend = 0.5,
+                wReg = 0.3,
+                wMacd = 0.1,
                 wRsi = 0.1;
             if (tf === '1m' || tf === '5m') { wTrend = 0.6;
                 wReg = 0.25;
                 wMacd = 0.1;
                 wRsi = 0.05; }
-            if (tf === '4h' || tf === '1d') { wTrend = 0.3;
+            if (tf === '4h' || tf === '1d') { wTrend = 0.4;
                 wReg = 0.3;
-                wMacd = 0.2;
-                wRsi = 0.2; }
+                wMacd = 0.15;
+                wRsi = 0.15; }
 
-            const trendProj = currentPrice + (lastEma12 - lastEma26) * 0.5;
+            const trendProj = currentPrice + (lastEma12 - lastEma26) * 0.3;
             const predictedPrice = (trendProj * wTrend) +
                 (linearProjection * wReg) +
-                (currentPrice + macdMomentum * wMacd * 10) +
-                (currentPrice + rsiAdjust * wRsi * 5) +
-                (currentPrice + bbAdjust * 0.1);
+                (currentPrice + macdMomentum * wMacd * 5) +
+                (currentPrice + rsiAdjust * wRsi * 3) +
+                (currentPrice + bbAdjust * 0.05);
+
+            // Evitar que la predicción se aleje más de un 3% del precio actual
+            const maxChange = currentPrice * 0.03;
+            const clampedPred = Math.min(Math.max(predictedPrice, currentPrice - maxChange), currentPrice + maxChange);
 
             // Volatilidad para confianza
             const volatility = last20.reduce((sum, v) => sum + Math.abs(v - currentPrice), 0) / 20;
             const confidence = Math.max(40, Math.min(90, 100 - (volatility / currentPrice) * 150));
 
             return {
-                predicted: predictedPrice,
+                predicted: clampedPred,
                 support: Math.min(...last20) * 0.998,
                 resistance: Math.max(...last20) * 1.002,
                 confidence: Math.round(confidence),
-                trend: predictedPrice > currentPrice ? 'BULLISH' : 'BEARISH',
-                changePercent: ((predictedPrice - currentPrice) / currentPrice * 100),
+                trend: clampedPred > currentPrice ? 'BULLISH' : 'BEARISH',
+                changePercent: ((clampedPred - currentPrice) / currentPrice * 100),
                 rsi: lastRsi,
                 macd: lastMacdHist,
                 ema12: lastEma12,
@@ -316,12 +322,11 @@
                 }));
             } catch (e) {
                 console.warn('Usando datos sintéticos por error:', e.message);
-                // Generar 300 velas sintéticas a partir de un precio base ~2900 USD
                 const base = 2900 + Math.random() * 50;
                 const candles = [];
                 let price = base;
                 for (let i = 0; i < 300; i++) {
-                    const change = (Math.random() - 0.5) * 4;
+                    const change = (Math.random() - 0.5) * 2;
                     price = Math.max(2800, Math.min(3100, price + change));
                     const open = price - (Math.random() - 0.5) * 0.5;
                     const close = price;
@@ -363,7 +368,7 @@
         }
 
         // ============================================================
-        // 5. UI y GRÁFICO
+        // 5. UI y GRÁFICO (con verificación robusta)
         // ============================================================
         function getTimeframeLabel(tf) {
             const map = { '1m': '1 Min', '5m': '5 Min', '15m': '15 Min', '1h': '1 Hora', '4h': '4 Horas', '1d': '1 Día' };
@@ -389,8 +394,9 @@
             el1h.innerText = `${ch1h > 0 ? '+' : ''}${ch1h.toFixed(2)}%`;
             el1h.className = `text-sm ${ch1h >= 0 ? 'text-success' : 'text-error'}`;
 
-            // Predicción 24h (extrapolación)
-            const p24h = currentPrice + (p1h - currentPrice) * 3.5;
+            // Predicción 24h con factor más realista (1.2 en lugar de 3.5)
+            const factor24h = 1.2;
+            const p24h = currentPrice + (p1h - currentPrice) * factor24h;
             document.getElementById('pred-24h').innerText = `$${p24h.toFixed(2)}`;
             const ch24h = ((p24h - currentPrice) / currentPrice * 100);
             const el24h = document.getElementById('pred-24h-change');
@@ -443,43 +449,61 @@
         }
 
         function updateChart(candles, predData, tf) {
+            // Verificar que la librería esté disponible
             if (typeof LightweightCharts === 'undefined') {
                 document.getElementById('chart-container').innerHTML =
-                    `<div class="alert alert-warning">Librería de gráficos no cargada. Verifica tu conexión.</div>`;
+                    `<div class="alert alert-warning shadow-lg">
+                        <div><i class="fas fa-exclamation-triangle"></i>
+                        <span>Librería de gráficos no disponible. Reintentando en 5 segundos...</span></div>
+                    </div>`;
+                // Reintentar cargar la librería (se usa el evento onerror del script para reintentar)
                 return;
             }
-            if (!chart) {
-                chart = LightweightCharts.createChart(document.getElementById('chart-container'), {
-                    layout: { background: { color: 'transparent' }, textColor: '#d1d5db' },
-                    grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
-                    width: document.getElementById('chart-container').clientWidth || 800,
-                    height: 450,
-                    timeScale: { timeVisible: true, secondsVisible: tf === '1m' || tf === '5m' }
-                });
-                series = chart.addCandlestickSeries({
-                    upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
-                    wickUpColor: '#26a69a', wickDownColor: '#ef5350'
-                });
-                predictionLine = chart.addLineSeries({
-                    color: '#fbbf24', lineWidth: 2, lineStyle: 2,
-                    priceLineVisible: false, lastValueVisible: true
-                });
+
+            // Si el contenedor no tiene tamaño, forzar uno
+            const container = document.getElementById('chart-container');
+            if (container.offsetWidth === 0) {
+                container.style.width = '100%';
+                container.style.minHeight = '450px';
             }
 
-            const chartData = candles.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
-            series.setData(chartData);
+            try {
+                if (!chart) {
+                    chart = LightweightCharts.createChart(container, {
+                        layout: { background: { color: 'transparent' }, textColor: '#d1d5db' },
+                        grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
+                        width: container.clientWidth || 800,
+                        height: 450,
+                        timeScale: { timeVisible: true, secondsVisible: tf === '1m' || tf === '5m' }
+                    });
+                    series = chart.addCandlestickSeries({
+                        upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
+                        wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+                    });
+                    predictionLine = chart.addLineSeries({
+                        color: '#fbbf24', lineWidth: 2, lineStyle: 2,
+                        priceLineVisible: false, lastValueVisible: true
+                    });
+                }
 
-            const last = candles[candles.length - 1];
-            const pred = predData.predicted;
-            const step = (pred - last.close) / 5;
-            const interval = (candles[1]?.time - candles[0]?.time) || 60;
-            const future = [];
-            for (let i = 1; i <= 5; i++) {
-                future.push({ time: last.time + i * interval, value: last.close + step * i });
+                const chartData = candles.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
+                series.setData(chartData);
+
+                const last = candles[candles.length - 1];
+                const pred = predData.predicted;
+                const step = (pred - last.close) / 5;
+                const interval = (candles[1]?.time - candles[0]?.time) || 60;
+                const future = [];
+                for (let i = 1; i <= 5; i++) {
+                    future.push({ time: last.time + i * interval, value: last.close + step * i });
+                }
+                predictionLine.setData([{ time: last.time, value: last.close }, ...future]);
+
+                chart.resize(container.clientWidth || 800, 450);
+            } catch (e) {
+                console.error('Error en el gráfico:', e);
+                container.innerHTML = `<div class="alert alert-error">Error al dibujar el gráfico: ${e.message}</div>`;
             }
-            predictionLine.setData([{ time: last.time, value: last.close }, ...future]);
-
-            chart.resize(document.getElementById('chart-container').clientWidth || 800, 450);
         }
 
         // ============================================================
@@ -503,12 +527,9 @@
             } catch (e) {
                 console.error(e);
                 status.innerHTML = `<span class="w-2 h-2 bg-red-400 rounded-full inline-block"></span> Error`;
-                // Muestra un mensaje de error amigable
-                const container = document.getElementById('chart-container');
-                container.innerHTML = `<div class="alert alert-error shadow-lg"><div><i class="fas fa-exclamation-triangle"></i><span>Error: ${e.message}</span></div></div>`;
-                // Fallback: si no hay datos, generar sintéticos forzados
+                // Fallback: si no hay datos, generar sintéticos
                 if (!currentCandles || currentCandles.length === 0) {
-                    const synthetic = await fetchCandles(300); // ya usa fallback interno
+                    const synthetic = await fetchCandles(300);
                     currentCandles = synthetic;
                     const agg = aggregateCandles(synthetic, currentTimeframe);
                     const pred = predictPrice(agg, currentTimeframe);
@@ -557,6 +578,19 @@
                 chart.resize(w, 450);
             }
         });
+
+        // Reintento de carga de la librería si falla (ya lo intenta con onerror en el script)
+        // Además, cada 5 segundos comprobamos si la librería está disponible y si no, recargamos el script
+        setInterval(() => {
+            if (typeof LightweightCharts === 'undefined') {
+                console.warn('Reintentando cargar Lightweight Charts...');
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lightweight-charts/4.1.0/lightweight-charts.standalone.min.js';
+                script.onload = () => { console.log('Lightweight Charts cargado correctamente'); if (currentCandles.length)
+                        fetchAndUpdate(); };
+                document.head.appendChild(script);
+            }
+        }, 5000);
     </script>
 </body>
 </html>
