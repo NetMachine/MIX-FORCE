@@ -1,686 +1,536 @@
-<!doctype html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mix Force -- Kits de coctelería premium</title>
-<meta name="description" content="Kits de coctelería premium: Mojito, Pisco Sour, Piña Colada, Strawberry Daiquiri y Margarita. Sin cadena de frío. Listos donde sea." />
-<meta property="og:title" content="Mix Force -- Coctelería en un sobre" />
-<meta property="og:description" content="Sin cadena de frío. Sin excusas. Donde sea, cuando sea." />
-<meta property="og:type" content="website" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
-<style>
-  /* ---------- Reset & Variables ---------- */
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:#f8f5ee;color:#0f0e0c;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
-  h1,h2,h3,h4{font-family:'Archivo Black','Arial Black',sans-serif;letter-spacing:-.03em;line-height:.9}
-  a{color:inherit;text-decoration:none}
-  img,svg{display:block;max-width:100%}
-  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
-  ::selection{background:#c83e4a;color:#fff}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-
-  /* ---------- Tipografía refinada ---------- */
-  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.3em;color:#7a7263;margin-bottom:14px;font-weight:600}
-  .hero h1{font-size:clamp(64px,15vw,180px);letter-spacing:-.04em;line-height:.85;font-weight:700}
-  .section-title{font-size:clamp(48px,8vw,80px);letter-spacing:-.03em}
-  .card-title{font-size:28px;letter-spacing:-.02em}
-  .price{font-family:'Archivo Black','Arial Black',sans-serif;font-size:28px;font-feature-settings:"tnum";letter-spacing:-.02em}
-  .tagline{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:#7a7263}
-  .body-text{font-size:16px;line-height:1.7;color:#7a7263}
-  .small-text{font-size:12px;letter-spacing:.05em;color:#7a7263}
-
-  /* ---------- Botones ---------- */
-  .btn{display:inline-flex;align-items:center;gap:10px;background:#0f0e0c;color:#f8f5ee;border-radius:999px;padding:16px 32px;font-size:14px;font-weight:600;transition:all .25s ease;position:relative;overflow:hidden}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.12)}
-  .btn:active{transform:scale(.96)}
-  .btn.ghost{background:transparent;color:#0f0e0c;border:2px solid #0f0e0c}
-  .btn.ghost:hover{background:#0f0e0c;color:#f8f5ee}
-  .btn.primary{background:#c83e4a;color:#fff}
-  .btn.primary:hover{background:#a8323c}
-  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
-
-  /* ---------- Header ---------- */
-  header.site{position:sticky;top:0;z-index:40;background:rgba(248,245,238,.92);border-bottom:1px solid rgba(0,0,0,.06)}
-  /* fallback para iOS 12 que no soporta backdrop-filter */
-  @supports (backdrop-filter:blur(12px)){
-    header.site{background:rgba(248,245,238,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-  }
-  header.site .inner{height:72px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-  .logo{font-family:'Archivo Black','Arial Black',sans-serif;font-size:22px;letter-spacing:-.03em;display:flex;align-items:center;gap:6px}
-  .logo span{opacity:.3}
-  .logo small{font-family:'Inter',sans-serif;font-size:10px;font-weight:400;opacity:.5;letter-spacing:.15em;text-transform:uppercase}
-  nav.main{display:none;gap:32px;font-size:14px;font-weight:500}
-  @media(min-width:768px){nav.main{display:flex}}
-  nav.main a{position:relative;padding:4px 0;transition:color .2s}
-  nav.main a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:2px;background:#c83e4a;transition:width .3s}
-  nav.main a:hover::after{width:100%}
-  .cart-btn{display:inline-flex;align-items:center;gap:10px;border:2px solid #0f0e0c;border-radius:999px;padding:8px 20px;font-size:13px;font-weight:600;transition:all .25s;position:relative}
-  .cart-btn:hover{background:#0f0e0c;color:#f8f5ee;transform:translateY(-1px)}
-  .cart-btn svg{width:18px;height:18px}
-  #cartCount{display:inline-block;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-  #cartCount.bounce{transform:scale(1.4)}
-
-  /* ---------- Hero ---------- */
-  .hero{min-height:80vh;display:flex;align-items:center;padding:120px 0 64px;position:relative;overflow:hidden}
-  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 30%, rgba(200,62,74,.06), transparent 50%);pointer-events:none}
-  .hero-content{position:relative;z-index:2}
-  .hero h1{max-width:900px}
-  .hero .sub{max-width:540px;margin-top:24px;font-size:18px;line-height:1.6;color:#7a7263}
-  .hero .cta{margin-top:40px;display:flex;gap:16px;flex-wrap:wrap}
-  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:#c83e4a;color:#fff;padding:6px 16px 6px 12px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px}
-  .hero-badge svg{width:14px;height:14px}
-
-  /* ---------- Secciones ---------- */
-  section{padding:96px 0}
-  .section-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:48px;gap:32px}
-  .section-head .rule{flex:1;height:2px;background:#0f0e0c;opacity:.15;min-width:60px}
-
-  /* ---------- Grid ---------- */
-  .grid{display:grid;grid-template-columns:repeat(1,1fr);gap:32px}
-  @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
-  @media(min-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
-  
-  .card{background:#faf6ec;border:1px solid #e5ddd0;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:all .4s ease;opacity:0;transform:translateY(40px);position:relative}
-  .card.visible{opacity:1;transform:translateY(0)}
-  .card:hover{transform:translateY(-8px) scale(1.01);box-shadow:0 24px 48px rgba(0,0,0,.08)}
-  .card .badge{position:absolute;top:12px;left:12px;background:#c83e4a;color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:4px 12px;border-radius:999px;z-index:2}
-  .card .pouch-wrap{aspect-ratio:1/1;padding:32px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
-  .card .pouch-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.03));pointer-events:none}
-  .card .pouch-wrap .hover-zoom{transition:transform .4s ease}
-  .card:hover .pouch-wrap .hover-zoom{transform:scale(1.05)}
-  .card .body{padding:24px 24px 28px;border-top:1px solid #e5ddd0;display:flex;flex-direction:column;gap:8px}
-  .card .row{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
-  .card .sku{font-size:10px;color:#7a7263;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
-  
-  .add{background:#0f0e0c;color:#f8f5ee;border-radius:999px;padding:10px 20px;font-size:13px;font-weight:600;transition:all .25s;display:inline-flex;align-items:center;gap:8px;position:relative;overflow:hidden}
-  .add::after{content:'→';opacity:0;transform:translateX(-8px);transition:all .25s}
-  .add:hover{background:#c83e4a;padding-right:28px}
-  .add:hover::after{opacity:1;transform:translateX(0)}
-  .add:active{transform:scale(.94)}
-  .add.added{background:#6b7a3a;pointer-events:none}
-  .add.added::after{content:'✓';opacity:1;transform:translateX(0)}
-
-  /* ---------- Cómo funciona ---------- */
-  .how{display:grid;gap:32px;grid-template-columns:repeat(1,1fr)}
-  @media(min-width:768px){.how{grid-template-columns:repeat(3,1fr)}}
-  .step{padding:32px;border:1px solid #e5ddd0;border-radius:12px;background:#faf6ec;transition:all .3s;position:relative}
-  .step:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.04)}
-  .step .n{font-family:'Archivo Black','Arial Black',sans-serif;font-size:52px;color:#c83e4a;opacity:.2;line-height:1}
-  .step .icon{font-size:32px;margin-bottom:8px}
-  .step h4{margin-top:12px;font-size:22px}
-  .step p{margin-top:8px;color:#7a7263;font-size:15px;line-height:1.6}
-
-  /* ---------- Nosotros ---------- */
-  .about{display:grid;gap:48px;grid-template-columns:1fr}
-  @media(min-width:900px){.about{grid-template-columns:1.1fr .9fr;align-items:center;gap:64px}}
-  .about .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px;padding-top:24px;border-top:2px solid #e5ddd0}
-  .about .stat{text-align:center}
-  .about .stat .num{font-family:'Archivo Black','Arial Black',sans-serif;font-size:32px;color:#c83e4a}
-  .about .stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#7a7263;margin-top:4px}
-  .about .visual{aspect-ratio:4/5;border-radius:12px;background:linear-gradient(135deg,#d4a017,#c73659 55%,#6b7a3a);position:relative;overflow:hidden;border:1px solid #e5ddd0}
-  .about .visual::after{content:'MIX FORCE';position:absolute;inset:auto 32px 32px auto;font-family:'Archivo Black','Arial Black',sans-serif;color:rgba(255,255,255,.9);font-size:44px;letter-spacing:-.03em}
-
-  /* ---------- Footer ---------- */
-  footer.site{border-top:2px solid #e5ddd0;padding:48px 0;margin-top:48px}
-  footer.site .inner{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;color:#7a7263;font-size:13px}
-
-  /* ---------- Drawer ---------- */
-  .drawer-back{position:fixed;inset:0;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s;z-index:60}
-  @supports (backdrop-filter:blur(4px)){
-    .drawer-back{backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-  }
-  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#f8f5ee;z-index:61;transform:translateX(100%);transition:transform .4s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(0,0,0,.1)}
-  body.cart-open .drawer{transform:translateX(0)}
-  body.cart-open .drawer-back{opacity:1;pointer-events:auto}
-  .drawer header{display:flex;justify-content:space-between;align-items:center;padding:24px;border-bottom:1px solid #e5ddd0}
-  .drawer header h3{font-size:24px}
-  .drawer .items{flex:1;overflow:auto;padding:8px 24px}
-  .drawer .empty{padding:60px 20px;text-align:center;color:#7a7263}
-  .line{display:grid;grid-template-columns:64px 1fr auto;gap:16px;padding:16px 0;border-bottom:1px solid #e5ddd0;align-items:center}
-  .line .sw{width:64px;height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center}
-  .line .name{font-weight:600;font-size:15px}
-  .line .qty{display:inline-flex;align-items:center;gap:8px;margin-top:6px;border:1px solid #e5ddd0;border-radius:999px;padding:2px 10px}
-  .line .qty button{width:24px;height:24px;font-size:16px;border-radius:50%;transition:background .2s}
-  .line .qty button:hover{background:rgba(0,0,0,.06)}
-  .line .rm{font-size:11px;color:#7a7263;text-decoration:underline;margin-left:12px;transition:color .2s;background:none;border:0;cursor:pointer}
-  .line .rm:hover{color:#c83e4a}
-  .line .lt{font-family:'Archivo Black','Arial Black',sans-serif;font-size:16px}
-  .drawer footer{border-top:1px solid #e5ddd0;padding:24px;display:flex;flex-direction:column;gap:16px}
-  .drawer .sub{display:flex;justify-content:space-between;font-family:'Archivo Black','Arial Black',sans-serif;font-size:22px}
-  .checkout-btn{background:#0f0e0c;color:#f8f5ee;border-radius:999px;padding:16px;text-align:center;font-weight:600;font-size:15px;transition:all .25s;border:0;width:100%}
-  .checkout-btn:hover:not([disabled]){background:#c83e4a;transform:translateY(-2px)}
-  .checkout-btn[disabled]{opacity:.3;cursor:not-allowed;transform:none!important}
-
-  /* ---------- Modal ---------- */
-  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
-  @supports (backdrop-filter:blur(8px)){
-    .modal-back{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-  }
-  body.checkout-open .modal-back{display:flex}
-  .modal{background:#f8f5ee;border-radius:16px;max-width:540px;width:100%;padding:40px;max-height:90vh;overflow:auto;animation:modalIn .3s cubic-bezier(.34,1.56,.64,1)}
-  @keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  .modal h3{font-size:32px;margin-bottom:6px}
-  .modal p{color:#7a7263;font-size:15px;margin-bottom:24px}
-  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
-  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#7a7263;font-weight:600}
-  .field input,.field textarea{border:2px solid #e5ddd0;border-radius:8px;padding:12px 14px;font:inherit;background:#faf6ec;transition:border .2s;width:100%}
-  .field input:focus,.field textarea:focus{outline:none;border-color:#c83e4a}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .field .error{color:#c83e4a;font-size:11px;margin-top:4px;display:none}
-
-  /* ---------- Scroll reveal ---------- */
-  .reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.22,1,.36,1)}
-  .reveal.visible{opacity:1;transform:translateY(0)}
-  .reveal-delay-1{transition-delay:.1s}
-  .reveal-delay-2{transition-delay:.2s}
-  .reveal-delay-3{transition-delay:.3s}
-  .reveal-delay-4{transition-delay:.4s}
-
-  /* ---------- Toast ---------- */
-  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f0e0c;color:#f8f5ee;padding:14px 28px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);z-index:100;box-shadow:0 12px 32px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast .emoji{margin-right:8px}
-
-  /* ---------- Responsive ---------- */
-  @media(max-width:640px){
-    .hero{min-height:60vh;padding:80px 0 40px}
-    .hero h1{font-size:clamp(48px,12vw,80px)}
-    .section-title{font-size:clamp(36px,7vw,56px)}
-    .card .body{padding:16px 16px 20px}
-    .modal{padding:24px}
-    .row2{grid-template-columns:1fr}
-    .about .stats{grid-template-columns:1fr 1fr}
-    .toast{white-space:normal;max-width:90%;padding:12px 20px;font-size:13px}
-  }
-
-  /* ---------- Utilidades ---------- */
-  .text-center{text-align:center}
-  .mt-16{margin-top:16px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 Predicción Oro en Tiempo Real (XAU/USD)</title>
+    <!-- Tailwind + DaisyUI (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lightweight Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        #chart-container { width: 100%; height: 450px; background: transparent; }
+        .prediction-badge { transition: all 0.3s ease; }
+        .stat-card { backdrop-filter: blur(4px); background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
+        [data-theme="dark"] .stat-card { background: rgba(0,0,0,0.3); }
+        .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
 </head>
-<body>
+<body class="min-h-screen bg-base-200 text-base-content">
 
-<!-- Header -->
-<header class="site">
-  <div class="wrap inner">
-    <a href="#top" class="logo">MIX<span>·</span>FORCE <small>coctelería</small></a>
-    <nav class="main" role="navigation" aria-label="Menú principal">
-      <a href="#top">Inicio</a>
-      <a href="#sabores">Sabores</a>
-      <a href="#como">Cómo funciona</a>
-      <a href="#nosotros">Nosotros</a>
-    </nav>
-    <button class="cart-btn" id="openCart" aria-label="Abrir carrito">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-      <span>Carrito</span><span id="cartCount">(0)</span>
-    </button>
-  </div>
-</header>
-
-<main id="top">
-  <!-- Hero -->
-  <section class="hero wrap">
-    <div class="hero-content">
-      <div class="hero-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        Sin cadena de frío
-      </div>
-      <h1>Un sobre.<br>Un clásico.<br>Sin excusas.</h1>
-      <p class="sub">Ingredientes reales, deshidratados en su punto. Sin cadena de frío. Donde sea, cuando sea. Solo agrega tu licor favorito.</p>
-      <div class="cta">
-        <a class="btn primary" href="#sabores">Ver sabores →</a>
-        <a class="btn ghost" href="#como">Cómo se prepara</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Sabores -->
-  <section class="wrap" id="sabores">
-    <div class="section-head">
-      <div>
-        <div class="eyebrow">Catálogo</div>
-        <h2 class="section-title">Sabores.</h2>
-      </div>
-      <div class="rule"></div>
-      <div style="text-align:right;color:#7a7263;font-size:12px;font-weight:600;white-space:nowrap">05 REFERENCIAS</div>
-    </div>
-    <div class="grid" id="grid"></div>
-  </section>
-
-  <!-- Cómo funciona -->
-  <section class="wrap" id="como">
-    <div class="section-head">
-      <div><div class="eyebrow">Preparación</div><h2 class="section-title">Cómo funciona.</h2></div>
-      <div class="rule"></div>
-    </div>
-    <div class="how">
-      <div class="step reveal reveal-delay-1">
-        <div class="icon">📦</div>
-        <div class="n">01</div>
-        <h4>Abre el sobre</h4>
-        <p>Contenido para 1 porción. Ingredientes reales, sin colorantes ni conservantes artificiales. Duración 12 meses.</p>
-      </div>
-      <div class="step reveal reveal-delay-2">
-        <div class="icon">🥃</div>
-        <div class="n">02</div>
-        <h4>Agrega tu licor</h4>
-        <p>60 ml del licor que corresponde al sabor: ron, pisco, tequila o ron blanco. Añade hielo y agita.</p>
-      </div>
-      <div class="step reveal reveal-delay-3">
-        <div class="icon">🍹</div>
-        <div class="n">03</div>
-        <h4>Mezcla y sirve</h4>
-        <p>Coctelera o vaso alto según la receta. Listo en menos de un minuto. Disfruta donde sea, cuando sea.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Nosotros -->
-  <section class="wrap" id="nosotros">
-    <div class="about">
-      <div class="reveal">
-        <div class="eyebrow">Nosotros</div>
-        <h2 class="section-title" style="margin-top:8px">Coctelería sin fricción.</h2>
-        <p class="body-text">Mix Force nació para resolver una idea simple: preparar un buen cóctel en casa sin comprar diez ingredientes distintos. Trabajamos con frutas y hierbas reales, deshidratadas para conservar el sabor por 12 meses.</p>
-        <p class="body-text">Sin cadena de frío. Sin excusas. Donde sea, cuando sea. Cinco recetas clásicas, dosificadas con precisión, empacadas en un sobre. Nada más.</p>
-        <div class="stats">
-          <div class="stat"><div class="num">12</div><div class="label">Meses de duración</div></div>
-          <div class="stat"><div class="num">5</div><div class="label">Recetas clásicas</div></div>
-          <div class="stat"><div class="num">0</div><div class="label">Conservantes</div></div>
+    <!-- NAVBAR -->
+    <nav class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
+        <div class="flex-1">
+            <a class="btn btn-ghost text-xl font-bold tracking-tight">
+                <i class="fas fa-coins text-warning"></i> OroPredictor <span class="text-xs font-normal opacity-70 ml-2">v1.0</span>
+            </a>
         </div>
-      </div>
-      <div class="visual reveal reveal-delay-2" aria-hidden="true"></div>
-    </div>
-  </section>
-</main>
+        <div class="flex-none gap-2">
+            <span id="live-status" class="badge badge-success gap-2 animate-pulse-slow">
+                <span class="w-2 h-2 bg-green-400 rounded-full inline-block"></span> En Vivo
+            </span>
+            <button class="btn btn-ghost btn-circle" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+            <button class="btn btn-ghost btn-circle" onclick="fetchAndUpdate()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </nav>
 
-<!-- Footer -->
-<footer class="site">
-  <div class="wrap inner">
-    <div>© <span id="yr"></span> Mix Force. Todos los derechos reservados.</div>
-    <div>Bebe con responsabilidad · +18</div>
-  </div>
-</footer>
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
 
-<!-- Toast Notification -->
-<div class="toast" id="toast"><span class="emoji">🍹</span> <span id="toastMsg">Agregado al carrito</span></div>
+        <!-- HEADER STATS -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stat-card p-4 text-center">
+                <p class="text-sm opacity-70">Precio Actual (XAU/USD)</p>
+                <p id="current-price" class="text-2xl font-bold text-primary">--</p>
+                <p id="current-change" class="text-sm font-semibold">---</p>
+            </div>
+            <div class="stat-card p-4 text-center">
+                <p class="text-sm opacity-70">Predicción 1h</p>
+                <p id="pred-1h" class="text-2xl font-bold text-secondary">--</p>
+                <p id="pred-1h-change" class="text-sm">--</p>
+            </div>
+            <div class="stat-card p-4 text-center">
+                <p class="text-sm opacity-70">Predicción 24h</p>
+                <p id="pred-24h" class="text-2xl font-bold text-accent">--</p>
+                <p id="pred-24h-change" class="text-sm">--</p>
+            </div>
+            <div class="stat-card p-4 text-center">
+                <p class="text-sm opacity-70">Señal Actual</p>
+                <p id="signal-badge" class="text-2xl font-bold"><span class="badge badge-ghost text-lg">--</span></p>
+                <p id="signal-confidence" class="text-xs opacity-60">Confianza: --%</p>
+            </div>
+        </div>
 
-<!-- Cart Drawer -->
-<div class="drawer-back" id="drawerBack"></div>
-<aside class="drawer" role="dialog" aria-label="Carrito de compra" aria-modal="true">
-  <header>
-    <h3>Tu carrito</h3>
-    <button id="closeCart" aria-label="Cerrar carrito" style="font-size:24px;padding:4px 12px;border-radius:8px;transition:background .2s;background:none;border:0;cursor:pointer">✕</button>
-  </header>
-  <div class="items" id="cartItems"></div>
-  <footer>
-    <div class="sub"><span>Subtotal</span><span id="cartSubtotal">$0.00</span></div>
-    <button class="checkout-btn" id="checkoutBtn" disabled>Finalizar compra</button>
-    <div style="font-size:11px;color:#7a7263;text-align:center">Envío calculado en el siguiente paso.</div>
-  </footer>
-</aside>
+        <!-- CHART & TIMEFRAMES -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div class="flex flex-wrap gap-1">
+                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="1m">1m</button>
+                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="5m">5m</button>
+                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="15m">15m</button>
+                        <button class="btn btn-sm btn-outline timeframe-btn active" data-tf="1h">1h</button>
+                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="4h">4h</button>
+                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="1d">1d</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge badge-ghost"><i class="fas fa-chart-line"></i> Proyección</span>
+                        <span class="badge badge-ghost"><i class="fas fa-arrows-up-down text-info"></i> Bandas</span>
+                    </div>
+                </div>
+                <div id="chart-container"></div>
+                <div class="flex flex-wrap justify-between text-xs mt-2 px-2 opacity-60">
+                    <span>Última actualización: <span id="update-time">--</span></span>
+                    <span>Fuente: Binance (PAXGUSDT)</span>
+                </div>
+            </div>
+        </div>
 
-<!-- Checkout Modal -->
-<div class="modal-back" id="modalBack">
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Checkout">
-    <div class="eyebrow">Checkout · demo</div>
-    <h3>Casi listo.</h3>
-    <p>Completa tus datos. Este es un checkout de demostración -- cuando conectemos pagos reales (Shopify o Stripe), se procesará automáticamente.</p>
-    <form id="checkoutForm" novalidate>
-      <div class="row2">
-        <div class="field"><label>Nombre</label><input required name="nombre" placeholder="Tu nombre" id="nombre"></div>
-        <div class="field"><label>Apellido</label><input required name="apellido" placeholder="Tu apellido" id="apellido"></div>
-      </div>
-      <div class="field"><label>Email</label><input required type="email" name="email" placeholder="tucorreo@ejemplo.com" id="email"></div>
-      <div class="field"><label>Dirección</label><input required name="direccion" placeholder="Calle y número" id="direccion"></div>
-      <div class="row2">
-        <div class="field"><label>Ciudad</label><input required name="ciudad" placeholder="Ciudad" id="ciudad"></div>
-        <div class="field"><label>Teléfono</label><input required name="telefono" placeholder="+56 9 1234 5678" id="telefono"></div>
-      </div>
-      <div style="display:flex;gap:12px;margin-top:16px">
-        <button type="button" class="btn ghost" id="cancelCheckout" style="flex:1;justify-content:center">Cancelar</button>
-        <button type="submit" class="btn primary" style="flex:1;justify-content:center">Confirmar pedido</button>
-      </div>
-    </form>
-  </div>
-</div>
+        <!-- INDICADORES TÉCNICOS Y PREDICCIONES DETALLADAS -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body p-4">
+                    <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-microchip text-primary"></i> Indicadores</h3>
+                    <div id="indicators-list" class="space-y-1 text-sm">
+                        <div class="flex justify-between"><span>RSI (14):</span><span id="ind-rsi" class="font-mono">--</span></div>
+                        <div class="flex justify-between"><span>MACD:</span><span id="ind-macd" class="font-mono">--</span></div>
+                        <div class="flex justify-between"><span>EMA 12:</span><span id="ind-ema12" class="font-mono">--</span></div>
+                        <div class="flex justify-between"><span>EMA 26:</span><span id="ind-ema26" class="font-mono">--</span></div>
+                        <div class="flex justify-between"><span>Banda Superior:</span><span id="ind-bb-up" class="font-mono">--</span></div>
+                        <div class="flex justify-between"><span>Banda Inferior:</span><span id="ind-bb-low" class="font-mono">--</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-base-100 shadow-xl md:col-span-2">
+                <div class="card-body p-4">
+                    <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-robot text-secondary"></i> Predicciones por Temporalidad</h3>
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra table-xs">
+                            <thead>
+                                <tr><th>Marco</th><th>Precio Estimado</th><th>Variación %</th><th>Tendencia</th><th>Confianza</th></tr>
+                            </thead>
+                            <tbody id="prediction-table-body">
+                                <tr><td colspan="5" class="text-center opacity-50">Cargando...</td>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-[10px] opacity-40 mt-2">
+                        <i class="fas fa-info-circle"></i> Predicciones basadas en Ensemble de Regresión + Momentum + RSI.
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<script>
-(function(){
-  "use strict";
+        <div class="text-center text-xs opacity-30 py-4 border-t border-base-300">
+            ⚠️ Las predicciones son probabilísticas y no constituyen asesoramiento financiero. Datos en tiempo real simulados con fines educativos.
+        </div>
+    </main>
 
-  /* ---------- Polyfills para iOS 12 ---------- */
-  // IntersectionObserver polyfill simple con scroll
-  if (!('IntersectionObserver' in window)) {
-    window.IntersectionObserver = function(callback, options) {
-      this.callback = callback;
-      this.options = options || {};
-      this.elements = [];
-      var self = this;
-      function check() {
-        var entries = [];
-        self.elements.forEach(function(el) {
-          var rect = el.getBoundingClientRect();
-          var threshold = self.options.threshold || 0;
-          var isIntersecting = rect.top < window.innerHeight && rect.bottom > 0;
-          if (isIntersecting) {
-            entries.push({ target: el, isIntersecting: true });
-          } else {
-            entries.push({ target: el, isIntersecting: false });
-          }
-        });
-        self.callback(entries, self);
-      }
-      this.observe = function(el) {
-        self.elements.push(el);
-        check();
-      };
-      this.unobserve = function(el) {
-        self.elements = self.elements.filter(function(e) { return e !== el; });
-      };
-      this.disconnect = function() {
-        self.elements = [];
-      };
-      window.addEventListener('scroll', check);
-      window.addEventListener('resize', check);
-      check();
-    };
-  }
+    <script>
+        // ============================================================
+        // 1. CONFIGURACIÓN Y ESTADO GLOBAL
+        // ============================================================
+        const SYMBOL = 'PAXGUSDT';
+        const BASE_URL = 'https://api.binance.com/api/v3';
+        let currentTimeframe = '1h';
+        let chart = null;
+        let series = null;
+        let predictionLine = null;
+        let allCandles = [];
+        let currentPredictionData = null;
 
-  // Array.from polyfill para iOS 12
-  if (!Array.from) {
-    Array.from = function(obj) {
-      var arr = [];
-      for (var i = 0; i < obj.length; i++) {
-        arr.push(obj[i]);
-      }
-      return arr;
-    };
-  }
-
-  // Object.assign polyfill
-  if (!Object.assign) {
-    Object.assign = function(target) {
-      for (var i = 1; i < arguments.length; i++) {
-        var source = arguments[i];
-        for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
-            target[key] = source[key];
-          }
+        // ============================================================
+        // 2. FUNCIONES DE UTILIDAD Y CÁLCULO DE INDICADORES
+        // ============================================================
+        function calcEMA(data, period) {
+            const k = 2 / (period + 1);
+            let ema = [data[0]];
+            for (let i = 1; i < data.length; i++) {
+                ema.push(data[i] * k + ema[i - 1] * (1 - k));
+            }
+            return ema;
         }
-      }
-      return target;
-    };
-  }
 
-  /* ---------- Products ---------- */
-  var products = [
-    {slug:"mojito-cubano",name:"Mojito Cubano",tagline:"Menta fresca. Lima. Ron blanco.",price:8,bg:"#6b7a3a",ink:"#1a1a1a",badge:"Sin cadena de frío"},
-    {slug:"pisco-sour",name:"Pisco Sour",tagline:"Ácido. Sedoso. Peruano.",price:8,bg:"#d4a017",ink:"#1a1a1a",badge:"Listo en 1 min"},
-    {slug:"pina-colada",name:"Piña Colada",tagline:"Tropical. Cremoso. Caribe.",price:8,bg:"#f0e6c8",ink:"#1a1a1a",badge:"12 meses"},
-    {slug:"strawberry-daiquiri",name:"Strawberry Daiquiri",tagline:"Fresa. Lima. Frappé.",price:8,bg:"#c73659",ink:"#1a1a1a",badge:"Sin conservantes"},
-    {slug:"margarita",name:"Margarita",tagline:"Tequila. Lima. Sal.",price:8,bg:"#f0d500",ink:"#1a1a1a",badge:"Donde sea"},
-  ];
-  var money = function(n){ return "$"+n.toFixed(2); };
-  var find = function(s){ 
-    for (var i=0; i<products.length; i++) {
-      if (products[i].slug === s) return products[i];
-    }
-    return null;
-  };
+        function calcRSI(closes, period = 14) {
+            let gains = 0, losses = 0;
+            for (let i = 1; i <= period; i++) {
+                const diff = closes[i] - closes[i - 1];
+                if (diff >= 0) gains += diff; else losses -= diff;
+            }
+            let avgGain = gains / period, avgLoss = losses / period;
+            const rsi = [50];
+            for (let i = period + 1; i < closes.length; i++) {
+                const diff = closes[i] - closes[i - 1];
+                if (diff >= 0) { avgGain = (avgGain * (period - 1) + diff) / period; avgLoss = (avgLoss * (period - 1)) / period; }
+                else { avgGain = (avgGain * (period - 1)) / period; avgLoss = (avgLoss * (period - 1) - diff) / period; }
+                if (avgLoss === 0) rsi.push(100);
+                else rsi.push(100 - (100 / (1 + avgGain / avgLoss)));
+            }
+            return rsi;
+        }
 
-  /* ---------- Pouch SVG ---------- */
-  function pouch(p, size){
-    size = size || 200;
-    var words = p.name.toUpperCase().split(" ");
-    var mid = Math.ceil(words.length/2);
-    var l1 = words.slice(0,mid).join(" ");
-    var l2 = words.slice(mid).join(" ");
-    return '<svg viewBox="0 0 300 380" width="'+size+'" height="'+(size*1.26)+'" xmlns="http://www.w3.org/2000/svg" aria-label="'+p.name+'">'+
-      '<defs><linearGradient id="sh-'+p.slug+'" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#000" stop-opacity=".08"/></linearGradient></defs>'+
-      '<path d="M135 6 h30 a8 8 0 0 1 8 8 v10 h-46 v-10 a8 8 0 0 1 8 -8z" fill="'+p.bg+'"/>'+
-      '<ellipse cx="150" cy="18" rx="9" ry="4" fill="'+p.ink+'" opacity=".6"/>'+
-      '<rect x="14" y="24" width="272" height="346" rx="10" fill="'+p.bg+'"/>'+
-      '<rect x="14" y="24" width="272" height="346" rx="10" fill="url(#sh-'+p.slug+')"/>'+
-      '<rect x="20" y="52" width="260" height="6" fill="'+p.ink+'" opacity=".12"/>'+
-      '<rect x="34" y="74" width="232" height="240" rx="4" fill="#fff" opacity=".55"/>'+
-      '<text x="50" y="118" fill="'+p.ink+'" font-family="Archivo Black,Arial Black,sans-serif" font-size="26">MIX FORCE</text>'+
-      '<line x1="50" y1="128" x2="250" y2="128" stroke="'+p.ink+'" stroke-width="2.5"/>'+
-      '<text x="50" y="168" fill="'+p.ink+'" font-family="Archivo Black,Arial Black,sans-serif" font-size="26">'+l1+'</text>'+
-      (l2?'<text x="50" y="196" fill="'+p.ink+'" font-family="Archivo Black,Arial Black,sans-serif" font-size="26">'+l2+'</text>':'')+
-      '<line x1="50" y1="230" x2="250" y2="230" stroke="'+p.ink+'" stroke-width="1.5"/>'+
-      '<text x="50" y="252" fill="'+p.ink+'" font-family="Inter,sans-serif" font-size="12" letter-spacing="1">KIT DE CAMPAÑA</text>'+
-      '<text x="50" y="278" fill="'+p.ink+'" font-family="Inter,sans-serif" font-size="11">1 PORCIÓN · DURACIÓN 12 MESES</text>'+
-      '<text x="50" y="298" fill="'+p.ink+'" font-family="Inter,sans-serif" font-size="9" opacity=".5">SIN CADENA DE FRÍO</text>'+
-    '</svg>';
-  }
+        function calcMACD(closes, fast = 12, slow = 26, signal = 9) {
+            const emaFast = calcEMA(closes, fast);
+            const emaSlow = calcEMA(closes, slow);
+            const macdLine = emaFast.map((v, i) => v - emaSlow[i]);
+            const signalLine = calcEMA(macdLine, signal);
+            const histogram = macdLine.map((v, i) => v - signalLine[i]);
+            return { macdLine, signalLine, histogram };
+        }
 
-  /* ---------- Render grid ---------- */
-  var grid = document.getElementById("grid");
-  var html = '';
-  for (var i=0; i<products.length; i++) {
-    var p = products[i];
-    var delay = (i%3)+1;
-    html += '<article class="card reveal reveal-delay-'+delay+'" style="transition-delay:'+(i*0.08)+'s">'+
-      '<div class="badge">'+p.badge+'</div>'+
-      '<div class="pouch-wrap" style="background:'+p.bg+'22">'+
-        '<div class="hover-zoom">'+pouch(p,220)+'</div>'+
-      '</div>'+
-      '<div class="body">'+
-        '<h3 class="card-title">'+p.name+'</h3>'+
-        '<div class="tagline">'+p.tagline+'</div>'+
-        '<div class="sku">SKU: MF-'+p.slug.toUpperCase().slice(0,4)+'</div>'+
-        '<div class="row">'+
-          '<span class="price">'+money(p.price)+'</span>'+
-          '<button class="add" data-add="'+p.slug+'">Agregar</button>'+
-        '</div>'+
-      '</div>'+
-    '</article>';
-  }
-  grid.innerHTML = html;
+        function calcBB(closes, period = 20, stdDev = 2) {
+            const sma = [];
+            const upper = [];
+            const lower = [];
+            for (let i = 0; i < closes.length; i++) {
+                if (i < period - 1) { sma.push(closes[i]); upper.push(closes[i]); lower.push(closes[i]); continue; }
+                const slice = closes.slice(i - period + 1, i + 1);
+                const mean = slice.reduce((a, b) => a + b, 0) / period;
+                const std = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / period);
+                sma.push(mean);
+                upper.push(mean + stdDev * std);
+                lower.push(mean - stdDev * std);
+            }
+            return { sma, upper, lower };
+        }
 
-  /* ---------- Toast ---------- */
-  var toastTimer;
-  function showToast(msg){
-    var toast = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2500);
-  }
+        // ============================================================
+        // 3. MOTOR DE PREDICCIÓN HÍBRIDO (CLIENT-SIDE)
+        // ============================================================
+        function predictPrice(candles, tf) {
+            if (candles.length < 30) return null;
+            const closes = candles.map(c => c.close);
+            const high = candles.map(c => c.high);
+            const low = candles.map(c => c.low);
+            const currentPrice = closes[closes.length - 1];
 
-  /* ---------- Scroll Reveal (usando IntersectionObserver con polyfill) ---------- */
-  var revealObserver = new IntersectionObserver(function(entries){
-    for (var i=0; i<entries.length; i++) {
-      if (entries[i].isIntersecting) {
-        entries[i].target.classList.add('visible');
-      }
-    }
-  }, { threshold: 0.1 });
+            // Indicadores
+            const ema12 = calcEMA(closes, 12);
+            const ema26 = calcEMA(closes, 26);
+            const rsiArray = calcRSI(closes, 14);
+            const macd = calcMACD(closes, 12, 26, 9);
+            const bb = calcBB(closes, 20, 2);
 
-  var reveals = document.querySelectorAll('.reveal');
-  for (var r=0; r<reveals.length; r++) {
-    revealObserver.observe(reveals[r]);
-  }
+            const lastEma12 = ema12[ema12.length - 1];
+            const lastEma26 = ema26[ema26.length - 1];
+            const lastRsi = rsiArray[rsiArray.length - 1];
+            const lastMacdHist = macd.histogram[macd.histogram.length - 1];
+            const lastBbUp = bb.upper[bb.upper.length - 1];
+            const lastBbLow = bb.lower[bb.lower.length - 1];
 
-  /* ---------- Cart ---------- */
-  var KEY = "mixforce.cart.v1";
-  var cart = [];
-  try { 
-    var stored = localStorage.getItem(KEY);
-    if (stored) cart = JSON.parse(stored);
-  } catch(e) {}
+            // 1. Proyección por Regresión Lineal (últimos 20 precios)
+            const last20 = closes.slice(-20);
+            const n = last20.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += i;
+                sumY += last20[i];
+                sumXY += i * last20[i];
+                sumX2 += i * i;
+            }
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            const linearProjection = intercept + slope * (n + 1);
 
-  function save(){
-    try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch(e) {}
-  }
+            // 2. Momentum MACD
+            const macdMomentum = lastMacdHist * 0.15;
 
-  function add(slug){
-    var found = null;
-    for (var i=0; i<cart.length; i++) {
-      if (cart[i].slug === slug) { found = cart[i]; break; }
-    }
-    if (found) {
-      found.qty++;
-    } else {
-      cart.push({slug:slug, qty:1});
-    }
-    save();
-    render();
-    // bounce
-    var el = document.getElementById('cartCount');
-    el.classList.remove('bounce');
-    void el.offsetWidth;
-    el.classList.add('bounce');
-    var p = find(slug);
-    if (p) showToast(p.name+' agregado al carrito');
-    var btn = document.querySelector('[data-add="'+slug+'"]');
-    if (btn) {
-      btn.classList.add('added');
-      setTimeout(function(){ btn.classList.remove('added'); }, 1200);
-    }
-  }
+            // 3. Reversión RSI (sobrecompra/sobreventa)
+            let rsiAdjust = 0;
+            if (lastRsi > 70) rsiAdjust = (100 - lastRsi) * 0.1;
+            else if (lastRsi < 30) rsiAdjust = (30 - lastRsi) * 0.1;
 
-  function setQty(slug, qty){
-    if (qty <= 0) {
-      cart = cart.filter(function(item){ return item.slug !== slug; });
-    } else {
-      for (var i=0; i<cart.length; i++) {
-        if (cart[i].slug === slug) { cart[i].qty = qty; break; }
-      }
-    }
-    save();
-    render();
-  }
+            // 4. Bandas de Bollinger (tensión)
+            let bbAdjust = 0;
+            if (currentPrice > lastBbUp) bbAdjust = (lastBbUp - currentPrice) * 0.2;
+            else if (currentPrice < lastBbLow) bbAdjust = (lastBbLow - currentPrice) * 0.2;
 
-  function remove(slug){
-    cart = cart.filter(function(item){ return item.slug !== slug; });
-    save();
-    render();
-  }
+            // Ponderación del Ensemble (pesos dinámicos según temporalidad)
+            let weightTrend = 0.4, weightReg = 0.35, weightMacd = 0.15, weightRsi = 0.1;
+            if (tf === '1m' || tf === '5m') { weightTrend = 0.6;
+                weightReg = 0.25;
+                weightMacd = 0.1;
+                weightRsi = 0.05; }
+            if (tf === '4h' || tf === '1d') { weightTrend = 0.3;
+                weightReg = 0.3;
+                weightMacd = 0.2;
+                weightRsi = 0.2; }
 
-  function clearCart(){
-    cart = [];
-    save();
-    render();
-  }
+            const trendProj = currentPrice + (lastEma12 - lastEma26) * 0.5;
+            const predictedPrice = (trendProj * weightTrend) +
+                (linearProjection * weightReg) +
+                (currentPrice + macdMomentum * weightMacd * 10) +
+                (currentPrice + rsiAdjust * weightRsi * 5) +
+                (currentPrice + bbAdjust * 0.1);
 
-  function render(){
-    var count = 0;
-    var sub = 0;
-    for (var i=0; i<cart.length; i++) {
-      count += cart[i].qty;
-      var p = find(cart[i].slug);
-      if (p) sub += cart[i].qty * p.price;
-    }
-    document.getElementById('cartCount').textContent = '('+count+')';
-    document.getElementById('cartSubtotal').textContent = money(sub);
-    var checkoutBtn = document.getElementById('checkoutBtn');
-    checkoutBtn.disabled = (count === 0);
+            // Volatilidad para bandas de confianza
+            const volatility = last20.reduce((sum, v) => sum + Math.abs(v - currentPrice), 0) / 20;
+            const confidence = Math.max(40, Math.min(90, 100 - (volatility / currentPrice) * 150));
 
-    var box = document.getElementById('cartItems');
-    if (cart.length === 0) {
-      box.innerHTML = '<div class="empty">Tu carrito está vacío.<br><br><button class="btn primary" id="closeEmpty">Ver sabores →</button></div>';
-      document.getElementById('closeEmpty').onclick = function(){ closeCart(); location.hash="#sabores"; };
-      return;
-    }
-    var html2 = '';
-    for (var j=0; j<cart.length; j++) {
-      var item = cart[j];
-      var p2 = find(item.slug);
-      if (!p2) continue;
-      var svgSmall = pouch(p2,54).replace(/width="\d+" height="\d+"/,'width="54" height="68"');
-      html2 += '<div class="line">'+
-        '<div class="sw" style="background:'+p2.bg+'">'+svgSmall+'</div>'+
-        '<div>'+
-          '<div class="name">'+p2.name+'</div>'+
-          '<div style="font-size:13px;color:#7a7263">'+money(p2.price)+'</div>'+
-          '<div>'+
-            '<span class="qty">'+
-              '<button data-dec="'+p2.slug+'" aria-label="Disminuir cantidad">−</button><span>'+item.qty+'</span><button data-inc="'+p2.slug+'" aria-label="Aumentar cantidad">+</button>'+
-            '</span>'+
-            '<button class="rm" data-rm="'+p2.slug+'">quitar</button>'+
-          '</div>'+
-        '</div>'+
-        '<div class="lt">'+money(p2.price*item.qty)+'</div>'+
-      '</div>';
-    }
-    box.innerHTML = html2;
-  }
+            // Soporte / Resistencia
+            const support = Math.min(...last20) * 0.998;
+            const resistance = Math.max(...last20) * 1.002;
 
-  /* ---------- Event listeners ---------- */
-  document.addEventListener('click', function(e){
-    var target = e.target.closest('[data-add],[data-inc],[data-dec],[data-rm]');
-    if (!target) return;
-    if (target.dataset.add) {
-      add(target.dataset.add);
-    } else if (target.dataset.inc) {
-      var slugInc = target.dataset.inc;
-      var foundInc = null;
-      for (var i=0; i<cart.length; i++) {
-        if (cart[i].slug === slugInc) { foundInc = cart[i]; break; }
-      }
-      var qtyInc = foundInc ? foundInc.qty : 0;
-      setQty(slugInc, qtyInc + 1);
-    } else if (target.dataset.dec) {
-      var slugDec = target.dataset.dec;
-      var foundDec = null;
-      for (var i=0; i<cart.length; i++) {
-        if (cart[i].slug === slugDec) { foundDec = cart[i]; break; }
-      }
-      var qtyDec = foundDec ? foundDec.qty : 1;
-      setQty(slugDec, qtyDec - 1);
-    } else if (target.dataset.rm) {
-      remove(target.dataset.rm);
-    }
-  });
+            return {
+                predicted: predictedPrice,
+                support,
+                resistance,
+                confidence: Math.round(confidence),
+                trend: predictedPrice > currentPrice ? 'BULLISH' : 'BEARISH',
+                changePercent: ((predictedPrice - currentPrice) / currentPrice * 100),
+                rsi: lastRsi,
+                macd: lastMacdHist,
+                ema12: lastEma12,
+                ema26: lastEma26,
+                bbUp: lastBbUp,
+                bbLow: lastBbLow
+            };
+        }
 
-  function openCart(){ document.body.classList.add('cart-open'); }
-  function closeCart(){ document.body.classList.remove('cart-open'); }
+        // ============================================================
+        // 4. OBTENER DATOS Y AGREGAR VELAS
+        // ============================================================
+        async function fetchCandles(limit = 500) {
+            const url = `${BASE_URL}/klines?symbol=${SYMBOL}&interval=1m&limit=${limit}`;
+            const resp = await fetch(url);
+            const data = await resp.json();
+            return data.map(k => ({
+                time: Math.floor(k[0] / 1000),
+                open: parseFloat(k[1]),
+                high: parseFloat(k[2]),
+                low: parseFloat(k[3]),
+                close: parseFloat(k[4]),
+                volume: parseFloat(k[5])
+            }));
+        }
 
-  document.getElementById('openCart').onclick = openCart;
-  document.getElementById('closeCart').onclick = closeCart;
-  document.getElementById('drawerBack').onclick = closeCart;
+        function aggregateCandles(candles, tf) {
+            if (tf === '1m') return candles;
+            const minutes = { '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 } [tf] || 60;
+            const result = [];
+            let bucket = null;
+            for (const c of candles) {
+                const ts = c.time;
+                const bucketIdx = Math.floor(ts / (minutes * 60));
+                if (!bucket || bucket.time !== bucketIdx) {
+                    if (bucket) result.push(bucket);
+                    bucket = { time: bucketIdx, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume };
+                } else {
+                    bucket.high = Math.max(bucket.high, c.high);
+                    bucket.low = Math.min(bucket.low, c.low);
+                    bucket.close = c.close;
+                    bucket.volume += c.volume;
+                }
+            }
+            if (bucket) result.push(bucket);
+            return result;
+        }
 
-  document.getElementById('checkoutBtn').onclick = function(){
-    closeCart();
-    document.body.classList.add('checkout-open');
-  };
-  document.getElementById('cancelCheckout').onclick = function(){
-    document.body.classList.remove('checkout-open');
-  };
+        // ============================================================
+        // 5. ACTUALIZAR UI Y GRÁFICO
+        // ============================================================
+        function getTimeframeLabel(tf) {
+            const map = { '1m': '1 Minuto', '5m': '5 Minutos', '15m': '15 Minutos', '1h': '1 Hora', '4h': '4 Horas',
+            '1d': '1 Día' };
+            return map[tf] || tf;
+        }
 
-  document.getElementById('checkoutForm').onsubmit = function(e){
-    e.preventDefault();
-    var form = e.target;
-    var nombre = form.querySelector('[name="nombre"]').value.trim();
-    if (!nombre) {
-      alert('Por favor ingresa tu nombre.');
-      return;
-    }
-    alert('¡Gracias '+nombre+'! Recibimos tu pedido de demostración.\nCuando conectemos pagos reales (Shopify o Stripe), se procesará automáticamente.');
-    clearCart();
-    form.reset();
-    document.body.classList.remove('checkout-open');
-    showToast('¡Pedido confirmado! 🎉');
-  };
+        function updateUI(candles, predData, tf) {
+            if (!candles.length || !predData) return;
+            const last = candles[candles.length - 1];
+            const currentPrice = last.close;
 
-  document.getElementById('yr').textContent = new Date().getFullYear();
-  render();
+            // Precio actual
+            document.getElementById('current-price').innerText = `$${currentPrice.toFixed(2)}`;
+            const change = ((currentPrice - candles[candles.length - 2]?.close || currentPrice) / (candles[candles.length - 2]
+                ?.close || currentPrice) * 100);
+            const changeEl = document.getElementById('current-change');
+            changeEl.innerText = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+            changeEl.className = `text-sm font-semibold ${change >= 0 ? 'text-success' : 'text-error'}`;
 
-  // Keyboard: close on Escape
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') {
-      if (document.body.classList.contains('checkout-open')) document.body.classList.remove('checkout-open');
-      if (document.body.classList.contains('cart-open')) closeCart();
-    }
-  });
+            // Predicciones destacadas
+            const pred1h = predData.predicted;
+            document.getElementById('pred-1h').innerText = `$${pred1h.toFixed(2)}`;
+            const ch1h = predData.changePercent;
+            const el1h = document.getElementById('pred-1h-change');
+            el1h.innerText = `${ch1h > 0 ? '+' : ''}${ch1h.toFixed(2)}%`;
+            el1h.className = `text-sm ${ch1h >= 0 ? 'text-success' : 'text-error'}`;
 
-})();
-</script>
+            // Predicción 24h (simulada con un factor de tendencia mayor)
+            const pred24h = currentPrice + (predData.predicted - currentPrice) * 3.5;
+            document.getElementById('pred-24h').innerText = `$${pred24h.toFixed(2)}`;
+            const ch24h = ((pred24h - currentPrice) / currentPrice * 100);
+            const el24h = document.getElementById('pred-24h-change');
+            el24h.innerText = `${ch24h > 0 ? '+' : ''}${ch24h.toFixed(2)}%`;
+            el24h.className = `text-sm ${ch24h >= 0 ? 'text-success' : 'text-error'}`;
+
+            // Señal
+            const signal = predData.trend === 'BULLISH' ? 'COMPRAR' : 'VENDER';
+            const badge = document.getElementById('signal-badge').querySelector('span') || document.getElementById(
+            'signal-badge');
+            badge.innerText = signal;
+            badge.className = `badge text-lg ${signal === 'COMPRAR' ? 'badge-success' : 'badge-error'}`;
+            document.getElementById('signal-confidence').innerText = `Confianza: ${predData.confidence}%`;
+
+            // Indicadores
+            document.getElementById('ind-rsi').innerText = predData.rsi?.toFixed(2) || '--';
+            document.getElementById('ind-macd').innerText = predData.macd?.toFixed(4) || '--';
+            document.getElementById('ind-ema12').innerText = predData.ema12?.toFixed(2) || '--';
+            document.getElementById('ind-ema26').innerText = predData.ema26?.toFixed(2) || '--';
+            document.getElementById('ind-bb-up').innerText = predData.bbUp?.toFixed(2) || '--';
+            document.getElementById('ind-bb-low').innerText = predData.bbLow?.toFixed(2) || '--';
+
+            // Tabla de predicciones por temporalidad
+            const tfs = ['1m', '5m', '15m', '1h', '4h', '1d'];
+            const rows = tfs.map(t => {
+                const agg = aggregateCandles(candles, t);
+                if (agg.length < 10) return null;
+                const p = predictPrice(agg, t);
+                if (!p) return null;
+                return { tf: t, label: getTimeframeLabel(t), price: p.predicted, change: p.changePercent, trend: p
+                        .trend, conf: p.confidence };
+            }).filter(r => r);
+
+            const tbody = document.getElementById('prediction-table-body');
+            if (rows.length) {
+                tbody.innerHTML = rows.map(r => `
+                        <tr>
+                            <td class="font-bold">${r.label}</td>
+                            <td>$${r.price.toFixed(2)}</td>
+                            <td class="${r.change >= 0 ? 'text-success' : 'text-error'}">${r.change > 0 ? '+' : ''}${r.change.toFixed(2)}%</td>
+                            <td><span class="badge ${r.trend === 'BULLISH' ? 'badge-success' : 'badge-error'} badge-sm">${r.trend}</span></td>
+                            <td><div class="radial-progress text-primary" style="--value:${r.conf}; --size:1.5rem;">${r.conf}%</div></td>
+                        </tr>
+                    `).join('');
+            }
+
+            document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
+
+            // Actualizar gráfico
+            updateChart(candles, predData, tf);
+        }
+
+        // ============================================================
+        // 6. GRÁFICO CON LIGHTWEIGHT CHARTS
+        // ============================================================
+        function updateChart(candles, predData, tf) {
+            if (!chart) {
+                chart = LightweightCharts.createChart(document.getElementById('chart-container'), {
+                    layout: { background: { color: 'transparent' }, textColor: '#d1d5db' },
+                    grid: { vertLines: { color: 'rgba(255,255,255,0.05)' }, horzLines: { color: 'rgba(255,255,255,0.05)' } },
+                    width: document.getElementById('chart-container').clientWidth,
+                    height: 450,
+                    timeScale: { timeVisible: true, secondsVisible: tf === '1m' || tf === '5m' }
+                });
+                series = chart.addCandlestickSeries({
+                    upColor: '#26a69a', downColor: '#ef5350', borderVisible: false,
+                    wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+                });
+                predictionLine = chart.addLineSeries({
+                    color: '#fbbf24', lineWidth: 2, lineStyle: 2,
+                    priceLineVisible: false, lastValueVisible: true
+                });
+            }
+
+            // Datos para velas
+            const chartData = candles.map(c => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
+            series.setData(chartData);
+
+            // Línea de predicción (proyectamos 5 velas futuras)
+            const lastCandle = candles[candles.length - 1];
+            const predPrice = predData.predicted;
+            const step = (predPrice - lastCandle.close) / 5;
+            const futurePoints = [];
+            for (let i = 1; i <= 5; i++) {
+                const ts = lastCandle.time + i * (candles[1]?.time - candles[0]?.time || 60);
+                futurePoints.push({ time: ts, value: lastCandle.close + step * i });
+            }
+            // Añadir punto actual para conectar
+            const allPoints = [{ time: lastCandle.time, value: lastCandle.close }, ...futurePoints];
+            predictionLine.setData(allPoints);
+
+            // Bandas de confianza (sombreado con área) - opcional
+            chart.resize(document.getElementById('chart-container').clientWidth, 450);
+        }
+
+        // ============================================================
+        // 7. FLUJO PRINCIPAL
+        // ============================================================
+        let currentCandles = [];
+
+        async function fetchAndUpdate() {
+            try {
+                document.getElementById('live-status').innerHTML =
+                    `<span class="w-2 h-2 bg-yellow-400 rounded-full inline-block animate-pulse"></span> Cargando...`;
+                const raw = await fetchCandles(500);
+                currentCandles = raw;
+                // Agregar según timeframe seleccionado
+                const agg = aggregateCandles(raw, currentTimeframe);
+                if (agg.length < 10) { alert('Datos insuficientes'); return; }
+                const pred = predictPrice(agg, currentTimeframe);
+                if (!pred) { alert('No se pudo generar predicción'); return; }
+                currentPredictionData = pred;
+                updateUI(agg, pred, currentTimeframe);
+                document.getElementById('live-status').innerHTML =
+                    `<span class="w-2 h-2 bg-green-400 rounded-full inline-block"></span> En Vivo`;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('live-status').innerHTML =
+                    `<span class="w-2 h-2 bg-red-400 rounded-full inline-block"></span> Error`;
+                alert('Error al obtener datos: ' + e.message);
+            }
+        }
+
+        // Cambio de temporalidad
+        document.querySelectorAll('.timeframe-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+                this.classList.add('active', 'btn-primary');
+                currentTimeframe = this.dataset.tf;
+                if (currentCandles.length) {
+                    const agg = aggregateCandles(currentCandles, currentTimeframe);
+                    if (agg.length < 5) { alert('Pocos datos para este marco'); return; }
+                    const pred = predictPrice(agg, currentTimeframe);
+                    if (pred) { currentPredictionData = pred;
+                        updateUI(agg, pred, currentTimeframe); }
+                }
+            });
+        });
+
+        // Tema oscuro/claro
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            document.getElementById('theme-icon').className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+
+        // Inicializar con el tema oscuro por defecto
+        document.documentElement.setAttribute('data-theme', 'dark');
+
+        // Cargar datos al inicio
+        window.addEventListener('load', () => {
+            fetchAndUpdate();
+            // Actualizar cada 60 segundos
+            setInterval(fetchAndUpdate, 60000);
+        });
+
+        // Redimensionar gráfico
+        window.addEventListener('resize', () => {
+            if (chart) {
+                chart.resize(document.getElementById('chart-container').clientWidth, 450);
+            }
+        });
+    </script>
 </body>
 </html>
