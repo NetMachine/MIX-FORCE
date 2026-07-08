@@ -1,721 +1,409 @@
-<!DOCTYPE html>
-<html lang="es" data-theme="dark">
-<head>
+<!doctype html>
+<html lang="es">
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Oro Predictor – Tiempo Real</title>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>XAU/USD Terminal -- Predicción de Oro en Tiempo Real</title>
+    <meta
+      name="description"
+      content="Terminal profesional para el precio del oro (XAU/USD) en tiempo real: velas, señales y predicción probabilística."
+    />
+    <meta property="og:title" content="XAU/USD Terminal -- Predicción de Oro" />
+    <meta property="og:description" content="Cotización en vivo del oro, gráficos de velas y señales técnicas." />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://api.binance.com" />
+    <link rel="preconnect" href="https://stream.binance.com" />
+    <script src="https://unpkg.com/lightweight-charts@5.0.6/dist/lightweight-charts.standalone.production.js"></script>
     <style>
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        #chart-container { width: 100%; height: 450px; background: transparent; position: relative; }
-        .stat-card { backdrop-filter: blur(4px); background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
-        [data-theme="dark"] .stat-card { background: rgba(0,0,0,0.3); }
-        .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .badge-success { background: #22c55e; }
-        .badge-error { background: #ef4444; }
-        canvas#fallback-chart { width: 100%; height: 100%; display: block; background: transparent; }
+      :root {
+        color-scheme: dark;
+        --bg: #0b0d10;
+        --card: #14171c;
+        --border: rgba(255, 255, 255, 0.08);
+        --border-strong: rgba(255, 255, 255, 0.16);
+        --fg: #e7e7ea;
+        --muted: #8b8f98;
+        --gold: #e5b84a;
+        --up: #22c58a;
+        --down: #e5484d;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+      header {
+        border-bottom: 1px solid var(--border);
+      }
+      .header-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 0;
+      }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand-logo {
+        width: 36px; height: 36px; border-radius: 8px;
+        background: rgba(229, 184, 74, 0.15);
+        color: var(--gold); font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; letter-spacing: 0.5px;
+      }
+      .brand-title { font-size: 13px; font-weight: 600; line-height: 1.1; }
+      .brand-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+      .status {
+        display: inline-flex; align-items: center; gap: 6px;
+        border: 1px solid; border-radius: 999px;
+        padding: 4px 10px; font-size: 11px; font-weight: 500;
+      }
+      .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      main { padding: 16px 0 32px; }
+      .price-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+      .price { font-size: 36px; font-weight: 600; font-variant-numeric: tabular-nums; }
+      .change { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+      .tf {
+        margin-top: 16px;
+        display: inline-flex; padding: 4px; gap: 2px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border); border-radius: 10px;
+      }
+      .tf button {
+        appearance: none; border: 0; background: transparent;
+        color: var(--muted); font-size: 12px; font-weight: 500;
+        padding: 6px 12px; border-radius: 6px; cursor: pointer;
+        transition: color .15s, background .15s;
+      }
+      .tf button:hover { color: var(--fg); }
+      .tf button.active { background: var(--gold); color: #1a1408; }
+      .card {
+        margin-top: 16px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+      }
+      .pred { padding: 18px 20px; }
+      .pred-head {
+        display: flex; justify-content: space-between; align-items: baseline;
+        gap: 8px; flex-wrap: wrap;
+      }
+      .pred-label {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .pred-value { font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 4px; }
+      .signal {
+        border: 1px solid; border-radius: 8px;
+        padding: 6px 12px; font-size: 13px; font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+      .mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+      .mini-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+      .mini-value { margin-top: 2px; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 14px; }
+      @media (max-width: 520px) {
+        .mini-grid { grid-template-columns: 1fr; gap: 8px; }
+        .price { font-size: 30px; }
+      }
+      .chart-head {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 8px 14px; border-bottom: 1px solid var(--border);
+      }
+      .chart-head .label { font-size: 12px; color: var(--muted); }
+      .icon-btn {
+        appearance: none; background: transparent; cursor: pointer;
+        border: 1px solid var(--border); border-radius: 8px;
+        width: 30px; height: 30px; color: var(--muted);
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: color .15s, background .15s;
+      }
+      .icon-btn:hover { color: var(--fg); background: rgba(255,255,255,0.04); }
+      #chart {
+        width: 100%;
+        height: 460px;
+        transition: height .25s ease;
+        overflow: hidden;
+      }
+      #chart.collapsed { height: 0; }
+      .disclaimer { margin-top: 24px; font-size: 11px; color: var(--muted); line-height: 1.5; }
     </style>
-</head>
-<body class="min-h-screen bg-base-200 text-base-content">
-
-    <nav class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
-        <div class="flex-1">
-            <a class="btn btn-ghost text-xl font-bold tracking-tight">
-                <i class="fas fa-coins text-warning"></i> OroPredictor <span class="text-xs font-normal opacity-70 ml-2">v4.0 (Real-time)</span>
-            </a>
+  </head>
+  <body>
+    <header>
+      <div class="wrap header-row">
+        <div class="brand">
+          <div class="brand-logo">Au</div>
+          <div>
+            <div class="brand-title">XAU / USD</div>
+            <div class="brand-sub">Gold · Terminal</div>
+          </div>
         </div>
-        <div class="flex-none gap-2">
-            <span id="live-status" class="badge badge-success gap-2 animate-pulse-slow">
-                <span class="w-2 h-2 bg-green-400 rounded-full inline-block"></span> Conectado
-            </span>
-            <button class="btn btn-ghost btn-circle" onclick="toggleTheme()">
-                <i class="fas fa-moon" id="theme-icon"></i>
-            </button>
+        <span id="status" class="status" style="color: var(--gold); border-color: rgba(229,184,74,0.4);">
+          <span class="status-dot"></span><span id="status-text">Conectando</span>
+        </span>
+      </div>
+    </header>
+    <main class="wrap">
+      <div class="price-row">
+        <div id="price" class="price">--</div>
+        <div id="change" class="change"></div>
+      </div>
+      <div id="tf" class="tf"></div>
+      <!-- Predicción arriba del gráfico -->
+      <div class="card pred">
+        <div class="pred-head">
+          <div>
+            <div class="pred-label">Predicción · próximo <span id="horizon-label">--</span></div>
+            <div id="pred-value" class="pred-value">--</div>
+          </div>
+          <div id="signal" class="signal" style="color: var(--muted); border-color: rgba(255,255,255,0.16);">--</div>
         </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="stat-card p-4 text-center">
-                <p class="text-sm opacity-70">Precio Actual</p>
-                <p id="current-price" class="text-2xl font-bold text-primary">--</p>
-                <p id="current-change" class="text-sm font-semibold">---</p>
-            </div>
-            <div class="stat-card p-4 text-center">
-                <p class="text-sm opacity-70">Predicción 1h</p>
-                <p id="pred-1h" class="text-2xl font-bold text-secondary">--</p>
-                <p id="pred-1h-change" class="text-sm">--</p>
-            </div>
-            <div class="stat-card p-4 text-center">
-                <p class="text-sm opacity-70">Predicción 24h</p>
-                <p id="pred-24h" class="text-2xl font-bold text-accent">--</p>
-                <p id="pred-24h-change" class="text-sm">--</p>
-            </div>
-            <div class="stat-card p-4 text-center">
-                <p class="text-sm opacity-70">Señal</p>
-                <p id="signal-badge" class="text-2xl font-bold"><span class="badge badge-ghost text-lg">--</span></p>
-                <p id="signal-confidence" class="text-xs opacity-60">Confianza: --%</p>
-            </div>
+        <div id="mini-grid" class="mini-grid" style="display:none;">
+          <div><div class="mini-label">Cambio esperado</div><div id="m-change" class="mini-value">--</div></div>
+          <div><div class="mini-label">Rango 95%</div><div id="m-range" class="mini-value">--</div></div>
+          <div><div class="mini-label">Confianza</div><div id="m-conf" class="mini-value">--</div></div>
         </div>
-
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
-                    <div class="flex flex-wrap gap-1">
-                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="1m">1m</button>
-                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="5m">5m</button>
-                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="15m">15m</button>
-                        <button class="btn btn-sm btn-outline timeframe-btn active" data-tf="1h">1h</button>
-                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="4h">4h</button>
-                        <button class="btn btn-sm btn-outline timeframe-btn" data-tf="1d">1d</button>
-                    </div>
-                    <span class="badge badge-ghost"><i class="fas fa-chart-line"></i> Proyección</span>
-                </div>
-                <div id="chart-container">
-                    <canvas id="fallback-chart"></canvas>
-                </div>
-                <div class="flex flex-wrap justify-between text-xs mt-2 px-2 opacity-60">
-                    <span>Actualizado: <span id="update-time">--</span></span>
-                    <span>Fuente: Binance WebSocket / REST</span>
-                </div>
-            </div>
+      </div>
+      <!-- Gráfico con minimizar -->
+      <div class="card">
+        <div class="chart-head">
+          <div class="label">Gráfico · <span id="tf-label">--</span></div>
+          <button id="toggle-chart" class="icon-btn" aria-label="Minimizar gráfico">
+            <svg id="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          </button>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body p-4">
-                    <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-microchip text-primary"></i> Indicadores</h3>
-                    <div id="indicators-list" class="space-y-1 text-sm">
-                        <div class="flex justify-between"><span>RSI (14):</span><span id="ind-rsi" class="font-mono">--</span></div>
-                        <div class="flex justify-between"><span>MACD:</span><span id="ind-macd" class="font-mono">--</span></div>
-                        <div class="flex justify-between"><span>EMA 12:</span><span id="ind-ema12" class="font-mono">--</span></div>
-                        <div class="flex justify-between"><span>EMA 26:</span><span id="ind-ema26" class="font-mono">--</span></div>
-                        <div class="flex justify-between"><span>Banda Sup.:</span><span id="ind-bb-up" class="font-mono">--</span></div>
-                        <div class="flex justify-between"><span>Banda Inf.:</span><span id="ind-bb-low" class="font-mono">--</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="card bg-base-100 shadow-xl md:col-span-2">
-                <div class="card-body p-4">
-                    <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-robot text-secondary"></i> Predicciones por Temporalidad</h3>
-                    <div class="overflow-x-auto">
-                        <table class="table table-zebra table-xs">
-                            <thead><tr><th>Marco</th><th>Precio Estimado</th><th>Variación %</th><th>Tendencia</th><th>Confianza</th></tr></thead>
-                            <tbody id="prediction-table-body"><tr><td colspan="5" class="text-center opacity-50">Esperando datos...</td></tr></tbody>
-                        </table>
-                    </div>
-                    <div class="text-[10px] opacity-40 mt-2"><i class="fas fa-info-circle"></i> Ensemble: Regresión + Momentum + RSI + Bandas.</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center text-xs opacity-30 py-4 border-t border-base-300">
-            ⚠️ Predicciones probabilísticas. No constituyen asesoramiento financiero.
-        </div>
+        <div id="chart"></div>
+      </div>
+      <p class="disclaimer">
+        Las predicciones son probabilísticas y no constituyen asesoramiento financiero.
+        Datos en vivo: Binance PAXG/USDT como proxy de XAU/USD.
+      </p>
     </main>
-
     <script>
-        // ============================================================
-        // 1. CONFIGURACIÓN GLOBAL
-        // ============================================================
-        const SYMBOL = 'PAXGUSDT';
-        let currentTimeframe = '1h';
-        let allCandles = [];
-        let currentCandle = null;
-        let lastPrice = null;
-        let currentPredictionData = null;
-        let chartLibraryLoaded = false;
-        let useFallbackChart = true;
-        let lwChart = null,
-            lwSeries = null,
-            lwPredLine = null;
-        let updateCounter = 0;
-
-        // ============================================================
-        // 2. INDICADORES TÉCNICOS (idénticos)
-        // ============================================================
-        function calcEMA(data, period) {
-            const k = 2 / (period + 1);
-            let ema = [data[0]];
-            for (let i = 1; i < data.length; i++) {
-                ema.push(data[i] * k + ema[i - 1] * (1 - k));
+      const SYMBOL = "paxgusdt";
+      const TIMEFRAMES = [
+        { key: "1m",  label: "1m",  horizon: "1 minuto",  seconds: 60 },
+        { key: "5m",  label: "5m",  horizon: "5 minutos", seconds: 5*60 },
+        { key: "15m", label: "15m", horizon: "15 minutos", seconds: 15*60 },
+        { key: "1h",  label: "1h",  horizon: "1 hora",    seconds: 60*60 },
+        { key: "1d",  label: "1D",  horizon: "1 día",     seconds: 24*60*60 },
+        { key: "1w",  label: "1W",  horizon: "1 semana",  seconds: 7*24*60*60 },
+      ];
+      const fmt = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      // State
+      let tf = "15m";
+      let klines = [];
+      let price = null;
+      let ws = null;
+      let wsClosed = false;
+      let wsRetry = 0;
+      // Chart setup
+      const chartEl = document.getElementById("chart");
+      const chart = LightweightCharts.createChart(chartEl, {
+        layout: {
+          background: { color: "transparent" },
+          textColor: "#c9c9d1",
+          fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        },
+        grid: {
+          vertLines: { color: "rgba(255,255,255,0.04)" },
+          horzLines: { color: "rgba(255,255,255,0.06)" },
+        },
+        rightPriceScale: { borderColor: "rgba(255,255,255,0.08)" },
+        timeScale: { borderColor: "rgba(255,255,255,0.08)", timeVisible: true, secondsVisible: false },
+        crosshair: { mode: 1 },
+        autoSize: true,
+      });
+      const candle = chart.addSeries(LightweightCharts.CandlestickSeries, {
+        upColor: "#22c58a", downColor: "#e5484d",
+        wickUpColor: "#22c58a", wickDownColor: "#e5484d",
+        borderVisible: false,
+      });
+      const predLine = chart.addSeries(LightweightCharts.LineSeries, {
+        color: "#e5b84a", lineWidth: 2, lineStyle: 2,
+        lastValueVisible: false, priceLineVisible: false,
+      });
+      // Build timeframe buttons
+      const tfWrap = document.getElementById("tf");
+      TIMEFRAMES.forEach((t) => {
+        const b = document.createElement("button");
+        b.textContent = t.label;
+        b.dataset.key = t.key;
+        b.addEventListener("click", () => setTimeframe(t.key));
+        tfWrap.appendChild(b);
+      });
+      // Minimize toggle
+      const chev = document.getElementById("chev");
+      document.getElementById("toggle-chart").addEventListener("click", () => {
+        const collapsed = chartEl.classList.toggle("collapsed");
+        chev.innerHTML = collapsed
+          ? '<polyline points="6 9 12 15 18 9"></polyline>'
+          : '<polyline points="18 15 12 9 6 15"></polyline>';
+      });
+      function setStatus(kind) {
+        const el = document.getElementById("status");
+        const t = document.getElementById("status-text");
+        if (kind === "live") {
+          el.style.color = "var(--up)"; el.style.borderColor = "rgba(34,197,138,0.4)";
+          t.textContent = "LIVE";
+        } else if (kind === "offline") {
+          el.style.color = "var(--down)"; el.style.borderColor = "rgba(229,72,77,0.4)";
+          t.textContent = "Offline";
+        } else {
+          el.style.color = "var(--gold)"; el.style.borderColor = "rgba(229,184,74,0.4)";
+          t.textContent = "Conectando";
+        }
+      }
+      function updateTfUI() {
+        [...tfWrap.children].forEach((b) => {
+          b.classList.toggle("active", b.dataset.key === tf);
+        });
+        const info = TIMEFRAMES.find((x) => x.key === tf);
+        document.getElementById("horizon-label").textContent = info.horizon;
+        document.getElementById("tf-label").textContent = info.label;
+      }
+      async function fetchKlines(interval, limit = 300) {
+        const url = `https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=${limit}`;
+        const r = await fetch(url);
+        const raw = await r.json();
+        return raw.map((k) => ({
+          t: Math.floor(k[0] / 1000),
+          o: parseFloat(k[1]), h: parseFloat(k[2]),
+          l: parseFloat(k[3]), c: parseFloat(k[4]),
+        }));
+      }
+      // Prediction: EMA(20) mean-reversion + momentum drift, 95% band via stdev of log-returns.
+      function predictNext(kl, horizonSeconds) {
+        if (kl.length < 25) return null;
+        const closes = kl.map((k) => k.c);
+        const period = 20, kf = 2 / (period + 1);
+        let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
+        for (let i = period; i < closes.length; i++) ema = closes[i] * kf + ema * (1 - kf);
+        const rets = [];
+        for (let i = Math.max(1, closes.length - 30); i < closes.length; i++) {
+          rets.push(Math.log(closes[i] / closes[i - 1]));
+        }
+        const mean = rets.reduce((a, b) => a + b, 0) / rets.length;
+        const variance = rets.reduce((a, b) => a + (b - mean) ** 2, 0) / rets.length;
+        const sd = Math.sqrt(variance);
+        const last = closes[closes.length - 1];
+        const drift = mean;
+        const reversion = Math.log(ema / last) * 0.4;
+        const expected = drift * 0.6 + reversion;
+        const predicted = last * Math.exp(expected);
+        const lower = last * Math.exp(expected - 1.96 * sd);
+        const upper = last * Math.exp(expected + 1.96 * sd);
+        const changePct = ((predicted - last) / last) * 100;
+        let signal = "NEUTRO";
+        if (changePct > 0.15) signal = "COMPRAR";
+        else if (changePct < -0.15) signal = "VENDER";
+        const noise = sd || 1e-9;
+        const confidence = Math.max(0, Math.min(1, Math.abs(expected) / (noise * 1.96)));
+        return { predicted, lower, upper, changePct, signal, confidence, horizonSeconds };
+      }
+      function renderPrice() {
+        document.getElementById("price").textContent = price === null ? "--" : `$${fmt(price)}`;
+        const changeEl = document.getElementById("change");
+        if (klines.length < 2 || price === null) { changeEl.textContent = ""; return; }
+        const prev = klines[klines.length - 2].c;
+        const abs = price - prev;
+        const pct = (abs / prev) * 100;
+        const up = abs >= 0;
+        changeEl.style.color = up ? "var(--up)" : "var(--down)";
+        changeEl.textContent = `${up ? "▲" : "▼"} ${fmt(Math.abs(abs))} (${pct.toFixed(2)}%)`;
+      }
+      function renderPrediction() {
+        const info = TIMEFRAMES.find((x) => x.key === tf);
+        const p = predictNext(klines, info.seconds);
+        const predVal = document.getElementById("pred-value");
+        const sig = document.getElementById("signal");
+        const grid = document.getElementById("mini-grid");
+        if (!p) {
+          predVal.textContent = "--"; sig.textContent = "--";
+          sig.style.color = "var(--muted)"; sig.style.borderColor = "rgba(255,255,255,0.16)";
+          grid.style.display = "none";
+          predLine.setData([]);
+          return;
+        }
+        predVal.textContent = `$${fmt(p.predicted)}`;
+        sig.textContent = p.signal;
+        const color = p.signal === "COMPRAR" ? "var(--up)" : p.signal === "VENDER" ? "var(--down)" : "var(--muted)";
+        sig.style.color = color;
+        sig.style.borderColor =
+          p.signal === "COMPRAR" ? "rgba(34,197,138,0.4)" :
+          p.signal === "VENDER"  ? "rgba(229,72,77,0.4)"  : "rgba(255,255,255,0.16)";
+        grid.style.display = "";
+        const mc = document.getElementById("m-change");
+        mc.textContent = `${p.changePct >= 0 ? "+" : ""}${p.changePct.toFixed(2)}%`;
+        mc.style.color = p.changePct >= 0 ? "var(--up)" : "var(--down)";
+        document.getElementById("m-range").textContent = `$${fmt(p.lower)} – $${fmt(p.upper)}`;
+        document.getElementById("m-conf").textContent = `${Math.round(p.confidence * 100)}%`;
+        const last = klines[klines.length - 1];
+        predLine.setData([
+          { time: last.t, value: last.c },
+          { time: last.t + info.seconds, value: p.predicted },
+        ]);
+      }
+      async function loadTimeframe() {
+        updateTfUI();
+        try {
+          const kl = await fetchKlines(tf);
+          klines = kl;
+          candle.setData(kl.map((k) => ({ time: k.t, open: k.o, high: k.h, low: k.l, close: k.c })));
+          chart.timeScale().fitContent();
+          price = kl[kl.length - 1]?.c ?? null;
+          renderPrice();
+          renderPrediction();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      function connectWs() {
+        setStatus("connecting");
+        const url = `wss://stream.binance.com:9443/stream?streams=${SYMBOL}@kline_${tf}/${SYMBOL}@trade`;
+        ws = new WebSocket(url);
+        ws.onopen = () => { wsRetry = 0; setStatus("live"); };
+        ws.onmessage = (ev) => {
+          try {
+            const msg = JSON.parse(ev.data);
+            const stream = msg.stream, d = msg.data;
+            if (stream.endsWith("@trade")) {
+              price = parseFloat(d.p);
+              renderPrice();
+            } else if (stream.includes("@kline_")) {
+              const k = d.k;
+              const t = Math.floor(k.t / 1000);
+              const c = { time: t, open: parseFloat(k.o), high: parseFloat(k.h), low: parseFloat(k.l), close: parseFloat(k.c) };
+              candle.update(c);
+              if (klines.length) {
+                const last = klines[klines.length - 1];
+                const item = { t, o: c.open, h: c.high, l: c.low, c: c.close };
+                if (last.t === t) klines[klines.length - 1] = item;
+                else klines.push(item);
+                renderPrediction();
+              }
             }
-            return ema;
-        }
-
-        function calcRSI(closes, period = 14) {
-            if (closes.length < period + 1) return Array(closes.length).fill(50);
-            let gains = 0,
-                losses = 0;
-            for (let i = 1; i <= period; i++) {
-                const diff = closes[i] - closes[i - 1];
-                if (diff >= 0) gains += diff;
-                else losses -= diff;
-            }
-            let avgGain = gains / period,
-                avgLoss = losses / period;
-            const rsi = [50];
-            for (let i = period + 1; i < closes.length; i++) {
-                const diff = closes[i] - closes[i - 1];
-                if (diff >= 0) { avgGain = (avgGain * (period - 1) + diff) / period;
-                    avgLoss = (avgLoss * (period - 1)) / period; } else { avgGain = (avgGain * (period - 1)) / period;
-                    avgLoss = (avgLoss * (period - 1) - diff) / period; }
-                if (avgLoss === 0) rsi.push(100);
-                else rsi.push(100 - (100 / (1 + avgGain / avgLoss)));
-            }
-            return rsi;
-        }
-
-        function calcMACD(closes, fast = 12, slow = 26, signal = 9) {
-            const emaFast = calcEMA(closes, fast);
-            const emaSlow = calcEMA(closes, slow);
-            const macdLine = emaFast.map((v, i) => v - emaSlow[i]);
-            const signalLine = calcEMA(macdLine, signal);
-            const histogram = macdLine.map((v, i) => v - signalLine[i]);
-            return { macdLine, signalLine, histogram };
-        }
-
-        function calcBB(closes, period = 20, stdDev = 2) {
-            const sma = [],
-                upper = [],
-                lower = [];
-            for (let i = 0; i < closes.length; i++) {
-                if (i < period - 1) { sma.push(closes[i]);
-                    upper.push(closes[i]);
-                    lower.push(closes[i]); continue; }
-                const slice = closes.slice(i - period + 1, i + 1);
-                const mean = slice.reduce((a, b) => a + b, 0) / period;
-                const std = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / period);
-                sma.push(mean);
-                upper.push(mean + stdDev * std);
-                lower.push(mean - stdDev * std);
-            }
-            return { sma, upper, lower };
-        }
-
-        // ============================================================
-        // 3. PREDICTOR (Ensemble)
-        // ============================================================
-        function predictPrice(candles, tf) {
-            if (!candles || candles.length < 30) return null;
-            const closes = candles.map(c => c.close);
-            const currentPrice = closes[closes.length - 1];
-
-            const ema12 = calcEMA(closes, 12);
-            const ema26 = calcEMA(closes, 26);
-            const rsiArray = calcRSI(closes, 14);
-            const macd = calcMACD(closes, 12, 26, 9);
-            const bb = calcBB(closes, 20, 2);
-
-            const lastEma12 = ema12[ema12.length - 1];
-            const lastEma26 = ema26[ema26.length - 1];
-            const lastRsi = rsiArray[rsiArray.length - 1];
-            const lastMacdHist = macd.histogram[macd.histogram.length - 1];
-            const lastBbUp = bb.upper[bb.upper.length - 1];
-            const lastBbLow = bb.lower[bb.lower.length - 1];
-
-            const last20 = closes.slice(-20);
-            const n = last20.length;
-            let sumX = 0,
-                sumY = 0,
-                sumXY = 0,
-                sumX2 = 0;
-            for (let i = 0; i < n; i++) {
-                sumX += i;
-                sumY += last20[i];
-                sumXY += i * last20[i];
-                sumX2 += i * i;
-            }
-            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-            const intercept = (sumY - slope * sumX) / n;
-            const linearProjection = intercept + slope * (n + 1);
-
-            const macdMomentum = Math.min(Math.max(lastMacdHist * 0.1, -5), 5);
-            let rsiAdjust = 0;
-            if (lastRsi > 70) rsiAdjust = (100 - lastRsi) * 0.05;
-            else if (lastRsi < 30) rsiAdjust = (30 - lastRsi) * 0.05;
-            let bbAdjust = 0;
-            if (currentPrice > lastBbUp) bbAdjust = (lastBbUp - currentPrice) * 0.1;
-            else if (currentPrice < lastBbLow) bbAdjust = (lastBbLow - currentPrice) * 0.1;
-
-            let wTrend = 0.5,
-                wReg = 0.3,
-                wMacd = 0.1,
-                wRsi = 0.1;
-            if (tf === '1m' || tf === '5m') { wTrend = 0.6;
-                wReg = 0.25;
-                wMacd = 0.1;
-                wRsi = 0.05; }
-            if (tf === '4h' || tf === '1d') { wTrend = 0.4;
-                wReg = 0.3;
-                wMacd = 0.15;
-                wRsi = 0.15; }
-
-            const trendProj = currentPrice + (lastEma12 - lastEma26) * 0.3;
-            let predictedPrice = (trendProj * wTrend) + (linearProjection * wReg) +
-                (currentPrice + macdMomentum * wMacd * 5) +
-                (currentPrice + rsiAdjust * wRsi * 3) +
-                (currentPrice + bbAdjust * 0.05);
-
-            const maxChange = currentPrice * 0.03;
-            predictedPrice = Math.min(Math.max(predictedPrice, currentPrice - maxChange), currentPrice + maxChange);
-
-            const volatility = last20.reduce((sum, v) => sum + Math.abs(v - currentPrice), 0) / 20;
-            const confidence = Math.max(40, Math.min(90, 100 - (volatility / currentPrice) * 150));
-
-            return {
-                predicted: predictedPrice,
-                support: Math.min(...last20) * 0.998,
-                resistance: Math.max(...last20) * 1.002,
-                confidence: Math.round(confidence),
-                trend: predictedPrice > currentPrice ? 'BULLISH' : 'BEARISH',
-                changePercent: ((predictedPrice - currentPrice) / currentPrice * 100),
-                rsi: lastRsi,
-                macd: lastMacdHist,
-                ema12: lastEma12,
-                ema26: lastEma26,
-                bbUp: lastBbUp,
-                bbLow: lastBbLow
-            };
-        }
-
-        // ============================================================
-        // 4. GESTIÓN DE VELAS
-        // ============================================================
-        function buildCandleFromTrade(price, timestamp) {
-            if (!currentCandle) {
-                currentCandle = {
-                    time: Math.floor(timestamp / 60000) * 60,
-                    open: price,
-                    high: price,
-                    low: price,
-                    close: price,
-                    volume: 0
-                };
-                return;
-            }
-            const currentMinute = Math.floor(timestamp / 60000) * 60;
-            if (currentCandle.time !== currentMinute) {
-                if (currentCandle) {
-                    allCandles.push({ ...currentCandle });
-                    if (allCandles.length > 500) allCandles.shift();
-                }
-                currentCandle = {
-                    time: currentMinute,
-                    open: price,
-                    high: price,
-                    low: price,
-                    close: price,
-                    volume: 0
-                };
-            } else {
-                currentCandle.high = Math.max(currentCandle.high, price);
-                currentCandle.low = Math.min(currentCandle.low, price);
-                currentCandle.close = price;
-                currentCandle.volume += 1;
-            }
-        }
-
-        function aggregateCandles(candles, tf) {
-            if (tf === '1m') return candles;
-            const minutes = { '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 } [tf] || 60;
-            const result = [];
-            let bucket = null;
-            for (const c of candles) {
-                const bucketIdx = Math.floor(c.time / (minutes * 60));
-                if (!bucket || bucket.time !== bucketIdx) {
-                    if (bucket) result.push(bucket);
-                    bucket = { time: bucketIdx, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume };
-                } else {
-                    bucket.high = Math.max(bucket.high, c.high);
-                    bucket.low = Math.min(bucket.low, c.low);
-                    bucket.close = c.close;
-                    bucket.volume += c.volume;
-                }
-            }
-            if (bucket) result.push(bucket);
-            return result;
-        }
-
-        function getCandlesForDisplay() {
-            const display = [...allCandles];
-            if (currentCandle) display.push({ ...currentCandle });
-            return display;
-        }
-
-        // ============================================================
-        // 5. ACTUALIZACIÓN DE UI (se llama en cada tick)
-        // ============================================================
-        function updateUI() {
-            if (allCandles.length < 2) return;
-            const candles1m = [...allCandles];
-            if (currentCandle) {
-                const extended = [...candles1m, { ...currentCandle }];
-                const agg = aggregateCandles(extended, currentTimeframe);
-                if (agg.length < 10) return;
-                const pred = predictPrice(agg, currentTimeframe);
-                if (!pred) return;
-                currentPredictionData = pred;
-                renderStats(extended, pred);
-                renderIndicators(pred);
-                renderTable(extended);
-                renderChart();
-            }
-        }
-
-        function renderStats(candles, pred) {
-            const last = candles[candles.length - 1];
-            const currentPrice = last.close;
-            document.getElementById('current-price').innerText = `$${currentPrice.toFixed(2)}`;
-            const prevClose = candles.length > 1 ? candles[candles.length - 2].close : currentPrice;
-            const change = ((currentPrice - prevClose) / prevClose * 100);
-            const chEl = document.getElementById('current-change');
-            chEl.innerText = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-            chEl.className = `text-sm font-semibold ${change >= 0 ? 'text-success' : 'text-error'}`;
-
-            const p1h = pred.predicted;
-            document.getElementById('pred-1h').innerText = `$${p1h.toFixed(2)}`;
-            const ch1h = pred.changePercent;
-            const el1h = document.getElementById('pred-1h-change');
-            el1h.innerText = `${ch1h > 0 ? '+' : ''}${ch1h.toFixed(2)}%`;
-            el1h.className = `text-sm ${ch1h >= 0 ? 'text-success' : 'text-error'}`;
-
-            const factor24h = 1.2;
-            const p24h = currentPrice + (p1h - currentPrice) * factor24h;
-            document.getElementById('pred-24h').innerText = `$${p24h.toFixed(2)}`;
-            const ch24h = ((p24h - currentPrice) / currentPrice * 100);
-            const el24h = document.getElementById('pred-24h-change');
-            el24h.innerText = `${ch24h > 0 ? '+' : ''}${ch24h.toFixed(2)}%`;
-            el24h.className = `text-sm ${ch24h >= 0 ? 'text-success' : 'text-error'}`;
-
-            const signal = pred.trend === 'BULLISH' ? 'COMPRAR' : 'VENDER';
-            const badge = document.getElementById('signal-badge').querySelector('span');
-            badge.innerText = signal;
-            badge.className = `badge text-lg ${signal === 'COMPRAR' ? 'badge-success' : 'badge-error'}`;
-            document.getElementById('signal-confidence').innerText = `Confianza: ${pred.confidence}%`;
-            document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
-        }
-
-        function renderIndicators(pred) {
-            document.getElementById('ind-rsi').innerText = pred.rsi?.toFixed(2) || '--';
-            document.getElementById('ind-macd').innerText = pred.macd?.toFixed(4) || '--';
-            document.getElementById('ind-ema12').innerText = pred.ema12?.toFixed(2) || '--';
-            document.getElementById('ind-ema26').innerText = pred.ema26?.toFixed(2) || '--';
-            document.getElementById('ind-bb-up').innerText = pred.bbUp?.toFixed(2) || '--';
-            document.getElementById('ind-bb-low').innerText = pred.bbLow?.toFixed(2) || '--';
-        }
-
-        function renderTable(candles) {
-            const tfs = ['1m', '5m', '15m', '1h', '4h', '1d'];
-            const rows = tfs.map(t => {
-                const agg = aggregateCandles(candles, t);
-                if (agg.length < 10) return null;
-                const p = predictPrice(agg, t);
-                if (!p) return null;
-                return { label: getTimeframeLabel(t), price: p.predicted, change: p.changePercent, trend: p.trend,
-                    conf: p.confidence };
-            }).filter(r => r);
-            const tbody = document.getElementById('prediction-table-body');
-            if (rows.length) {
-                tbody.innerHTML = rows.map(r => `
-                    <tr>
-                        <td class="font-bold">${r.label}</td>
-                        <td>$${r.price.toFixed(2)}</td>
-                        <td class="${r.change >= 0 ? 'text-success' : 'text-error'}">${r.change > 0 ? '+' : ''}${r.change.toFixed(2)}%</td>
-                        <td><span class="badge ${r.trend === 'BULLISH' ? 'badge-success' : 'badge-error'} badge-sm">${r.trend}</span></td>
-                        <td><div class="radial-progress text-primary" style="--value:${r.conf}; --size:1.5rem;">${r.conf}%</div></td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center opacity-50">Sin suficientes datos</td></tr>`;
-            }
-        }
-
-        function getTimeframeLabel(tf) {
-            const map = { '1m': '1 Min', '5m': '5 Min', '15m': '15 Min', '1h': '1 Hora', '4h': '4 Horas', '1d': '1 Día' };
-            return map[tf] || tf;
-        }
-
-        // ============================================================
-        // 6. RENDERIZADO DEL GRÁFICO (Canvas de respaldo)
-        // ============================================================
-        function renderChart() {
-            const canvas = document.getElementById('fallback-chart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width || 800;
-            canvas.height = rect.height || 450;
-            const w = canvas.width,
-                h = canvas.height;
-
-            ctx.clearRect(0, 0, w, h);
-
-            const candles = getCandlesForDisplay();
-            if (!candles || candles.length < 2) {
-                ctx.fillStyle = '#888';
-                ctx.font = '16px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Esperando datos...', w / 2, h / 2);
-                return;
-            }
-
-            let minPrice = Infinity,
-                maxPrice = -Infinity;
-            candles.forEach(c => {
-                if (c.low < minPrice) minPrice = c.low;
-                if (c.high > maxPrice) maxPrice = c.high;
-            });
-            const padding = (maxPrice - minPrice) * 0.1;
-            minPrice -= padding;
-            maxPrice += padding;
-            const range = maxPrice - minPrice || 1;
-
-            const xStep = w / (candles.length + 1);
-            const yScale = (h - 40) / range;
-
-            // Dibujar velas
-            ctx.strokeStyle = '#aaa';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < candles.length; i++) {
-                const c = candles[i];
-                const x = xStep * (i + 1);
-                const yOpen = h - 20 - (c.open - minPrice) * yScale;
-                const yClose = h - 20 - (c.close - minPrice) * yScale;
-                const yHigh = h - 20 - (c.high - minPrice) * yScale;
-                const yLow = h - 20 - (c.low - minPrice) * yScale;
-                const isBull = c.close >= c.open;
-                ctx.fillStyle = isBull ? '#26a69a' : '#ef5350';
-                ctx.strokeStyle = isBull ? '#26a69a' : '#ef5350';
-                ctx.lineWidth = 1;
-
-                ctx.beginPath();
-                ctx.moveTo(x, yHigh);
-                ctx.lineTo(x, yLow);
-                ctx.stroke();
-
-                const bodyTop = Math.min(yOpen, yClose);
-                const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
-                ctx.fillRect(x - 3, bodyTop, 6, bodyHeight);
-            }
-
-            // Línea de proyección
-            if (currentPredictionData && candles.length > 0) {
-                const last = candles[candles.length - 1];
-                const predPrice = currentPredictionData.predicted;
-                const x0 = xStep * candles.length;
-                const y0 = h - 20 - (last.close - minPrice) * yScale;
-                const x1 = xStep * (candles.length + 5);
-                const y1 = h - 20 - (predPrice - minPrice) * yScale;
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.beginPath();
-                ctx.moveTo(x0, y0);
-                ctx.lineTo(x1, y1);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            // Precio actual
-            if (candles.length > 0) {
-                const last = candles[candles.length - 1];
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px monospace';
-                ctx.textAlign = 'right';
-                ctx.fillText('$' + last.close.toFixed(2), w - 10, 20);
-            }
-        }
-
-        // ============================================================
-        // 7. FUENTES DE DATOS EN TIEMPO REAL (WebSocket + REST + Sintético)
-        // ============================================================
-        let ws = null;
-        let restInterval = null;
-        let syntheticInterval = null;
-        let usingSynthetic = false;
-        let lastRestPrice = null;
-
-        function startDataSources() {
-            // 1. WebSocket
-            try {
-                ws = new WebSocket('wss://stream.binance.com:9443/ws/paxgusdt@trade');
-                ws.onopen = function() {
-                    console.log('WebSocket conectado');
-                    document.getElementById('live-status').innerHTML =
-                        `<span class="w-2 h-2 bg-green-400 rounded-full inline-block"></span> Conectado`;
-                    if (syntheticInterval) { clearInterval(syntheticInterval);
-                        syntheticInterval = null;
-                        usingSynthetic = false; }
-                    if (restInterval) { clearInterval(restInterval);
-                        restInterval = null; }
-                };
-                ws.onmessage = function(event) {
-                    const data = JSON.parse(event.data);
-                    if (data.e === 'trade') {
-                        const price = parseFloat(data.p);
-                        const timestamp = data.T;
-                        if (!isNaN(price)) {
-                            processPrice(price, timestamp / 1000);
-                        }
-                    }
-                };
-                ws.onerror = function(err) {
-                    console.warn('WebSocket error:', err);
-                    document.getElementById('live-status').innerHTML =
-                        `<span class="w-2 h-2 bg-yellow-400 rounded-full inline-block"></span> Usando REST`;
-                    startRestPolling();
-                };
-                ws.onclose = function() {
-                    console.warn('WebSocket cerrado');
-                    document.getElementById('live-status').innerHTML =
-                        `<span class="w-2 h-2 bg-yellow-400 rounded-full inline-block"></span> Usando REST`;
-                    startRestPolling();
-                };
-            } catch (e) {
-                console.warn('Error al iniciar WebSocket:', e);
-                startRestPolling();
-            }
-
-            // 2. REST Polling (fallback)
-            function startRestPolling() {
-                if (restInterval) return;
-                restInterval = setInterval(async () => {
-                    try {
-                        const resp = await fetch(
-                            `https://api.binance.com/api/v3/ticker/price?symbol=${SYMBOL}`);
-                        const data = await resp.json();
-                        const price = parseFloat(data.price);
-                        if (!isNaN(price) && price > 0) {
-                            lastRestPrice = price;
-                            const now = Date.now() / 1000;
-                            processPrice(price, now);
-                            // Si viene de REST, no hay timestamp de trade, usamos el actual
-                        }
-                    } catch (e) {
-                        console.warn('REST falló:', e);
-                        startSynthetic();
-                    }
-                }, 1000);
-            }
-
-            // 3. Sintético (último recurso)
-            function startSynthetic() {
-                if (syntheticInterval) return;
-                usingSynthetic = true;
-                document.getElementById('live-status').innerHTML =
-                    `<span class="w-2 h-2 bg-yellow-400 rounded-full inline-block"></span> Datos sintéticos`;
-                let price = lastRestPrice || 2900 + Math.random() * 50;
-                syntheticInterval = setInterval(() => {
-                    const change = (Math.random() - 0.5) * 0.3;
-                    price = Math.max(2800, Math.min(3100, price + change));
-                    const now = Date.now() / 1000;
-                    processPrice(price, now);
-                }, 1000);
-            }
-
-            // Si después de 3 segundos no hay datos, forzar sintético
-            setTimeout(() => {
-                if (!lastPrice && !usingSynthetic) {
-                    console.warn('Sin datos, forzando sintético');
-                    startSynthetic();
-                }
-            }, 3000);
-        }
-
-        function processPrice(price, timestamp) {
-            if (!lastPrice) lastPrice = price;
-            buildCandleFromTrade(price, timestamp);
-            updateUI();
-        }
-
-        // ============================================================
-        // 8. DATOS HISTÓRICOS (para contexto)
-        // ============================================================
-        async function fetchHistoricalCandles() {
-            try {
-                const resp = await fetch(
-                    `https://api.binance.com/api/v3/klines?symbol=${SYMBOL}&interval=1m&limit=100`);
-                const data = await resp.json();
-                if (data && data.length) {
-                    const candles = data.map(k => ({
-                        time: Math.floor(k[0] / 1000),
-                        open: parseFloat(k[1]),
-                        high: parseFloat(k[2]),
-                        low: parseFloat(k[3]),
-                        close: parseFloat(k[4]),
-                        volume: parseFloat(k[5])
-                    }));
-                    allCandles = candles;
-                    if (candles.length > 0) {
-                        const last = candles[candles.length - 1];
-                        currentCandle = {
-                            time: last.time,
-                            open: last.open,
-                            high: last.high,
-                            low: last.low,
-                            close: last.close,
-                            volume: last.volume
-                        };
-                        allCandles.pop();
-                    }
-                    console.log('Históricos cargados:', candles.length);
-                    updateUI();
-                }
-            } catch (e) {
-                console.warn('No se pudieron cargar históricos:', e);
-            }
-        }
-
-        // ============================================================
-        // 9. INICIALIZACIÓN
-        // ============================================================
-        function init() {
-            fetchHistoricalCandles();
-            startDataSources();
-
-            // Eventos de temporalidad
-            document.querySelectorAll('.timeframe-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active',
-                        'btn-primary'));
-                    this.classList.add('active', 'btn-primary');
-                    currentTimeframe = this.dataset.tf;
-                    if (allCandles.length > 0) {
-                        const agg = aggregateCandles(allCandles, currentTimeframe);
-                        const pred = predictPrice(agg, currentTimeframe);
-                        if (pred) {
-                            currentPredictionData = pred;
-                            updateUI();
-                        }
-                    }
-                });
-            });
-
-            // Redibujar gráfico al redimensionar
-            window.addEventListener('resize', () => {
-                renderChart();
-            });
-
-            // Forzar redibujado cada segundo (por si acaso)
-            setInterval(() => {
-                renderChart();
-            }, 1000);
-        }
-
-        // Tema
-        function toggleTheme() {
-            const html = document.documentElement;
-            const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            document.getElementById('theme-icon').className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        }
-
-        window.addEventListener('load', init);
+          } catch {}
+        };
+        ws.onclose = () => {
+          if (wsClosed) return;
+          setStatus("offline");
+          wsRetry = Math.min(wsRetry + 1, 6);
+          setTimeout(connectWs, 500 * 2 ** wsRetry);
+        };
+        ws.onerror = () => { try { ws.close(); } catch {} };
+      }
+      function setTimeframe(next) {
+        if (next === tf) return;
+        tf = next;
+        try { wsClosed = true; ws && ws.close(); } catch {}
+        wsClosed = false;
+        loadTimeframe().then(connectWs);
+      }
+      // Boot
+      updateTfUI();
+      loadTimeframe().then(connectWs);
     </script>
-</body>
+  </body>
 </html>
