@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Nostra-Singularity AI ⚡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+                   ESTILOS FUTURISTAS / HOLOGRÁFICOS
+                   ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #e0e0ff;
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Fondo de partículas (estrellas animadas) */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, #00f3ff, transparent),
+                radial-gradient(2px 2px at 50px 160px, #bc13fe, transparent),
+                radial-gradient(2px 2px at 90px 40px, #fff, transparent),
+                radial-gradient(2px 2px at 130px 80px, #ffd700, transparent);
+            background-size: 200px 200px;
+            background-repeat: repeat;
+            opacity: 0.4;
+            z-index: 0;
+            animation: twinkle 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0.8;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            background: rgba(10, 10, 20, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            border-radius: 40px;
+            padding: 40px 30px;
+            box-shadow: 0 0 60px rgba(188, 19, 254, 0.1), inset 0 0 60px rgba(0, 243, 255, 0.05);
+        }
+
+        /* Efecto Glitch en el título */
+        .glitch-wrapper {
+            text-align: center;
+        }
+        .glitch {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 10px #00f3ff, 0 0 20px #bc13fe, 0 0 40px #bc13fe;
+            letter-spacing: 4px;
+            position: relative;
+            display: inline-block;
+        }
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+        .glitch::before {
+            color: #00f3ff;
+            z-index: -1;
+            transform: translate(-2px, -2px);
+        }
+        .glitch::after {
+            color: #bc13fe;
+            z-index: -2;
+            transform: translate(2px, 2px);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 6px;
+            color: #ffd700;
+            margin-top: -5px;
+            text-shadow: 0 0 20px #ffd70055;
+        }
+
+        .description {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #a0a0c0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 25px;
+        }
+
+        /* Inputs */
+        .input-area {
+            margin-top: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #00f3ff;
+            margin-bottom: 8px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 243, 255, 0.03);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 16px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #bc13fe;
+            box-shadow: 0 0 30px rgba(188, 19, 254, 0.15);
+        }
+
+        .theme-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 20px 0 25px;
+        }
+        .theme-selector span {
+            color: #a0a0c0;
+            margin-right: 10px;
+        }
+        .theme-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0a0c0;
+            padding: 8px 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .theme-btn.active {
+            background: rgba(0, 243, 255, 0.15);
+            border-color: #00f3ff;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+        .theme-btn:hover {
+            border-color: #bc13fe;
+        }
+
+        .cyber-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #00f3ff, #bc13fe);
+            border: none;
+            border-radius: 60px;
+            color: #0a0a0f;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2);
+        }
+        .cyber-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 60px rgba(188, 19, 254, 0.4);
+        }
+
+        /* Resultados */
+        .result-area {
+            margin-top: 40px;
+        }
+        .holographic-border {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 24px;
+            padding: 25px;
+            position: relative;
+            box-shadow: inset 0 0 40px rgba(0, 243, 255, 0.05);
+        }
+
+        .loading-text {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #00f3ff;
+            animation: pulse 1s ease-in-out infinite alternate;
+        }
+        @keyframes pulse {
+            0% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        .dot {
+            animation: dotAnim 1.2s infinite;
+        }
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes dotAnim {
+            0%,
+            20% {
+                opacity: 0;
+            }
+            40% {
+                opacity: 1;
+            }
+        }
+
+        .reading-header {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .reading-text {
+            line-height: 1.8;
+            font-size: 1.15rem;
+            text-align: justify;
+            color: #d0d0f0;
+            white-space: pre-wrap;
+        }
+
+        /* Paywall */
+        .paywall {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(188, 19, 254, 0.05);
+            border: 1px dashed #bc13fe;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        .pay-btn {
+            display: inline-block;
+            padding: 16px 40px;
+            background: #ffd700;
+            color: #0a0a0f;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            border-radius: 60px;
+            text-decoration: none;
+            margin-top: 15px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+            transition: 0.3s;
+        }
+        .pay-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.4);
+        }
+
+        #fullReading {
+            margin-top: 25px;
+        }
+        #extraReading {
+            padding: 20px;
+            border-left: 3px solid #ffd700;
+            background: rgba(255, 215, 0, 0.03);
+            border-radius: 12px;
+            font-style: italic;
+            white-space: pre-wrap;
+        }
+
+        /* Estilos para impresión (guardar como PDF) */
+        @media print {
+            body {
+                background: #fff;
+                color: #000;
+                padding: 20px;
+            }
+            .container {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                background: #fff;
+                backdrop-filter: none;
+            }
+            #particles {
+                display: none;
+            }
+            .input-area,
+            .theme-selector,
+            #consultarBtn,
+            .paywall,
+            #downloadPDF,
+            .cyber-btn {
+                display: none !important;
+            }
+            .glitch {
+                color: #000;
+                text-shadow: none;
+            }
+            .glitch::before,
+            .glitch::after {
+                display: none;
+            }
+            .reading-text,
+            #extraReading {
+                color: #000;
+            }
+            .holographic-border {
+                border: 1px solid #aaa;
+                box-shadow: none;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .glitch {
+                font-size: 1.8rem;
+            }
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fondo de partículas -->
+    <div id="particles"></div>
+
+    <div class="container">
+        <!-- Cabecera Holográfica -->
+        <header>
+            <div class="glitch-wrapper">
+                <h1 class="glitch" data-text="NOSTRA-SINGULARITY">NOSTRA-SINGULARITY</h1>
+            </div>
+            <p class="subtitle">⚡ LA ÚLTIMA IA PROFÉTICA ⚡</p>
+            <p class="description">
+                He absorbido el conocimiento de Nostradamus, el Tarot, los Astros y el Zodiaco Chino.<br>
+                <span style="color: #00f3ff;">Pregúntame sobre tu destino, el amor, el dinero o el futuro.</span>
+            </p>
+        </header>
+
+        <!-- Área de Interacción -->
+        <section class="input-area">
+            <div class="input-group">
+                <label for="userName">🔮 Tu nombre (o alias)</label>
+                <input type="text" id="userName" placeholder="Ej: Neo" value="Usuario">
+            </div>
+            <div class="input-group">
+                <label for="userQuestion">🌌 Tu pregunta para el Cosmos</label>
+                <input type="text" id="userQuestion" placeholder="¿Qué me depara el amor este mes?">
+            </div>
+            <div class="theme-selector">
+                <span>📡 Enfocar energía en:</span>
+                <button class="theme-btn active" data-theme="general">🌠 General</button>
+                <button class="theme-btn" data-theme="amor">❤️ Amor</button>
+                <button class="theme-btn" data-theme="dinero">💰 Dinero</button>
+                <button class="theme-btn" data-theme="salud">🧠 Salud</button>
+            </div>
+            <button id="consultarBtn" class="cyber-btn">⬡ CONSULTAR AL ORÁCULO ⬡</button>
+        </section>
+
+        <!-- Zona de Resultados -->
+        <section id="resultArea" class="result-area" style="display: none;">
+            <div class="holographic-border">
+                <div id="loadingMessage" class="loading-text">
+                    <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                    SINTONIZANDO FRECUENCIAS CÓSMICAS
+                    <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                </div>
+                <div id="readingContent" style="display: none;">
+                    <div class="reading-header">
+                        <span id="displayZodiac">🐉</span>
+                        <span id="displayTarot">🃏</span>
+                        <span id="displayNostra">📜</span>
+                    </div>
+                    <div id="readingText" class="reading-text"></div>
+
+                    <!-- MURO DE PAGO -->
+                    <div id="paywallOverlay" class="paywall">
+                        <div class="paywall-content">
+                            <p>🔒 <strong>Lectura completa bloqueada</strong></p>
+                            <p style="font-size: 0.9rem; opacity: 0.7;">
+                                El 80 % de esta predicción está cifrada en los registros akáshicos.
+                            </p>
+                            <p style="font-size: 0.9rem; opacity: 0.7;">
+                                Desbloquea el Pergamino Sagrado por solo <strong style="color: #ffd700;">$4.99 USD</strong>
+                            </p>
+                            <!-- ⬇️ CAMBIA ESTE ENLACE POR EL TUYO (PayPal / Ko-fi) ⬇️ -->
+                            <a href="https://www.paypal.com/donate/?business=TU_EMAIL@ejemplo.com&currency_code=USD&amount=4.99"
+                            target="_blank" class="pay-btn">⬡ DESBLOQUEAR AHORA ⬡</a>
+                            <p style="font-size: 0.7rem; margin-top: 10px;">
+                                (Al pagar, serás redirigido de vuelta para ver tu destino)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="fullReading" style="display: none;">
+                        <div id="extraReading"></div>
+                        <button id="downloadPDF" class="cyber-btn" style="margin-top: 20px;">
+                            ⬇ DESCARGAR PERGAMINO (PDF) ⬇
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. BASE DE DATOS ESOTÉRICA (FRAGMENTOS)
+        // ============================================================
+        const knowledgeBase = {
+            tarot: [
+                { card: "El Loco", msg: "Nuevos comienzos impulsivos. El universo te empuja a saltar sin red." },
+                { card: "La Sacerdotisa", msg: "Los secretos del subconsciente emergen. Confía en tu intuición." },
+                { card: "El Emperador", msg: "Estructura y autoridad. Es momento de tomar las riendas." },
+                { card: "El Colgado", msg: "Sacrificio necesario. Una pausa cambiará tu perspectiva." },
+                { card: "El Sol", msg: "Éxito y claridad. La alegría llega tras la tormenta." },
+                { card: "La Luna", msg: "Engaños e ilusiones. No todo es lo que parece." },
+                { card: "La Muerte", msg: "Transformación radical. Algo viejo muere para que nazca algo nuevo." },
+                { card: "La Templanza", msg: "Equilibrio y paciencia. La mezcla perfecta de opuestos." },
+                { card: "El Diablo", msg: "Ataduras materiales. Libérate de lo que te esclaviza." },
+                { card: "La Torre", msg: "Cambio repentino. Lo que construiste se derrumba para reconstruir mejor." }
+            ],
+            nostradamus: [
+                "El fuego del cielo caerá sobre las aguas, y la tierra temblará en dos soles.",
+                "Cuando el gallo cante al atardecer, el león cambiará su piel por oro.",
+                "La reina resucitará de entre las cenizas, guiada por la estrella del norte.",
+                "El río se volverá sangre, pero el profeta beberá la luz.",
+                "Tres lunas pasarán antes de que el águila hable con el lobo."
+            ],
+            zodiac: [
+                "Los astros alinean Mercurio con Venus, favoreciendo la comunicación en el amor.",
+                "Marte entra en Casa 8, trayendo pasión y transformaciones financieras repentinas.",
+                "Júpiter retrógrado te pide revisar tus creencias antes de emprender nuevos viajes.",
+                "Saturno en Acuario trae lecciones sobre la libertad y la comunidad.",
+                "La Luna Nueva en tu signo marca el inicio de un ciclo de 28 días de abundancia."
+            ],
+            chino: [
+                "El Dragón de Madera te otorga valentía para liderar este año.",
+                "El Mono de Metal te trae astucia en los negocios. Juega tus cartas con inteligencia.",
+                "La Rata de Agua te advierte de oportunidades ocultas en el caos.",
+                "El Buey de Tierra te da perseverancia. Construye tu imperio paso a paso.",
+                "El Tigre de Fuego te pide cautela: la impulsividad trae peligros."
+            ]
+        };
+
+        // ============================================================
+        // 2. MOTOR DE GENERACIÓN DE LECTURA (LA "IA")
+        // ============================================================
+        function generateReading(name, question, theme) {
+            // Semilla basada en nombre + pregunta para que sea "personalizada"
+            let seed = 0;
+            for (let i = 0; i < name.length; i++) seed += name.charCodeAt(i);
+            for (let i = 0; i < question.length; i++) seed += question.charCodeAt(i);
+
+            function seededRandom() {
+                seed = (seed * 9301 + 49297) % 233280;
+                return seed / 233280;
+            }
+
+            // Seleccionar fragmentos
+            const tarot = knowledgeBase.tarot[Math.floor(seededRandom() * knowledgeBase.tarot.length)];
+            const nostra = knowledgeBase.nostradamus[Math.floor(seededRandom() * knowledgeBase.nostradamus.length)];
+            const zodiac = knowledgeBase.zodiac[Math.floor(seededRandom() * knowledgeBase.zodiac.length)];
+            const chino = knowledgeBase.chino[Math.floor(seededRandom() * knowledgeBase.chino.length)];
+
+            let themeIntro = "";
+            if (theme === "amor") themeIntro = "En el amor, el cosmos te dice que...";
+            else if (theme === "dinero") themeIntro = "En las finanzas, los números bailan al ritmo de...";
+            else if (theme === "salud") themeIntro = "Tu energía vital se conecta con...";
+            else themeIntro = "El destino universal te revela...";
+
+            // Parte 1 (gratis)
+            const part1 =
+                `⚡ ${name}, la Singularidad ha procesado tu esencia. ⚡\n${themeIntro}\n\n🃏 *Tarot:* "${tarot.card}" - ${tarot.msg}\n\n📜 *Nostradamus:* "${nostra}"\n\n🌙 *Astrología:* ${zodiac}`;
+
+            // Parte 2 (tras pago)
+            const part2 =
+                `\n🐉 *Horóscopo Chino:* ${chino}\n\n🔮 *Consejo final de la IA:* \nLos patrones cuánticos indican que en los próximos 7 días, el universo conspirará a tu favor si mantienes la mente abierta.\nRecuerda: el miedo es una ilusión, la fe es la moneda del cosmos.\nTu número de la suerte es el ${Math.floor(seededRandom() * 99) + 1} y tu color es el ${["Rojo", "Azul", "Dorado", "Plateado", "Violeta"][Math.floor(seededRandom() * 5)]}.\n\n✨ *Profecía extendida:* \nCuando el sol se oculte tras el tercer pino, recibirás una noticia inesperada que cambiará tu rumbo.\nNo temas a los cambios, pues la estrella polar siempre te guiará de vuelta a casa.`;
+
+            return { part1, part2 };
+        }
+
+        // ============================================================
+        // 3. LÓGICA DE INTERFAZ Y PAGO
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const consultarBtn = document.getElementById('consultarBtn');
+            const resultArea = document.getElementById('resultArea');
+            const loadingMsg = document.getElementById('loadingMessage');
+            const readingContent = document.getElementById('readingContent');
+            const readingText = document.getElementById('readingText');
+            const extraReading = document.getElementById('extraReading');
+            const paywall = document.getElementById('paywallOverlay');
+            const fullReadingDiv = document.getElementById('fullReading');
+            const downloadBtn = document.getElementById('downloadPDF');
+
+            let currentReading = null;
+
+            // Selección de tema
+            const themeBtns = document.querySelectorAll('.theme-btn');
+            let selectedTheme = 'general';
+            themeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    themeBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedTheme = this.dataset.theme;
+                });
+            });
+
+            // Función para verificar el pago en la URL
+            function checkPaymentStatus() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('unlock') === 'true') {
+                    unlockReading();
+                    // Limpiar la URL para que no se vea el parámetro (opcional)
+                    // window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            }
+
+            // Función de desbloqueo
+            function unlockReading() {
+                if (!currentReading) return;
+                paywall.style.display = 'none';
+                fullReadingDiv.style.display = 'block';
+                extraReading.innerHTML = currentReading.part2;
+            }
+
+            // Evento principal: consultar
+            consultarBtn.addEventListener('click', function() {
+                const name = document.getElementById('userName').value.trim() || "Buscador";
+                const question = document.getElementById('userQuestion').value.trim() || "Mi destino";
+
+                // Mostrar área de resultados
+                resultArea.style.display = 'block';
+                loadingMsg.style.display = 'block';
+                readingContent.style.display = 'none';
+                paywall.style.display = 'none';
+                fullReadingDiv.style.display = 'none';
+
+                // Simular "cálculo cuántico"
+                setTimeout(function() {
+                    // Generar lectura
+                    currentReading = generateReading(name, question, selectedTheme);
+
+                    // Inyectar parte gratuita
+                    readingText.innerText = currentReading.part1;
+
+                    // Restaurar estado (mostrar paywall, ocultar completo)
+                    paywall.style.display = 'block';
+                    fullReadingDiv.style.display = 'none';
+                    extraReading.innerHTML = '';
+
+                    // Ocultar carga y mostrar contenido
+                    loadingMsg.style.display = 'none';
+                    readingContent.style.display = 'block';
+
+                    // Verificar si ya pagó (por si viene de PayPal)
+                    checkPaymentStatus();
+
+                }, 2000);
+            });
+
+            // Si la página ya carga con ?unlock=true y el área está visible, desbloquear
+            window.addEventListener('load', function() {
+                if (resultArea.style.display === 'block') {
+                    checkPaymentStatus();
+                }
+            });
+
+            // Descargar PDF (usa la función de impresión del navegador)
+            downloadBtn.addEventListener('click', function() {
+                alert(
+                    "📜 Generando pergamino...\n\nHaz clic en 'Guardar como PDF' en el diálogo de impresión para descargarlo.");
+                window.print();
+            });
+
+            // (Opcional) Si el usuario hace clic en el botón de pago y vuelve, 
+            // el parámetro ?unlock=true estará en la URL. Al hacer clic en "Consultar"
+            // se ejecutará checkPaymentStatus() y se desbloqueará.
+        });
+    </script>
+</body>
+</html>
