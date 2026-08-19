@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoOracle - Predice y Gana</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --gold: #fbbf24;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
+        
+        .stats-bar {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--gold); }
+        .stat-label { font-size: 0.8rem; opacity: 0.7; }
+
+        .crypto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .crypto-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+
+        .crypto-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+
+        .coin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .coin-name { font-size: 1.2rem; font-weight: bold; }
+        .coin-price { font-size: 1.1rem; color: #94a3b8; }
+
+        .prediction-btns { display: flex; gap: 10px; margin-top: 15px; }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-up { background-color: var(--accent-green); color: white; }
+        .btn-down { background-color: var(--accent-red); color: white; }
+        .btn-vip { background-color: var(--gold); color: black; width: 100%; margin-top: 20px; }
+
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .timer { text-align: center; margin: 20px 0; font-size: 1.2rem; color: #94a3b8; }
+        
+        .vip-badge {
+            background: var(--gold);
+            color: black;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: none; /* Se muestra si es VIP */
+        }
+
+        /* Modal simple para pago */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🔮 CryptoOracle</h1>
+    
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="userPoints">0</div>
+            <div class="stat-label">Puntos</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="userStreak">0</div>
+            <div class="stat-label">Racha</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="votesLeft">3</div>
+            <div class="stat-label">Votos Gratis</div>
+        </div>
+    </div>
+
+    <div class="timer">Próximo cierre de mercado en: <span id="countdown">23:59:59</span></div>
+
+    <div class="crypto-grid" id="cryptoContainer">
+        <!-- Las tarjetas se generan con JS -->
+        <p style="text-align:center; width:100%;">Cargando mercados...</p>
+    </div>
+
+    <button class="btn-vip" onclick="openVipModal()">👑 DESBLOQUEAR VOTOS ILIMITADOS + SEÑALES VIP ($0.99)</button>
+
+    <!-- Modal de Pago Simulado -->
+    <div id="vipModal" class="modal">
+        <div class="modal-content">
+            <h2>🚀 Hazte VIP</h2>
+            <p>Obtén votos ilimitados y acceso a señales privilegiadas.</p>
+            <h3 style="color: var(--gold)">$0.99 / día</h3>
+            <!-- Aquí iría tu link real de Stripe -->
+            <button class="btn-vip" onclick="simulatePayment()">Pagar con Tarjeta (Simulado)</button>
+            <button style="background:transparent; color:white; margin-top:10px;" onclick="closeVipModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const COINS = ['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple'];
+        const API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=' + COINS.join(',') + '&vs_currencies=usd';
+        
+        // --- ESTADO DEL USUARIO (LocalStorage) ---
+        let userState = JSON.parse(localStorage.getItem('cryptoOracleState')) || {
+            points: 0,
+            streak: 0,
+            votesLeft: 3,
+            isVip: false,
+            lastVoteDate: null,
+            predictions: {} // Guarda { 'bitcoin': 'up' }
+        };
+
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            resetDailyVotes();
+            updateUI();
+            fetchPrices();
+            startTimer();
+        });
+
+        // --- LÓGICA PRINCIPAL ---
+
+        async function fetchPrices() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                renderCards(data);
+            } catch (error) {
+                console.error("Error fetching prices:", error);
+                document.getElementById('cryptoContainer').innerHTML = "<p>Error cargando precios. Intenta recargar.</p>";
+            }
+        }
+
+        function renderCards(data) {
+            const container = document.getElementById('cryptoContainer');
+            container.innerHTML = '';
+
+            COINS.forEach(coin => {
+                const price = data[coin].usd;
+                const prediction = userState.predictions[coin];
+                
+                let buttonsHtml = '';
+                if (prediction) {
+                    buttonsHtml = `<div style="text-align:center; padding:10px; background:#334155; border-radius:8px;">
+                        Apostaste: <strong>${prediction === 'up' ? '📈 SUBE' : '📉 BAJA'}</strong><br>
+                        <small>Esperando resultado...</small>
+                    </div>`;
+                } else {
+                    const disabled = (!userState.isVip && userState.votesLeft <= 0) ? 'disabled' : '';
+                    buttonsHtml = `
+                        <div class="prediction-btns">
+                            <button class="btn-up" ${disabled} onclick="vote('${coin}', 'up')">📈 SUBE</button>
+                            <button class="btn-down" ${disabled} onclick="vote('${coin}', 'down')">📉 BAJA</button>
+                        </div>
+                    `;
+                }
+
+                const card = `
+                    <div class="crypto-card">
+                        <div class="coin-header">
+                            <span class="coin-name">${coin.toUpperCase()}</span>
+                            <span class="coin-price">$${price}</span>
+                        </div>
+                        ${buttonsHtml}
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function vote(coin, direction) {
+            if (!userState.isVip && userState.votesLeft <= 0) {
+                alert("¡Te has quedado sin votos gratis! Hazte VIP.");
+                openVipModal();
+                return;
+            }
+
+            // Guardar predicción
+            userState.predictions[coin] = direction;
+            
+            // Restar voto si no es VIP
+            if (!userState.isVip) {
+                userState.votesLeft--;
+            }
+
+            saveState();
+            updateUI();
+            fetchPrices(); // Re-renderizar para mostrar estado "Apotado"
+        }
+
+        function resetDailyVotes() {
+            const today = new Date().toDateString();
+            if (userState.lastVoteDate !== today) {
+                userState.votesLeft = 3; // Resetear a 3 votos gratis
+                userState.lastVoteDate = today;
+                // Aquí podrías añadir lógica para verificar resultados de ayer
+                checkYesterdayResults(); 
+                saveState();
+            }
+        }
+
+        function checkYesterdayResults() {
+            // Lógica simplificada: En una app real, compararías el precio de ayer con hoy.
+            // Aquí simulamos que si apostó, gana puntos aleatorios para la demo.
+            if (Object.keys(userState.predictions).length > 0) {
+                const pointsWon = Math.floor(Math.random() * 50) + 10;
+                userState.points += pointsWon;
+                userState.streak++;
+                alert(`¡Resultados de ayer procesados! Ganaste ${pointsWon} puntos.`);
+                userState.predictions = {}; // Limpiar predicciones antiguas
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('userPoints').innerText = userState.points;
+            document.getElementById('userStreak').innerText = userState.streak;
+            document.getElementById('votesLeft').innerText = userState.isVip ? '∞' : userState.votesLeft;
+        }
+
+        function saveState() {
+            localStorage.setItem('cryptoOracleState', JSON.stringify(userState));
+        }
+
+        // --- TEMPORIZADOR ---
+        function startTimer() {
+            setInterval(() => {
+                const now = new Date();
+                const endOfDay = new Date();
+                endOfDay.setHours(23, 59, 59, 999);
+                const diff = endOfDay - now;
+                
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                document.getElementById('countdown').innerText = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // --- MODAL Y PAGO SIMULADO ---
+        function openVipModal() { document.getElementById('vipModal').style.display = 'flex'; }
+        function closeVipModal() { document.getElementById('vipModal').style.display = 'none'; }
+        
+        function simulatePayment() {
+            // AQUÍ IRÍA LA REDIRECCIÓN A STRIPE
+            // window.location.href = "TU_LINK_DE_STRIPE";
+            
+            // Simulación para probar la UI
+            alert("¡Pago Exitoso! Bienvenido al club VIP.");
+            userState.isVip = true;
+            userState.votesLeft = 999;
+            saveState();
+            updateUI();
+            closeVipModal();
+        }
+    </script>
+</body>
+</html>
