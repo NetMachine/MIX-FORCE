@@ -1,317 +1,2519 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoOracle - Predice y Gana</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f8fafc;
-            --accent-green: #22c55e;
-            --accent-red: #ef4444;
-            --gold: #fbbf24;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
-        
-        .stats-bar {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 600px;
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--gold); }
-        .stat-label { font-size: 0.8rem; opacity: 0.7; }
-
-        .crypto-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .crypto-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid #334155;
-            transition: transform 0.2s;
-        }
-
-        .crypto-card:hover { transform: translateY(-5px); border-color: var(--gold); }
-
-        .coin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .coin-name { font-size: 1.2rem; font-weight: bold; }
-        .coin-price { font-size: 1.1rem; color: #94a3b8; }
-
-        .prediction-btns { display: flex; gap: 10px; margin-top: 15px; }
-        
-        button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn-up { background-color: var(--accent-green); color: white; }
-        .btn-down { background-color: var(--accent-red); color: white; }
-        .btn-vip { background-color: var(--gold); color: black; width: 100%; margin-top: 20px; }
-
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .timer { text-align: center; margin: 20px 0; font-size: 1.2rem; color: #94a3b8; }
-        
-        .vip-badge {
-            background: var(--gold);
-            color: black;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            display: none; /* Se muestra si es VIP */
-        }
-
-        /* Modal simple para pago */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 400px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS TRADE
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .panel {
+    background | Pro Crypto Prediction Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .panel-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
++Mono:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0b0e11;
+    --bg-1: #12161c;
+    --bg-2: #1e2329;
+    --bg-3: #2b3139;
+    --border: #2b3139;
+    --text-0: #eaecef;
+    --text-1: #848e9c;
+    --text-2: #5e6673;
+    --    font-size:green: #0ecb81;
+    --red: #f6465d;
+    --yellow: #f0b90b;
+    --blue: #1e88e5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(-- 12px;
+    font-weight: 600;
+    color: var(--text-1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .btn {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .btn-long { background: var(--green); color: #000; }
+  .btn-long:hover { background: #12e08f; }
+  .btn-short { background: var(--red); color: #fff; }
+  .btn-short:hover { background: #ff5a70; }
+  .btn-vip {
+    background: linear-gradient(135deg, #f0b90b, #f8d12f);
+    color: #000;
+    font-weight: 800;
+    box-shadow: 0 0 20px rgbabg-0);
+    color: var(--text-0);
+    margin: 0;
+    overflow-x: hidden;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .panel {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .panel-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+(240, 185, 11, 0.3);
+  }
+  .btn-vip:hover { box-shadow: 0 0 30px rgba(240, 185, 11, 0.6); }
+  .input-field {
+    background: var(--bg-2);
+    border: 1    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .btn {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;px solid var(--border);
+    color: var(--text-0);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+  }
+  .input-field:focus { outline: none;
+    border: border-color: var none;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .btn-long { background: var(--green); color: #000; }
+  .btn-long:hover { background: #12e08f; }
+ (--yellow); }
+  .leverage-btn {
+    padding: 6px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    .btn-short { transition: all 0.15s;
+  }
+  .leverage-btn.active background: var(--red); color: #fff; }
+  .btn-short:hover { background: #ff5a70; }
+  .btn-vip {
+    background: linear-gradient(135deg, #f0b90b, #f8d12f);
+    color: #000;
+    font-weight: 800 {
+    background: var(--yellow);
+    color: #000;
+    border-color: var(--yellow);
+  }
+  .market-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 80px;
+    padding: 8px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-bottom: 1px solid var(--border);
+  }
+  .market-row:hover { background: var(--bg-2); }
+  .market-row.active { background: var(--bg-2); border-left: 2px solid var(--yellow); }
+  .orderbook-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    position: relative;
+  }
+  .orderbook-row .bar {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    opacity: 0.12;
+  }
+  .tab {
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-1);
+    border-bottom: 2px solid transparent;
+    font-weight: 600;
+  }
+  .tab.active { color: var(--text-0); border-bottom-color: var(--yellow); }
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 20px;
+    border-radius: 6px;
+    font-weight: 6;
+    box00;
+-shadow: 0 0 20px rgba(240, 185, 11, 0.3);
+  }
+  .btn-vip:hover { box-shadow: 0 0 30px rgba(240, 185, 11, 0.6); }
+     z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    .input-field { to { transform: translateX(0); opacity: 1; }
+  }
+  .flash-green { animation: flashG 0.6s; }
+  .flash-red { animation: flashR 0.6s; }
+  @keyframes flashG { 0%, 100% { background: transparent; } 50% { background: rgba(1
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-0);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+ 4, 203, 129, 0.2); } }
+  @keyframes flashR { 0%, 100% { background: transparent; } 50% { background: rgba(246, 70, 93, 0.2); } }
+  .liquidation-overlay {
+    position: fixed;
+    inset: 0;
+    }
+  .input-field:focus { outline: none; border-color: var(--yellow); }
+  .leverage-btn {
+    padding: 6px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    border-radius: 4px; background: rgba(246, 70, 93, 0.15);
+    z-index: 999;
+    pointer-events: none;
+    animation: liquidationFlash 1.5s;
+  }
+  @keyframes liquidationFlash {
+    0%, 100% { opacity: 0; }
+    10%, 
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .leverage-btn.active {
+    background: var(--yellow);
+    color: #000;
+    border-color: var(--yellow);
+  }
+  .market-row {
+    display: grid;
+30%, 50% { opacity: 1; }
+    20%, 40% { opacity: 0.3; }
+  }
+  .scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar::-webkit-scrollbar-track { background: var(--bg-1); }
+    grid-template-columns: 1fr 1fr 80px;
+    padding: 8px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-bottom: 1px solid var(--border);
+  }
+  .market-row:hover { background: var(--bg-2  .scrollbar::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+  .ticker-tape {
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker); }
+  .market-row.active { background: var(--bg-2); border-left: 2px solid var(--yellow); }
+  .orderbook-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-family: 'JetBrains-content {
+    display: inline-block;
+    animation: ticker 60s linear infinite;
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .achievement-badge {
+    background: linear-gradient(135deg, #f0b90b, #ff9500);
+    color: #000;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    display: inline-block;
+    margin: 2px;
+  }
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(-- Mono', monospace;
+    position: relative;
+  }
+  .orderbook-row .bar {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    opacity: 0.12;
+  }
+  .tab {
+    padding: 8px 14px;
+    cursorgreen);
+    border-radius: : pointer;
+    font-size:50%;
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+</style>
 </head>
 <body>
 
-    <h1>🔮 CryptoOracle</h1>
+<!-- HEADER -->
+<header class="flex items-center justify-between px-4 py-2 border-b" style="border-color: var(--border); background: var(--bg-1);">
+ 12px;
+    color: var(--text-1);
+    border-bottom: 2px solid transparent;
+    font-weight: 600;
+  }
+  .tab.active { color: var(--text-0); border-bottom-color: var(--yellow); }
+  .notification  <div class {
+    position: fixed;
+    top: ="flex items-center gap-6">
+    <div class="flex items-center gap-220px;">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg
+    right:,#f0b90b,#ff9500);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;color 20px;
+    padding: 14px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    z-index: 1000;
+    animation: slideIn 0.3s ease:#000-out;
+   ;">N</div>
+      <div>
+        <div class="font-bold text-sm" style="letter-spacing:1px;">NEXUS TRADE</div>
+        <div class="text-xs" style="color:var(--text-2);">PRO PREDICTION PLATFORM</div>
+      </div>
+    </div box-shadow: 0 10px 30px rgba(0,0,0,0.>
+    <nav class="hidden md:flex gap-5 text-xs font-semibold" style="color:var(--text-1);">
+      <a class="hover:text-white cursor-pointer" style="color:var(--yellow);">TRADE</a5);
+ >
+      <a class="hover:text-white cursor-pointer">FUTURES</a>
+      <a class="hover:text-white cursor-pointer }
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .flash-green { animation: flashG 0.6s; }
+  .flash-red { animation: flashR 0.6s; }">RANKING</a>
+      <a class="hover:text-white cursor-pointer">ACHIEVEMENTS</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded" style="background:var(--bg
+  @keyframes flashG { 0%, 100% { background: transparent; } 50% { background: rgba(14, 203, 129, 0.2); } }
+  @keyframes flashR { 0%, 100% { background: transparent; } 50% { background: rgba(246, 70, 93, 0.2); } }
+  .liquidation-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(246, 70, 93, 0.15);
+    z-index: 999;
+    pointer-events: none;
+    animation: liquidationFlash 1.5s;
+  }
+  @keyframes liquidationFlash {
+    0%, 100% { opacity: 0; }
+    10%, 30%, 50% { opacity: 1; }
+    20%, 40% { opacity: 0.3; }
+  }
+  .scrollbar::-webkit-scrollbar { width-2);">
+      <span class="text-xs" style="color:var(--text-1);">BALANCE:</span>
+      <span class="mono font-bold text-sm yellow" id="headerBalance">$10,000.00</span>
+    </div>
+    <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded" style="background:var(--bg-2);">
+      <span class="text-xs" style: 6px; height: 6px; }
+  .scrollbar::-webkit-scrollbar-track { background: var(--bg-1); }
+  .scrollbar::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+  .ticker-tape {
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border);
+    padding="color:var(--text-1);">P&L HOY:</span>
+      <span class="mono font-bold text-sm" id="headerPnl">$0.00</span>
+    </div>
+    <button class="btn btn-vip text-xs" onclick="openVipModal()">👑 VIP</button>
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer" style="background:var(--bg-2);" onclick="openDepositModal()">
+      <span class="text-xs font-semibold">DEPOSITAR</span>
+    </div>: 6px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker-content {
+    display: inline-block;
+    animation: ticker 60s linear infinite;
+  }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .achievement-badge {
+    background: linear-gradient(135deg, #f0b90b, #ff9
+  </div>
+</header>
+
+<!-- TICKER TAPE -->
+<div class="ticker-tape">
+  <div class="ticker-content mono text-xs" id="tickerTape"></div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="grid grid-cols-12 gap-1 p-1" style="height: calc(100vh - 110px);">
+
+  <!-- LEFT: MARKET LIST -->500);
+    color: #000;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    display: inline-block;
+    margin: 2px;
+  }
+  .pulse { animation:
+  <div class="col-span-12 md:col-span-2 panel flex flex-col" style="height:100%;">
+    <div class="panel-header">
+      <span><span class="live-dot"></span>MERCADOS</span>
+      <span class="mono text-xs" id="marketCount">0</span>
+    </div>
+    <div class="p-2 border-b" style="border-color:var(--border);">
+      <input type="text" placeholder="Buscar..." class="input-field text-xs" id="marketSearch">
+    </div>
+    <div class="market-row font-semibold text-xs" style pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="flex items-center justify-between px-4 py-2 border-b" style="border-color: var(--border); background: var(--bg-="color:var(--text-2);">
+      <span>PAR</span><span>PRECIO</span><span>24H%</span>
+    </div>
+    <div class="overflow-y-auto scrollbar flex-1" id="marketList"></div>
+  </div>
+
+  <!-- CENTER: CHART + STATS -->
+  <div class="col1);">
+  <div class="flex items-center gap-6">
+    <div class="flex items-center gap-2">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#f0b90b,#ff9500);border-radius:6px;display:flex;align-items:center;justify-content:center;font-span-12 md:col-span-7 flex flex-col gap-1" style="height:100%;">
     
-    <div class="stats-bar">
-        <div class="stat-item">
-            <div class="stat-value" id="userPoints">0</div>
-            <div class="stat-label">Puntos</div>
+    <!-- Asset Header -->
+    <div class="panel p-3 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-4">
+        <div>
+          <div class="flex items-center-weight:900;color:#000;">N</div>
+      <div>
+        <div class="font-bold text-sm" style="letter-spacing:1px;">NEXUS TRADE</div>
+        <div class="text-xs" style="color:var(--text-2);">PRO PREDICTION PLATFORM</div>
+ gap-2">
+            <span class="text-xl font-bold" id="assetSymbol">BTC/USDT</span>
+            <span class="text-xs px-2 py-0.5 rounded" style="background:var(--bg-2);color:var(--text-1);">PERP</span>
+          </div>
+          <div class="text-xs" style="color:      </div>var(--text-2);" id="assetFullName">Bitcoin / Tether</div>
         </div>
-        <div class="stat-item">
-            <div class="stat-value" id="userStreak">0</div>
-            <div class="stat-label">Racha</div>
+        <div class="mono">
+          <div class="text-2xl font-bold" id="currentPrice">$0.00</div>
+          <div class="text-xs flex items-center gap-3" id="priceStats">
+           
+    </div>
+    <nav class="hidden md:flex gap-5 text-xs font-semibold" style="color:var(--text-1);">
+      <a class="hover:text-white cursor-pointer" style="color:var(--yellow);">TRADE</a>
+      <a class="hover:text-white cursor-pointer">FUTURES</a <span>24h: <span id="priceChange24h">0%</span></span>
+            <span>H: <span id="priceHigh">-</span></span>
+            <span>L: <span id="priceLow">-</span></span>
+          </div>
         </div>
-        <div class="stat-item">
-            <div class="stat-value" id="votesLeft">3</div>
-            <div class="stat-label">Votos Gratis</div>
-        </div>
+      </div>
+      <div class="flex gap-2">>
+      <
+        <buttona class="hover:text-white cursor-pointer">RANKING</a>
+      <a class="hover:text-white cursor-pointer">ACHIEVEMENTS</a>
+    </nav>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded class="leverage-btn" onclick="setChartIndicator('ma')">MA</button>
+        <button class="leverage-btn" onclick="setChartIndicator('bb')">BB</button>
+        <button class="leverage-btn" onclick="setChartIndicator('vol')">VOL</button>
+      </div>
     </div>
 
-    <div class="timer">Próximo cierre de mercado en: <span id="countdown">23:59:59</span></div>
-
-    <div class="crypto-grid" id="cryptoContainer">
-        <!-- Las tarjetas se generan con JS -->
-        <p style="text-align:center; width:100%;">Cargando mercados...</p>
+    <!-- Chart -->
+   " style="background <div class=":var(--bg-2);">
+      <span class="text-xs" style="color:var(--text-1);">BALANCE:</span>
+      <span class="mono font-bold text-sm yellow" id="headerBalance">$10,000.00</span>
+    </div>
+    <div class="hidden md:flexpanel flex-1 relative" style="min-height:400px;">
+      <div id="chartContainer" style="width:100%;height:100%;"></div>
+      <div class="absolute top-2 left-2 flex gap-1 z-10">
+        <button class="leverage-btn tf-btn" data-tf="1">1m</button>
+        <button class="leverage-btn tf-btn active" data-tf="5">5m</button>
+        <button class="leverage-btn tf-btn" data-tf="15">15m</button>
+        < items-center gap-button class="leverage-btn tf-btn" data-tf="60">1h</button>
+        <button class="le2 px-3 py-1.5 rounded" style="background:var(--bg-2);">
+      <span class="text-xs" style="color:var(--text-1);">P&L HOY:</span>
+      <span class="mono font-bold text-sm" id="headerPnl">$0.00</span>
+    </div>
+    <buttonverage-btn tf-btn" data-tf="240">4h</button>
+        <button class="leverage-btn tf-btn" data-tf="1440">1D</button>
+      </div>
     </div>
 
-    <button class="btn-vip" onclick="openVipModal()">👑 DESBLOQUEAR VOTOS ILIMITADOS + SEÑALES VIP ($0.99)</button>
+    <!-- Bottom Panel: Positions / History / Ranking -->
+    <div class="panel" style="height:220px;">
+      < class="btn btn-vip text-xs" onclick="openVipModal()">👑 VIP</button>
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded cursor-pointer" style="background:var(--bg-2);" onclick="openDepositModal()">
+      <span class="text-xs font-semibold">DEPOSITAR</span>
+    </div>
+  </div>
+</headerdiv class="flex border-b" style="border-color:var(--border);">
+        <div class="tab active" data-tab="positions">POSICIONES <span class="mono text-xs" id="posCount">(0)</span></div>
+        <div class="tab" data-tab="history">HISTORIAL</div>
+        <div class="tab" data-tab="ranking">R>
 
-    <!-- Modal de Pago Simulado -->
-    <div id="vipModal" class="modal">
-        <div class="modal-content">
-            <h2>🚀 Hazte VIP</h2>
-            <p>Obtén votos ilimitados y acceso a señales privilegiadas.</p>
-            <h3 style="color: var(--gold)">$0.99 / día</h3>
-            <!-- Aquí iría tu link real de Stripe -->
-            <button class="btn-vip" onclick="simulatePayment()">Pagar con Tarjeta (Simulado)</button>
-            <button style="background:transparent; color:white; margin-top:10px;" onclick="closeVipModal()">Cancelar</button>
+<!-- TICKER TAPE -->
+<div class="ticker-tape">
+  <div class="ticker-content mono text-xs" id="tickerTape"></div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="grid grid-cols-12 gap-1 p-1" style="height: calc(100vh - 110ANKING</div>
+        <div class="tab" data-tab="vip">🔥 SEÑALES VIP</div>
+      </div>
+      <div class="overflow-y-auto scrollbar" style="height:calc(100% - 40px);" id="bottomContent"></div>
+    </div>
+  </div>px);">
+
+  <!-- LEFT: MARKET LIST -->
+  <div class="col-span-12 md:col-span-2 panel flex flex-col" style="height:100%;">
+    <div class="panel-header">
+      <span><span class="live-dot"></span>MERCADOS</
+
+  <!-- RIGHTspan>
+     : ORDER PANEL + ORDERBOOK -->
+  <div class="col-span-12 md:col-span-3 flex flex-col gap-1" style="height:100%;">
+    
+    <!-- Order Form -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>NUEVA ORDEN</span>
+        <span class="text-xs" style="color:var(--text-2);">MARKET</span>
+      </div>
+      <div class="p-3">
+        <!-- Leverage -->
+        <div class="mb-3">
+          <div class="text-xs mb-2" style="color:var(--text-1);">APALANCAMIENTO</div>
+          <div class="grid grid-cols-6 gap-1" id="leverageButtons"></div>
+          <div class="text-xs mt-2 mono" style="color:var(--text-2);">
+            Liq. aprox: <span id="liqPrice" class="red">-</span>
+          </div>
         </div>
-    </div>
-
-    <script>
-        // --- CONFIGURACIÓN ---
-        const COINS = ['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple'];
-        const API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=' + COINS.join(',') + '&vs_currencies=usd';
         
-        // --- ESTADO DEL USUARIO (LocalStorage) ---
-        let userState = JSON.parse(localStorage.getItem('cryptoOracleState')) || {
-            points: 0,
-            streak: 0,
-            votesLeft: 3,
-            isVip: false,
-            lastVoteDate: null,
-            predictions: {} // Guarda { 'bitcoin': 'up' }
-        };
+        <!-- Size -->
+        <div class="mb-3">
+          <div class="text-xs mb-1" style="color:var(--text-1);">TAMAÑO (USDT)</div>
+          <input type="number" class="input-field" id="orderSize" value="100" placeholder="1 <span class="mono text-xs" id="marketCount">0</span>
+    </div>
+    <div class="p-2 border-b" style="border-color:var(--border);">
+      <input type="text" placeholder="Buscar..." class="input-field text-xs" id="marketSearch">
+    </div>00">
+          <div class="flex gap-1 mt-2">
+            <button class="leverage-btn flex-1" onclick="setOrderPct(25)">25%</button>
+            <button class="leverage-btn flex-1" onclick="setOrderPct(50)">50%</button>
+            <button class="leverage-btn
+    <div class="market-row font-semibold text-xs" style="color:var(--text-2);">
+      <span>PAR</span><span>PRECIO</span><span>24H%</span>
+    </div>
+    <div class="overflow-y-auto scrollbar flex-1" id="marketList"></div> flex-1" onclick="setOrderPct(75)">75%</button>
+            <button class="leverage-btn flex-1" onclick="setOrderPct(100)">MAX</button>
+          </div>
+        </div>
 
-        // --- INICIALIZACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
-            resetDailyVotes();
-            updateUI();
-            fetchPrices();
-            startTimer();
-        });
+        <!-- Order Info -->
+        <div class="text-xs mono mb-3 space-y-1" style="color:var(--text-1);">
+          <div
+  </div>
 
-        // --- LÓGICA PRINCIPAL ---
+  <!-- class="flex justify CENTER: CHART + STATS -->
+  <div class="col-span-12 md:col-span-7 flex flex-col gap-1" style="height:100%;">
+    
+    <!-- Asset Header -->
+    <div class="panel p-3 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex-between"><span>Margen requerido:</span><span id="requiredMargin">$0.00</span></div>
+          <div class="flex justify-between"><span>Comisión (0.05%):</span><span id="orderFee">$0.00</span></div>
+          <div class="flex justify-between"><span>Ries items-center gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-bold" id="assetSymbol">BTC/USDT</span>
+            <span class="text-xs px-2 py-0.5 rounded" style="background:var(--bg-2);color:var(--textgo máx:</span><span id="maxRisk" class="red">$0.00</span></div>
+        </div>
 
-        async function fetchPrices() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                renderCards(data);
-            } catch (error) {
-                console.error("Error fetching prices:", error);
-                document.getElementById('cryptoContainer').innerHTML = "<p>Error cargando precios. Intenta recargar.</p>";
-            }
-        }
+        <!-- Long/Short Buttons -->
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn btn-long" onclick="placeOrder('long')">
+            📈 COMPRAR / LONG-1);">PERP</span>
+          </div>
+          <div class="text-xs" style="color:var(--text-2);" id="assetFullName">Bitcoin / Tether</div>
+        </div>
+        <div class="mono">
+         
+          </button <div class="text->
+          <button class="btn btn-short" onclick="placeOrder('short')">
+            📉 VENDER / SHORT
+          </button>2xl font-bold" id="currentPrice">$0.00</
+        </div>
+      </div>
+    </div>
 
-        function renderCards(data) {
-            const container = document.getElementById('cryptoContainer');
-            container.innerHTML = '';
+    <!-- Order Book -->
+    <div class="panel flex-1 flex flex-col" style="min-height:0;">
+      <div class="panel-header">
+        <span>ORDER BOOK</span>
+        <span class="text-xs" style="color:var(--text-2);">0.01</span>
+      </div>
+      <div class="grid grid-cols-3 px-3 py-1 text-xs font-semibold" style="color:var(--text-2);border-bottom:1px solid var(--border);">
+        <span>PRECdiv>
+          <div class="text-xs flex items-center gap-3" id="priceStats">
+            <span>24h: <span id="priceChange24h">0%</span></span>
+            <span>H: <span id="priceHigh">-</span></span>
+            <span>L: <span id="priceLow">-</span></span>
+         IO</span>
+        <span class="text-right">CANTIDAD</span>
+        <span class="text-right">TOTAL</span>
+      </div>
+      <div class="overflow-y-auto scrollbar" id="askOrders" style="flex:1;"></div>
+      <div class="text-center py-2 mono font-bold text </div>
+        </div>
+      </div-lg border-y" style=">
+      <div class="flex gap-2">
+        <button class="leverage-btn" onclick="setChartIndicator('ma')">MA</button>
+        <button class="leverage-btn" onclick="setChartIndicator('bb')">BB</button>
+        <button class="leverage-btn" onclick="setChartIndicator('vol')">VOL</buttonborder-color:var(--border);" id="spreadPrice">-</div>
+      <div class="overflow-y-auto scrollbar" id="bidOrders" style="flex:1;"></div>
+    </div>
 
-            COINS.forEach(coin => {
-                const price = data[coin].usd;
-                const prediction = userState.predictions[coin];
-                
-                let buttonsHtml = '';
-                if (prediction) {
-                    buttonsHtml = `<div style="text-align:center; padding:10px; background:#334155; border-radius:8px;">
-                        Apostaste: <strong>${prediction === 'up' ? '📈 SUBE' : '📉 BAJA'}</strong><br>
-                        <small>Esperando resultado...</small>
-                    </div>`;
-                } else {
-                    const disabled = (!userState.isVip && userState.votesLeft <= 0) ? 'disabled' : '';
-                    buttonsHtml = `
-                        <div class="prediction-btns">
-                            <button class="btn-up" ${disabled} onclick="vote('${coin}', 'up')">📈 SUBE</button>
-                            <button class="btn-down" ${disabled} onclick="vote('${coin}', 'down')">📉 BAJA</button>
-                        </div>
-                    `;
-                }
+    <!-- Recent Trades -->
+    <div class="panel" style="height:180px;">
+      <div class="panel-header">
+        <span>OPERACIONES REC>
+      </div>
+    </div>
 
-                const card = `
-                    <div class="crypto-card">
-                        <div class="coin-header">
-                            <span class="coin-name">${coin.toUpperCase()}</span>
-                            <span class="coin-price">$${price}</span>
-                        </div>
-                        ${buttonsHtml}
-                    </div>
-                `;
-                container.innerHTML += card;
-            });
-        }
+    <!-- Chart -->
+    <div class="panel flex-1 relative" style="min-height:400px;">
+      <div id="chartContainer" style="width:100%;height:100%;"></div>
+      <div class="absolute top-2 left-2 flex gap-1IENTES</span>
+      </div>
+      <div class="overflow-y-auto scrollbar" style="height:calc(100% - 40px);" id="recentTrades"></div>
+    </div>
+  </div>
+</div>
 
-        function vote(coin, direction) {
-            if (!userState.isVip && userState.votesLeft <= 0) {
-                alert("¡Te has quedado sin votos gratis! Hazte VIP.");
-                openVipModal();
-                return;
-            }
+<!-- MODALS -->
+<div id="vipModal" class="fixed inset-0 bg-black/80 z-5 z-10">
+        <button class="leverage-btn tf-btn" data-tf="1">1m</0 hiddenbutton>
+        <button class="leverage-btn tf-btn active" data-tf="5">5m</button>
+        <button class="leverage-btn tf-btn" data-tf="15">1 items-center justify-center p-4" style="display:none;">
+  <div class="panel max-w-md w-full">
+    <div class="p-6 text-center">
+      <div class="text-5xl mb-3">👑</div>
+      <h2 class="text-2xl font-bold mb-2 yellow5m</button>
+        <button class="leverage-btn tf-btn" data-tf="60">1h</button>
+        <button class="leverage-btn tf-btn" data-tf="240">4h</button>
+        <button class="leverage-btn tf-btn" data-tf="1440">1D</button>
+      </div>
+    </div>
 
-            // Guardar predicción
-            userState.predictions[coin] = direction;
-            
-            // Restar voto si no es VIP
-            if (!userState.isVip) {
-                userState.votesLeft--;
-            }
+    <!-- Bottom Panel: Positions /">NEXUS VIP</h2>
+      <p class="text-sm mb-4" style="color:var(--text-1);">Desbloquea el poder de los profesionales</p>
+      <div class="space-y-2 text-left text-sm mb-5">
+        <div class="flex gap-2"><span class="green">✓</span> Señales premium con History / Ranking --> 87% de acierto</div>
+        <div class="flex gap-2"><span class="green">✓</span> Apalancamiento hasta x200</div>
+        <div class="flex gap-2"><span class="green">✓</span> Análisis de ballenas en tiempo real</div>
+    <div class="panel" style="height:220px;">
+      <div class="flex border-b" style="border-color:var(--border);">
+        <div class="tab active" data-tab="positions">POSICIONES <span class="mono text-xs" id="posCount">(0)</span></div>
+       
+        <div class="flex gap-2"><span class="green">✓</span> Sin límite de órdenes diarias</div>
+        <div class="flex gap-2"><span class="green">✓</span> Comisión reducida a 0.02%</div>
+      </div>
+      <div class="text-3xl font-bold mono mb-1 yellow">$0. <div class="tab" data-tab="history">HISTORIAL</div>
+        <div class="tab" data-tab="ranking">RANKING</div>
+        <div class="tab" data-tab="vip">🔥 SEÑALES VIP</div>
+      </div>
+      <div class="overflow-y-auto scrollbar" style="height:calc99</div>
+      <div class="text-xs mb-4" style="color:var(--text-1);">por día / $4.99 semanal</div>
+      <button class="btn btn-vip w-full mb-2" onclick="processVipPayment()">ACTIVAR VIP AHORA</button>
+      <button class="btn w-full" style="background:var(--bg-2);color:var(--text-1);" onclick="closeModal('vipModal')">Ahora no</button>
+    </div>
+  </div>
+</div>
 
-            saveState();
-            updateUI();
-            fetchPrices(); // Re-renderizar para mostrar estado "Apotado"
-        }
+<div id="depositModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center(100% - 40px);" id="bottomContent"></div>
+    </div>
+  </div>
 
-        function resetDailyVotes() {
-            const today = new Date().toDateString();
-            if (userState.lastVoteDate !== today) {
-                userState.votesLeft = 3; // Resetear a 3 votos gratis
-                userState.lastVoteDate = today;
-                // Aquí podrías añadir lógica para verificar resultados de ayer
-                checkYesterdayResults(); 
-                saveState();
-            }
-        }
-
-        function checkYesterdayResults() {
-            // Lógica simplificada: En una app real, compararías el precio de ayer con hoy.
-            // Aquí simulamos que si apostó, gana puntos aleatorios para la demo.
-            if (Object.keys(userState.predictions).length > 0) {
-                const pointsWon = Math.floor(Math.random() * 50) + 10;
-                userState.points += pointsWon;
-                userState.streak++;
-                alert(`¡Resultados de ayer procesados! Ganaste ${pointsWon} puntos.`);
-                userState.predictions = {}; // Limpiar predicciones antiguas
-            }
-        }
-
-        function updateUI() {
-            document.getElementById('userPoints').innerText = userState.points;
-            document.getElementById('userStreak').innerText = userState.streak;
-            document.getElementById('votesLeft').innerText = userState.isVip ? '∞' : userState.votesLeft;
-        }
-
-        function saveState() {
-            localStorage.setItem('cryptoOracleState', JSON.stringify(userState));
-        }
-
-        // --- TEMPORIZADOR ---
-        function startTimer() {
-            setInterval(() => {
-                const now = new Date();
-                const endOfDay = new Date();
-                endOfDay.setHours(23, 59, 59, 999);
-                const diff = endOfDay - now;
-                
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                
-                document.getElementById('countdown').innerText = 
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
-
-        // --- MODAL Y PAGO SIMULADO ---
-        function openVipModal() { document.getElementById('vipModal').style.display = 'flex'; }
-        function closeVipModal() { document.getElementById('vipModal').style.display = 'none'; }
+  <!-- RIGHT: ORDER PANEL + ORDERBOOK -->
+  <div class="col-span-12 md:col-span-3 flex flex-col gap-1" style="height:100%;">
+    
+    <!-- Order Form -->
+    <div class="panel"> p-4" style="display:none;">
+  <div class="panel max-w-md w-full">
+    <div class="p-6">
+      <h2 class="text-xl font-bold mb-4">💰 Depositar Fondos Virtuales</h2>
+      <p class="text-xs mb-4" style="color:var(--text-1);">Añade saldo virtual para seguir
+      <div class="panel-header">
+        <span>NUEVA ORDEN</span>
+        <span class="text-xs" style="color:var(--text-2);">MARKET</span>
+      </div>
+      <div class="p-3">
+        <!-- Leverage -->
+        <div class="mb-3">
+          operando. Las micro-transacciones desbloquean bonos.</p>
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        <button class="btn" style="background:var(--bg-2);" onclick="deposit(1000)">$1,000<br><span class="text-xs yellow">GRATIS</span></button <div class=">
+        <text-xs mb-2" style="color:var(--text-1);">APALANCAMIENTO</div>
+          <div class="grid grid-cols-6 gap-1" id="leverageButtons"></div>
+          <div class="text-xs mt-2 mono" style="color:var(--text-2);">
+            Liq.button class="btn" style="background:var(--bg-2);" onclick="deposit(5000, 0.99)">$5,000<br><span class="text-xs">$0.99</span></button>
+        <button class="btn" style="background:var(--bg-2);" onclick="deposit(25000, 3. aprox: <span id="liqPrice" class="red">-</span>
+          </div>
+        </div>
         
-        function simulatePayment() {
-            // AQUÍ IRÍA LA REDIRECCIÓN A STRIPE
-            // window.location.href = "TU_LINK_DE_STRIPE";
-            
-            // Simulación para probar la UI
-            alert("¡Pago Exitoso! Bienvenido al club VIP.");
-            userState.isVip = true;
-            userState.votesLeft = 999;
-            saveState();
-            updateUI();
-            closeVipModal();
-        }
-    </script>
+        <!-- Size -->
+        <div class="mb-3">
+          <div class="text-xs mb-1" style="color:var(--text-1);">TAMAÑO (USDT)</div>
+          <input type="number99)">$25,000<br><span class="text-xs">$3.99</span></button>
+        <button class="btn" style="background:var(--bg-2);" onclick="deposit(100000, 9.99)">$100,000<br><span class="text-xs yellow">BEST VALUE</span></button" class="input>
+      </div>
+      <button class="btn w-full" style="background:var(--bg-2);color:var(--text-1);" onclick="closeModal('depositModal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="achievementModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-field" id="orderSize" value="100" placeholder="100">
+          <div class="flex gap-1 mt-2">
+            <button class="leverage-btn flex-1" onclick="setOrderPct(25)">25%</button>
+            <button class="leverage-btn flex-1" onclick="setOrderPct(5-4" style="display:none;">
+  <div class="panel max-w-md w-full">
+    <div class="p-6 text-center">
+      <div class="text-5xl mb-3" id="achieveIcon">🏆</div>
+      <h2 class="text-xl font-bold mb-2 yellow" id="achieveTitle">¡LOG0)">50%</button>
+            <button class="leverage-btn flex-1" onclick="setOrderPct(75)">75%</button>
+            <button class="leverage-btn flex-1" onclick="setOrderPct(100)">MAX</button>
+          </div>
+        </div>
+
+        <!-- Order Info -->
+        <div class="text-xs monoRO DESBLOQUEADO!</h2>
+      <p class="text-sm mb-4" id="achieveDesc"></p>
+      <button class="btn btn-vip w-full" onclick="closeModal('achievementModal')">CONTINUAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+const STATE mb-3 space-y-1" style="color:var(--text-1);">
+          <div class="flex justify-between"><span>Margen requerido:</span><span id="requiredMargin">$0.00</span></div>
+          <div class="flex justify-between"><span>Comisión (0.05%):</span><span id="orderFee">$0._KEY = 'nexusTradeState_v2';
+let state = JSON.parse(localStorage.getItem(STATE_KEY)) || {
+  balance: 10000,
+  initialBalance: 10000,
+  positions: [],
+  history: [],
+  isVip: false,
+  vipExpiry: null,
+  leverage: 10,
+  achievements00</span: [],
+ ></div>
+          <div class="flex justify-between"><span>Riesgo máx:</span><span id="maxRisk" class="red">$0.00</span></div>
+        </div>
+
+        <!-- Long/Short Buttons -->
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn btn-long" onclick totalTrades: 0,
+  wins: 0,
+  losses: 0,
+  liquidations: 0,
+  bestStreak: 0,
+  currentStreak: 0,
+  favoriteAsset: 'bitcoin'
+};
+
+const COINS = [
+  { id: 'bitcoin', symbol: 'BTC', name: '="placeOrder('Bitcoin', price:long')">
+            📈 COMPRAR / LONG
+          </button>
+          <button class="btn btn-short" onclick="placeOrder('short')">
+            📉 VENDER / SHORT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Book -->
+    <div class="panel flex-1 flex 0 },
+  { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', price: 0 },
+  { id: 'solana', symbol: 'SOL', name: 'Solana', price: 0 },
+  { id: 'binancecoin', symbol: 'BNB', name: 'BNB', price: 0 },
+  { id: 'ripple', symbol: 'XRP', name: 'Ripple', price: 0 },
+  { id: 'cardano', symbol: 'ADA', name: 'Cardano', price: 0 },
+  { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', price: 0 },
+  { id: flex-col" style 'avalanche-2', symbol:="min-height:0;">
+      <div class="panel-header">
+        <span>ORDER BOOK</span>
+        <span class="text-xs" style="color:var(--text-2);">0.01</span>
+      </div>
+      <div class="grid grid-cols-3 px-3 py-1 text-xs 'AVAX', name: 'Avalanche', price: 0 },
+  { id: 'polkadot', symbol: 'DOT', name: 'Polkadot', price: 0 },
+  { id: 'chainlink', symbol: 'LINK', name: 'Chainlink', price: 0 },
+  { id: 'tron', symbol: 'TRX', name: 'TRON font-semibold" style', price: 0 },
+  { id: 'matic-network', symbol: 'MATIC', name: 'Polygon', price: 0 }
+];
+
+let currentAsset = COINS[0];
+let chart = null;
+let candleSeries = null;
+let volumeSeries = null;
+let maSeries = null;
+let bbUpperSeries = null;="color:var(--text-2);border-bottom:1px solid var(--border);">
+        <span>PRECIO</span>
+        <span class="text-right">CANTIDAD</span>
+        <span class="text-right">TOTAL</span>
+      </div>
+      <div class="overflow-y-auto scrollbar" id="askOrders
+let bbLowerSeries = null;
+let currentCandles = [];
+let priceUpdateInterval = null;
+let orderBookInterval = null;
+let activeTab = 'positions';
+let activeIndicator = null;
+
+// ============================================================
+// AUDIO ENGINE (sin archivos externos)
+// ============================================================
+const audioCtx = new (window.AudioContext || window.webkitAudio" style="flexContext)();
+function playSound(type) {
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    if (type === 'buy') { osc.frequency.value = 800;:1;"></div>
+      <div class="text-center py-2 mono font-bold text-lg border-y" style="border-color:var(--border);" id="spreadPrice">-</div>
+      <div class="overflow-y-auto scrollbar" id="bidOrders" style="flex:1;"></div>
+    </div>
+
+    <!-- Recent Trades osc.type = 'sine'; }
+    else if (type === 'sell') { osc.frequency.value = 400; osc.type = 'sine'; }
+    else if (type === 'liquidation') { osc.frequency.value = 150; osc.type = 'sawtooth'; }
+    else if (type === 'achieve') { osc.frequency.value =  -->
+   1200 <div class="panel" style="height:180px;">
+      <div class="panel-header">
+        <span>OPERACIONES RECIENTES</span>
+      </div>
+      <div class="overflow-y-auto scrollbar" style="height:calc(100% - 40px);"; osc.type = 'triangle'; }
+    else if (type === 'click') { osc.frequency.value = 600; osc.type = 'square'; }
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  } catch(e) {}
+}
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  initChart();
+  setupTabs();
+  setupLeverageButtons();
+  id="recentTrades"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="vipModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4" style="display:none;">
+  <div class="panel max-w-md w-full">
+    <div setupTimeframeButtons();
+  setupMarketSearch();
+  await loadMarkets();
+  await loadChart(currentAsset.id);
+  startPriceUpdates();
+  startOrderBookUpdates();
+  renderBottomPanel();
+  updateHeader();
+  checkVipStatus();
+  buildTickerTape();
+});
+
+// ============================================================
+// CHART
+// ============================================================
+function initChart() {
+  const container class="p- = document.getElementById('chartContainer');
+  chart = LightweightCharts.createChart(container, {
+    layout: {
+      background: { color: '#12161c' },
+      textColor: '#848e9c',
+      fontFamily: 'JetBrains Mono'
+    },
+    grid: {
+      vertLines6 text-center">
+      <div class="text-5xl mb-3">👑</div>
+      <h2 class="text-2xl font-bold mb-2 yellow">NEXUS VIP</h2>
+      <p class="text-sm mb-4" style="color:var(--text-1);">Desbloquea el poder: { color: '#1e2329' },
+      horzLines: { color: '#1e2329' }
+    },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: '#2b3139' },
+    timeScale: { borderColor: '#2b3139', de los profesionales</ timeVisible: truep>
+      <div class="space-y-2 text-left text-sm mb-5">
+        <div class="flex gap-2"><span class="green">✓</span> Señales premium con 87% de acierto</div>
+        <div class="flex gap-2"><span class="green">✓</span>, secondsVisible: false },
+    width: container.clientWidth,
+    height: container.clientHeight
+  });
+  candleSeries = chart.addCandlestickSeries({
+    upColor: '#0ecb81', downColor: '#f6465d',
+    borderUpColor: '#0ecb81', borderDownColor: '#f6465d',
+    wickUpColor: '#0ecb81', wickDownColor: '#f6465d'
+  });
+  volumeSeries = chart.addHistogramSeries({
+    priceFormat: { type: 'volume' },
+    priceScaleId: '',
+    color: '#26a69a'
+  });
+  volumeSeries.priceScale(). Apalancamiento hasta x200</div>
+        <div class="flex gap-2"><span class="green">✓</span> Análisis de ballenas en tiempo real</div>
+        <div class="flex gap-2"><span class="green">✓</span> Sin límite de órdenes diarias</div>
+        <divapplyOptions({
+    scaleMargins: { top: 0.85, bottom: 0 }
+  });
+  window.addEventListener('resize', () => {
+    chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+  });
+}
+
+async function loadChart(assetId) {
+  try {
+    const resp = await fetch(`https://api.coingecko.com/api/v3/coins/${assetId}/ohlc?vs_currency=usd&days=1`);
+    const data = await resp.json();
+    currentCandles = data.map(c => ({
+      time: Math.floor(c[0] / 1000),
+      open: c[1], high: c[ class="flex gap2], low:-2"><span class="green">✓</span> Comisión reducida a 0.02%</div>
+      </div>
+      <div class="text-3xl font-bold mono mb-1 yellow">$0.99</div>
+      <div class="text-xs mb-4" style="color:var(--text-1);">por día / $4.99 semanal</div> c[3], close: c[4]
+    }));
+    candleSeries.setData(currentCandles);
+    const vols = data.map(c => ({
+      time: Math.floor(c[0] / 1000),
+      value: Math.random() * 1000 + 100,
+      color: c[4] >= c[1] ? 'rgba(14,203,129,0.4)' : 'rgba(246,70,93,0.4)'
+    }));
+    volumeSeries.setData(vols);
+    chart.timeScale().fitContent();
+    updateIndicators();
+  } catch(e) {
+    console.error('Error cargando gráfico:', e);
+
+      <button class="btn btn-vip w-full mb-2" onclick="processVipPayment()">ACTIVAR VIP AHORA</button>
+      <button class="btn w-full" style="background:var(--bg-2);color:var(--text-1);" onclick="closeModal('vipModal')">Ahora no</button>
+    </div>  }
+}
+
+function updateIndicators() {
+  if (maSeries) { chart.removeSeries(maSeries); maSeries = null; }
+  if (bbUpperSeries) { chart.removeSeries(bbUpperSeries); bbUpperSeries = null; }
+  if (bbLowerSeries) { chart.removeSeries(bbLowerSeries); bbLowerSeries = null; }
+  
+  if (activeIndicator === 'ma' && currentCandles.length > 20) {
+    const maData = [];
+    for (let i = 19; i < currentCandles.length; i++) {
+      let sum = 0;
+      for (let j = i - 19; j <= i; j++) sum += currentCandles[j].close;
+     
+  </div>
+</div>
+
+<div id="depositModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4" style="display:none;">
+  <div class="panel max-w-md w-full">
+    <div class="p-6">
+      <h2 class="text-xl font-bold mb-4"> maData.push({ time: currentCandles[i].time, value: sum / 20 });
+    }
+    maSeries = chart.addLineSeries({ color: '#f0b90b', lineWidth: 2, priceLineVisible: false });
+    maSeries.setData(maData);
+  }
+  
+  if (activeIndicator === 'bb' && currentCandles.length > 20) {
+    const upper = [], lower = [];
+    for (let i = 19; i < currentCandles.length; i++) {
+      let sum = 0;
+      for (let j = i - 19; j <= i; j++) sum💰 Depositar Fond += currentCandles[j].close;
+      const mean = sum / 20;
+      let variance = 0;
+      for (letos Virtuales</h2>
+      <p class="text-xs mb-4" style="color:var(--text-1);">Añade saldo virtual para seguir operando. Las micro-transacciones desbloquean bonos.</p>
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        <button class="btn" style=" j = i - 19; j <= i; j++) variance += Math.pow(currentCandles[j].close - mean, 2);
+      const std = Math.sqrt(variance / 20);
+      upper.push({ time: currentCandles[i].time, value: mean + 2 * std });
+      lower.push({ time: currentCandles[i].time, value: meanbackground: - 2 *var(--bg-2);" onclick="deposit(1000)">$1,000<br><span class="text-xs yellow">GRATIS</span></button>
+        <button class="btn" style="background:var(--bg-2);" onclick="deposit(5000, 0.99)">$5,000<br std });
+    }
+    bbUpperSeries = chart.addLineSeries({ color: '#1e88e5', lineWidth: 1, lineStyle: 2, priceLineVisible: false });
+    bbLowerSeries = chart.addLineSeries({ color: '#1e88e5', lineWidth: 1, lineStyle: 2, priceLineVisible: false });
+    bbUpperSeries.setData(upper);
+    bbLowerSeries.setData(lower);
+  }
+}
+
+function setChartIndicator(ind) {
+  activeIndicator = activeIndicator === ind ? null : ind;
+  updateIndicators();
+  playSound('click');
+}
+
+// ============================================================
+// MARKETS
+// ============================================================
+async function loadMarkets() {
+  try {
+    const ids = COINS><span class="text-xs">$0.99</span></button>
+        <button class="btn" style="background:var(--bg-2);" onclick="deposit(25000, 3.99)">$25,000<br><span class="text-xs">$3.99</span></button>
+        <button class="btn" style="background:var(--bg-.map(c => c.id).join(',');
+    const resp = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`);
+    const data = await resp.json();
+    COINS.forEach(c => {
+      if (data[c.id]) {
+        c.price = data[c.id].usd;
+        c.change24h = data[c.id].usd_24h_change || 0;
+        c.volume = data[c.id].usd_24h_vol || 0;
+      }
+    });
+    renderMarketList();
+    updateAssetHeader();
+  } catch(e)2);" onclick="deposit(100000, 9.99)">$100,000<br><span class="text-xs yellow">BEST VALUE</span></button>
+      </div>
+      <button class="btn w-full" style="background:var(--bg-2);color:var(--text-1);" onclick="closeModal('deposit {
+    console.error('Error cargando mercados:', e);
+  }
+}
+
+function renderMarketList() {
+  const list = document.getElementById('marketList');
+  const search = document.getElementById('marketSearch').value.toLowerCase();
+  const filtered = COINS.filter(c => c.symbol.toLowerCase().includes(search) || c.name.toLowerCase().includes(search));
+  document.getElementById('marketCount').textContent = filtered.length;
+  list.innerHTML = filtered.map(c => `
+    <div class="market-row ${c.id === currentAsset.id ? 'active' : ''}" onclick="selectAsset('${c.id}')">
+      <div class="font-semibold">${c.symbol}<span style="color:var(--text-2)">/USDT</span></div>
+      <div class="mono">$${formatPrice(c.price)}</Modal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="achievementModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4" style="display:none;">
+  <div class="panel max-w-md w-full">
+    <div class="p-6 text-center">
+      <div>
+      <div class="mono ${c.change24h >= 0 ? 'green' : 'red'}">${c.change24h >= 0 ? '+' : ''}${c.change24h.toFixed(2)}%</div>
+    </div>
+  `).join('');
+}
+
+function setupMarketSearch() {
+  document.getElementById('marketSearch').addEventListener('input',div class="text-5xl mb renderMarketList);-3" id="achieveIcon">🏆</div>
+      <h2 class="text-xl font-bold mb-2 yellow" id="achieveTitle">¡LOGRO DESBLOQUEADO!</h2>
+      <p class="text-sm mb-4" id="achieveDesc"></p>
+      <button class="btn btn-vip w-full" onclick="close
+}
+
+async function selectAsset(id) {
+  currentAsset = COINS.find(c => c.id === id);
+  state.favoriteAsset = id;
+  saveState();
+  renderMarketList();
+  await loadChart(id);
+  updateAssetHeader();
+  playSound('click');
+}
+
+function updateAssetHeader() {
+  document.getElementById('assetSymbol').textContent = `${currentAsset.symbol}/USDT`;
+  document.getElementById('assetFullName').textContent = `${currentAsset.name} / Tether`;
+  document.getElementById('currentPrice').textContent = `$${formatPrice(currentAsset.price)}`;
+  const ch = currentAsset.change24h || 0;
+  const chEl = document.getElementById('priceChange24h');
+  chEl.textContent = `${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%`;
+  chEl.className = ch >= 0 ? 'green' : 'red';
+  if (currentCandles.length > 0) {
+    const highs = currentCandles.map(c => c.high);
+    const lows = currentCandles.map(c => c.low);
+    document.getElementById('Modal('achievementModal')">CONTINUAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+const STATE_KEY = 'nexusTradeState_v2';
+let state = JSON.parse(localStorage.getItem(STATE_KEY)) || {
+  balance: 10priceHigh').textContent = `$${formatPrice(Math.max(...highs))}`;
+    document.getElementById('priceLow').textContent = `$${formatPrice(Math.min(...lows))}`;
+  }
+}
+
+// ============================================================
+// PRICE UPDATES (simulación de ticks en vivo)
+// ============================================================
+function startPriceUpdates() {
+  priceUpdateInterval = setInterval(() => {
+    COINS.forEach(c => {
+      if (c.price > 0) {000,
+        const volatility = c.price >
+  initialBalance: 10000,
+  positions: [],
+  history: [],
+  isVip: false,
+  vipExpiry: null,
+  leverage: 10,
+  achievements: [],
+  totalTrades: 0,
+  wins: 0,
+  losses: 0,
+  liquidations: 0,
+  bestStreak: 0,
+  currentStreak: 0,
+  favoriteAsset: 'bitcoin'
+};
+
+const COINS = [
+  { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', price: 0 },
+  { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', price: 0 },
+  { id: ' 1000 ?solana', symbol: 'SOL', name: 'Solana', price: 0 },
+  { id: 'binancecoin', symbol: 'BNB', name: 'BNB', price: 0 },
+  { id: 'ripple', symbol: 'XRP', name: 'Ripple', price: 0 },
+  { id: 'cardano', symbol: ' 0.0005 : 0.002;
+        const change = (Math.random() - 0.5) * 2 * volatility * c.price;
+        c.price = Math.max(0.0001, c.price + change);
+      }
+    });
+    updateAssetHeader();
+    renderMarketList();
+    updatePositionsPnL();
+    addNewCandleADA', name:();
+    updateOrderBook();
+  }, 2000);
+}
+
+function addNewCandle() {
+  if (currentCandles.length === 0) return;
+  const last = currentCandles[currentCandles.length - 1];
+  const 'Cardano', price: 0 },
+  { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', price: 0 },
+  { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche', price: 0 },
+  { id: 'polkadot', symbol: 'DOT', name now = Math.floor(Date.now() / 1000);
+  const interval = 300; // 5 min
+  const bucket = Math.floor: 'Polkadot', price: 0 },
+  { id: 'chainlink', symbol: 'LINK', name: 'Chainlink', price: 0 },
+  { id: 'tron', symbol: 'TRX', name: 'TRON', price: 0 },
+  { id: 'matic-network', symbol: 'MATIC', name: 'Polygon', price: 0 }
+];
+
+let currentAsset = COINS[0];
+let chart = null;
+let candleSeries = null;
+let volumeSeries = null;
+let maSeries = null;
+let bbUpperSeries = null;
+let bbLowerSeries = null;
+let currentCandles = [];
+let priceUpdateInterval = null;
+let order(now / interval) * interval;
+  
+  if (bucket > last.time) {
+    currentCandles.push({
+      time: bucket,
+      open: currentAsset.price,
+      high: currentAsset.price,
+      low: currentAsset.price,
+      close: currentAsset.price
+    });
+    if (currentCandles.length > 300) currentBookInterval = nullCandles.shift();;
+let activeTab = 'positions';
+let activeIndicator = null;
+
+// ============================================================
+// AUDIO ENGINE (sin archivos externos)
+// ============================================================
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+  try {
+    const osc = audio
+    candleSeries.setData(currentCandles);
+  } else {
+    last.close = currentAsset.price;
+    last.high = Math.max(last.high, currentAsset.price);
+    last.low = Math.min(last.low, currentAsset.price);
+    candleSeries.update(last);
+  }Ctx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    if (type === 'buy') { osc.frequency.value = 800; osc.type = 'sine'; }
+    else if (type === 'sell') { osc.frequency.value = 400;
+}
+
+// ============================================================
+// ORDER BOOK (simulado)
+// ============================================================
+function startOrderBookUpdates() {
+  updateOrderBook();
+  orderBookInterval = setInterval(updateOrderBook, 1 osc.type = '500);sine'; }
+    else if (type === 'liquidation') { osc.frequency.value = 150; osc.type = 'sawtooth'; }
+    else if (type === 'achieve') { osc.frequency.value = 1200; osc.type = 'triangle'; }
+    else if (type === 'click') { osc.frequency.value = 600;
+  setInterval(addRecentTrade, 800);
+}
+
+function updateOrderBook() {
+  const price osc.type = 'square'; }
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.15);
+  } catch(e) {}
+}
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  initChart();
+  setupTabs();
+  setupLeverageButtons();
+  setupTimeframeButtons();
+  setupMarketSearch();
+  await loadMarkets();
+  await loadChart(currentAsset.id);
+  startPriceUpdates();
+  = currentAsset.price;
+  startOrderBookUpdates if (!price) return;
+  const step = price * 0.0001;
+  const asks = [], bids = [];
+  for (let i = 12; i >= 1; i--) {
+    const p = price + step * i;
+    const q = Math.random() * 1();
+  renderBottomPanel();
+  updateHeader();
+  checkVipStatus();
+  buildTickerTape();
+});
+
+// ============================================================
+// CHART
+// ============================================================
+function initChart() {
+  const container = document.getElementById('chartContainer');
+  chart = LightweightCharts.createChart(container, {
+    layout: {
+      background: {0 + 0.1;
+    asks.push({ price: p, qty: q, total: p * q });
+  }
+  for (let i = 1; i <= 12; i++) {
+    const p = price - step * i;
+    const q = Math.random() * 10 + 0.1;
+    bids.push({ price color: '#12161c' },
+      textColor: '#848e9c',
+      fontFamily: 'JetBrains Mono'
+    },
+    grid: {
+      vertLines: { color: '#1e2329' },
+      horzLines: { color: '#1e2329' }
+    },
+    crosshair: { mode: LightweightCharts.Cross: p, qty: q, total: p * q });
+  }
+  const maxTotal = Math.max(...asks.map(a => a.total),hairMode.Normal },
+    rightPriceScale: { borderColor: '#2b3139' },
+    timeScale: { borderColor: '#2b3139', timeVisible: true, secondsVisible: false },
+    width: container.clientWidth,
+    height: container.clientHeight
+  });
+  candleSeries = chart.addCandlestickSeries({
+    upColor: '#0ecb81', downColor: '#f6465d',
+    borderUpColor: '#0ecb81', borderDownColor: '#f6465d',
+    wickUpColor: '#0ecb81', wickDownColor: '#f6465d'
+  });
+  volumeSeries = chart.addHistogramSeries({
+    price ...bids.map(b => b.total));
+  document.getElementById('askOrders').innerHTML = asks.map(a => `
+    <div class="orderbook-row">
+      <div class="bar red" style="width:${(a.total/maxTotal)*100}%;background:var(--red);"></div>
+      <span class="red">${formatPrice(a.price)}</Format: { typespan>
+      <span class="text-right">${a.qty.toFixed(4)}</span>
+: 'volume' },
+    priceScaleId: '',
+    color: '#26a69a'
+  });
+  volumeSeries.priceScale().applyOptions({
+    scaleMargins: { top: 0.85, bottom: 0 }
+  });
+  window.addEventListener('resize', () => {
+    chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+  });
+}
+
+async function loadChart(assetId) {
+  try {
+    const resp = await fetch(`https://api.coingecko.com/api/v3/coins/${assetId}/ohlc?vs_currency=usd&days=1`);
+    const data = await      <span class="text-right" style="color:var(--text-2);">${a.total.toFixed(2)}</span>
+    </div>
+  `).join('');
+  document.getElementById('bidOrders').innerHTML = bids resp.json();
+.map(b => `    currentCandles = data.map(c => ({
+      time: Math.floor(c[0] / 1000),
+      open: c[1], high: c[2], low: c[3], close: c[4]
+    }));
+    candleSeries.setData(currentCandles);
+    const vols = data.map(c
+    <div class="orderbook-row">
+      <div class="bar green" style="width:${( => ({
+      time: Math.floor(c[0] / 1000),
+      value: Math.random() * 1000 + 100,
+      color: c[4] >= c[1] ? 'rgba(14,203,129,0.4)' : 'rgba(246,70,93,0.4)'
+    }));
+    volumeSeries.setData(vols);
+    chart.timeScale().fitContent();
+    updateIndicators();
+  } catch(e) {
+    console.error('Error cargando gráfico:', e);
+  }
+}
+
+function updateIndicators() {
+  if (maSeries) { chart.removeSeries(maSeries); maSeries = null;b.total/maxTotal)*100}%;background:var(--green);"></div>
+      <span class="green">${formatPrice(b.price)}</span>
+      <span class="text-right">${b.qty.toFixed(4)}</span>
+      <span class="text-right" style="color:var(--text-2);">${b.total.toFixed(2)}</span>
+    </div>
+  ` }
+  if (bbUpperSeries) { chart.removeSeries(bbUpperSeries); bbUpperSeries = null; }
+  if (bbLowerSeries) { chart.removeSeries(bbLowerSeries); bbLowerSeries = null; }
+  
+  if (activeIndicator === 'ma' && currentCandles.length > 20) {
+    const maData = [];
+    for (let i = 19;).join('');
+  document.getElementById('spreadPrice').textContent = `$${formatPrice(price)}`;
+  document.getElementById('spreadPrice').className = `text-center py-2 mono font-bold text-lg border-y ${Math.random() > i < currentCandles.length; i++) {
+      let sum = 0;
+      for (let j = i - 19; j <= i; j++) sum += currentCandles[j].close;
+      maData.push({ time: currentCandles[i].time, value: sum / 20 });
+    }
+    maSeries = chart.addLineSeries({ color: '#f0b90b', 0.5 ? 'green' : 'red'}`;
+}
+
+function addRecentTrade() {
+  const price = currentAsset.price;
+  if (!price) return;
+  const qty = (Math.random() * lineWidth: 2, priceLineVisible: false });
+    maSeries.setData(maData);
+  }
+  
+  if (activeIndicator === 'bb' && currentCandles.length > 20) {
+    const upper = [], lower = [];
+    for (let i = 19; i < currentCandles.length; i++) {
+      let sum = 0; 2 + 0.01).toFixed(4);
+  const side = Math.random
+      for (let j = i - 19; j <= i; j++) sum += currentCandles[j].close;
+      const mean = sum / 20;
+      let variance = 0;
+      for (let j = i - 19; j <= i; j++) variance += Math.pow(currentCandles[j].close - mean, 2);
+      const std = Math.sqrt(variance / 20);
+      upper.push({ time: currentCandles[i].time, value:() mean + 2 * std });
+      lower.push({ time: currentCandles[i].time, value: mean - 2 * std });
+    }
+    bbUpperSeries = chart.addLineSeries({ color: '#1e88e5', lineWidth: 1, lineStyle: 2, priceLineVisible: false });
+    bbLowerSeries = chart.addLineSeries({ color: '#1e88e5', lineWidth: 1, lineStyle: 2, priceLineVisible: false });
+    bbUpperSeries.setData(upper);
+    bbLowerSeries.setData(lower);
+  }
+}
+
+function setChartIndicator(ind) {
+  activeIndicator = activeIndicator === ind ? null : ind;
+  updateIndicators();
+  playSound('click');
+}
+
+// ============================================================
+// MARKETS
+// ============================================================
+async function loadMarkets() {
+  try {
+    const ids = COINS.map(c => c.id).join(',');
+    const resp = await fetch(`https://api > 0.5 ? 'buy' : 'sell';
+  const time = new Date().toLocaleTimeString();
+  const container = document.getElementById('recentTrades');
+  const row = document.createElement('div');
+  row.className = `grid grid-cols-3 px-3 py-1 text-xs mono ${side === 'buy' ? 'flash-green' :.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies 'flash-red'}`;
+  row.innerHTML = `
+    <span class="${side === 'buy' ? 'green' : 'red'}">${formatPrice(price)}</span>
+    <span class=usd&include_24hr_change=true&include_24hr_vol=true`);
+    const data = await resp.json();
+    COINS.forEach(c => {
+      if (data[c.id]) {
+        c.price = data[c.id].usd;
+        c.change24h = data[c.id].usd_24h_change || 0;
+        c.volume = data[c.id].usd_24h_vol || 0;
+      }
+    });
+    renderMarketList();
+    updateAssetHeader();
+  } catch(e) {
+    console.error('Error cargando mercados:', e);
+  }
+}
+
+function renderMarketList() {
+  const list = document.getElementById('marketList');
+  const search = document.getElementById('marketSearch').value.toLowerCase();
+  const filtered = COINS.filter(c => c.symbol.toLowerCase().includes(search) || c.name.toLowerCase().includes(search));
+  document.getElementById('marketCount').textContent = filtered.length;
+  list.innerHTML = filtered.map(c => `
+    <div class="market-row ${c.id === currentAsset.id ? 'active' : ''}" onclick="selectAsset('${c.id}')">
+      <div class="font-semibold">${c.symbol}<span style="color:var(--text-2)">/USDT</span></div>
+      <div class="mono">$${formatPrice(c.price)}</div>
+      <div class="mono ${c.change24h >= 0 ? 'green' : 'red'}">${c.change24h >= ="text-right">${qty}</span>
+    <span class="text-right" style="color:var(--text-2);">${time}</span>
+  `;
+  container.insertBefore(row, container.firstChild);
+  while (container.children.length > 30) container.removeChild(container.lastChild);
+}
+
+// ============================================================
+// ORDER FORM
+// ============================================================
+function setupLeverageButtons0 ? '+' :() {
+  ''}${c.change24h.toFixed(2)}%</div>
+    </div>
+  `).join('');
+}
+
+function setupMarketSearch() {
+  document.getElementById('marketSearch').addEventListener('input', renderMarketList);
+}
+
+async function selectAsset(id) {
+  currentAsset = COINS.find(c => c.id === id const leverages = [1, 2, 5, 10, 25, 50, 100];
+  const container = document.getElementById('leverageButtons');
+  container.innerHTML = leverages.map(l => {
+    const maxAllowed = state.isVip ? 200 : 100;
+    const disabled = l > maxAllowed;
+    return `<button class="leverage-btn ${state.leverage === l ? 'active' : ''}" 
+      ${disabled ? 'disabled style="opacity:0.3;"' : ''}
+      onclick=");
+  state.favoriteAsset = id;
+  saveState();
+  renderMarketList();
+  await loadChart(id);
+  updateAssetHeader();
+  playSound('click');
+}
+
+function updateAssetHeader() {
+  document.getElementById('assetSymbol').textContent = `${currentAsset.symbol}/USDT`;
+  document.getElementById('assetFullName').textContent = `${currentAsset.name} / Tether`;setLeverage(${l})">${l}x${disabled ? '🔒' : ''}</button>`;
+  }).join('');
+  updateOrderInfo();
+  document.getElementById('currentPrice').textContent = `$${formatPrice(currentAsset.price)}`;
+  const ch = currentAsset.change24h || 0;
+  const chEl = document.getElementById('priceChange24h');
+  chEl.textContent = `${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%`;
+  chEl.className = ch >= 0 ? 'green' : 'red';
+  if (currentCandles.length > 0) {
+    const highs = currentCandles.map(c => c.high);
+    const lows = currentCandles.map(c => c.low);
+    document.getElementById('priceHigh').textContent = `$${formatPrice(Math.max(...highs))}`;
+    document.getElementById('priceLow').textContent = `$${formatPrice(Math.min(...lows))}`;
+  }
+}
+
+// ============================================================
+// PRICE UPDATES (simulación de ticks en vivo)
+// ============================================================
+function startPriceUpdates() {
+  priceUpdateInterval = setInterval(() => {
+    COINS.forEach(c => {
+      if (c.price > 0) {
+        const volatility = c.price > 1000 ?
+}
+
+function setLeverage(l) {
+  state.leverage = l;
+  saveState();
+  setupLeverageButtons();
+  playSound('click');
+}
+
+function setOrderPct(pct) {
+  const size = Math.floor(state.balance * pct / 100);
+  document.getElementById('orderSize').value = size;
+ 0.0005 : 0.002;
+        const change = (Math.random() - 0.5) * 2 * volatility * c.price;
+        c.price = Math.max(0.0001, c.price + change);
+      }
+    });
+    updateAssetHeader();
+    renderMarketList();
+    updatePositionsPnL  updateOrderInfo();
+}
+
+function updateOrderInfo() {
+  const size = parseFloat(document.getElementById('orderSize').value) || 0;
+  const margin = size / state.leverage;
+  const fee = size * 0.0005;
+  document.getElementById('requiredMargin').textContent = `$${margin.toFixed(2)}`;
+  document.getElementById('orderFee').textContent = `$${fee.toFixed(2)}`;
+  document();
+    addNewCandle();
+    updateOrderBook();
+  }, 2000);
+}
+
+function addNewCandle() {
+  if (currentCandles.length === 0) return;
+  const last = currentCandles[currentCandles.length - 1];
+  const now = Math.floor(Date.now() / 1000);
+  const interval = 300; // 5 min
+  const bucket = Math.floor(now / interval) * interval;
+  
+  if (bucket > last.time) {
+    currentCandles.push({
+      time: bucket,
+      open: currentAsset.price,
+      high: currentAsset.price,
+      low: current.getElementById('maxRisk').textContent = `$Asset.price,
+${margin.toFixed(2)}`;
+  
+  // Liquidation price estimate
+  const price = currentAsset.price;
+  if (price && size > 0) {
+    const liqDistance = 1 / state.leverage;
+    const liqPrice = price * (1 - liqDistance * 0.95);
+    document.getElementById('liq      close: currentAsset.price
+    });
+    if (currentCandles.length > 300) currentCandles.shift();
+    candleSeries.setData(currentCandles);
+  } else {
+    last.close = currentAsset.price;
+    last.high = Math.max(last.high, currentAsset.price);
+    last.low = Math.min(last.low, currentAssetPrice').textContent = `$${formatPrice(liqPrice)}`;
+.price);
+    candleSeries.update(last);
+  }
+}
+
+// ============================================================
+// ORDER BOOK (simulado)
+// ============================================================
+function startOrderBookUpdates() {
+  updateOrderBook();
+  orderBookInterval = setInterval(updateOrderBook, 1500);
+  setInterval(addRecentTrade, 800);
+}
+
+function updateOrderBook() {
+  const price = currentAsset.price;
+  if (!price) return;
+  const step = price * 0.0001;
+  const asks = [], bids = [];
+  for (let i = 12; i >= 1; i--) {
+    const p = price + step * i;
+    const q = Math.random() * 1  }
+}0 + 0
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'orderSize') updateOrderInfo();
+});
+
+// ============================================================
+// TRADING ENGINE
+// ============================================================
+function placeOrder(side) {
+  const size = parseFloat(document.getElementById('orderSize').value);
+  if (!size || size <=.1;
+    asks.push({ price: p, qty: q, total: p * q });
+  }
+  for (let i = 1; i <= 12; i++) {
+    const p = price - step * i;
+    const q = Math.random() * 10 + 0.1;
+    bids.push({ price: p, qty 0) { notify('Tamaño inválido', 'red'); return; }
+  const margin = size / state.leverage;
+  const: q, total: p * q fee = size * });
+  }
+  const maxTotal = Math.max(...asks.map(a => a.total), ...bids.map(b => b.total));
+  document.getElementById('askOrders').innerHTML = asks.map(a => `
+    <div class="orderbook-row">
+      <div class="bar red" style="width:${(a.total/maxTotal)*1 0.0005;
+  if (00}%;background:var(--red);"></div>
+      <span class="red">${formatPrice(a.price)}</span>
+      <span class="text-right">${a.qty.toFixed(4)}</span>
+      <span class="text-right" style="color:var(--text-2);">${a.total.toFixed(2)}</span>
+    </div>
+  `).join('margin + fee > state.balance) { notify('Saldo insuficiente', 'red');
+  document.getElementById('bidOrders').innerHTML = bids.map(b => `
+    <div class="orderbook-row">
+      <div class="bar green" style="width:${(b.total/maxTotal)*100}%;background:var(--green);"></div>
+      <span class="green">${formatPrice(b.price)}</span>
+      <span class="text-right">${b.qty.toFixed(4)}</span>'); return; }
+      <span class="text-right" style="color:var(--text-2);">${b.total.toFixed(2)}</span>
+    </div>
+  `).join('');
+  document.getElementById('spreadPrice').textContent = `$${formatPrice(price)}`;
+  document.getElementById('spreadPrice').className = `text-center py-2 mono font-bold
+  
+  const entryPrice = current text-lg border-y ${Math.random() > 0.5 ? 'green' : 'red'}`;
+}
+
+function addRecentTrade() {
+  const price = currentAsset.price;
+  if (!price) return;
+  const qty = (Math.random() * 2 + 0.01).toFixed(4);
+  const side = Math.random()Asset.price;
+  const liqDistance = 1 / state.leverage;
+  const liqPrice = side === 'long' ? entryPrice * (1 - liqDistance * 0.95) : > 0. entryPrice * (1 + liq5 ? 'buy' : 'sell';
+  const time = new Date().toLocaleTimeString();
+  const container = document.getElementById('recentTrades');
+  const row = document.createElement('div');
+  row.className = `grid grid-cols-3 px-3 py-1 text-xs mono ${side === 'buy' ? 'flash-green' : 'flash-red'Distance * 0.95);
+  
+  const position = {
+    id: Date}`;
+  row.innerHTML = `
+    <span class="${side === 'buy' ? 'green' : 'red'}">${formatPrice(price)}</span>
+    <span class="text-right">${qty}</span>
+    <span class="text-right" style.now(),
+    asset: currentAsset.id,
+    symbol: currentAsset.symbol,
+    side,
+    size,
+    margin,
+   ="color:var leverage: state.le(--text-2);">${time}</span>
+  `;
+  container.insertBefore(row, container.firstChild);
+  while (container.children.length > 30) containerverage,
+    entryPrice,
+.removeChild(container.lastChild    liqPrice,
+    fee,
+    openTime: Date.now(),
+    pnl: 0
+  };
+  
+  state.balance -= (margin + fee);
+  state.positions.push(position);
+  state.totalTrades++;
+  saveState();
+  
+  playSound(side === 'long' ? 'buy' : 'sell');
+  notify(`${side === 'long' ? '📈 LONG' : '📉 SHORT'} ${currentAsset.symbol} x${state.leverage} | $${size}`, side === 'long' ? 'green');
+}
+
+// ============================================================
+ : 'red');// ORDER FORM
+// ============================================================
+function setupLeverageButtons() {
+  const leverages = [1, 2, 5, 10, 25, 50, 100];
+  const container = document.getElementById('leverageButtons');
+  container.innerHTML = leverages.map(l => {
+    const maxAllowed = state.isVip ? 200 : 100;
+    const disabled = l > maxAllowed;
+    return `<button class="leverage-btn ${state.leverage === l ? 'active'
+  updateHeader();
+  renderBottomPanel();
+  checkAchievements();
+}
+
+function updatePositionsPnL() {
+  let totalPnl = 0;
+  state.positions.forEach(p => {
+    const coin = COINS.find(c => c.id === p.asset);
+    if (!coin) return;
+    const currentPrice = coin.price;
+    const priceChange = p.side === 'long' 
+      ? (currentPrice - p.entryPrice) / p.entryPrice
+      : (p.entryPrice - currentPrice) / p.entryPrice;
+    p.pnl = p : ''}" 
+      ${disabled ? 'disabled style="opacity:0.3;"' : ''}
+      onclick="setLeverage(${l})">${l}x${disabled ? '🔒' : ''}</button>`;
+  }).join('');
+  updateOrderInfo();
+}
+
+function setLeverage(l) {
+  state.leverage = l;
+  saveState();
+  setupLeverageButtons();
+  playSound('click');
+}
+
+function setOrderPct(pct) {
+  const size = Math.floor(state.balance * pct / 1.size * priceChange * (00);
+  document.getElementById('orderSize').value = size;
+  updateOrderInfo();
+}
+
+function updateOrderInfo()p.size / p.margin) / p.size * {
+  const size = parseFloat(document.getElementById('orderSize').value) || 0;
+  const margin = size / state.leverage;
+  const fee = size * 0.0005;
+  document.getElementById('requiredMargin').textContent = `$${margin.toFixed p.margin;
+    // Simplified: pnl = size * priceChange *(2)}` leverage
+    p.pnl = p.margin * priceChange * p.leverage;
+    totalPnl += p.pnl;
+    
+    // Check liquidation
+    if ((p.side === 'long' && currentPrice <= p.liqPrice) ||
+        (p.side === 'short' && currentPrice >= p.liqPrice)) {
+;
+  document.getElementById('order      liquidatePosition(p);
+    }
+  });
+  document.getElementById('headerPnl').textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`;
+  document.getElementById('headerPnl').className = `mono font-bold text-sm ${totalPnl >= 0 ? 'green' : 'red'Fee').textContent = `$${fee.toFixed(2)}`;
+  document.getElementById('maxRisk').textContent = `$${margin.toFixed(2)}`;
+  
+  // Liquidation price estimate
+  const price = currentAsset.price;
+  if (price && size > 0)}`;
+  if (activeTab === 'positions') renderBottomPanel();
+}
+
+function liquidatePosition(pos {
+    const) {
+  liqDistance = state.balance -= pos.margin;
+ 1 / state.leverage;
+    const liqPrice  state.liquid = price * (1 - liqDistance * 0.95);
+    documentations++;
+  state.currentStreak = 0;
+  state.losses++;
+  state.history.unshift({
+    ...pos,
+    closePrice: pos.liqPrice,
+    pnl: -pos.margin,
+    closeTime: Date.now(),
+    closedBy: 'liquidation'
+  });
+  state.positions = state.positions.filter(p => p.id !== pos.id);
+  saveState();
+  playSound('liquid.getElementById('liqPrice').textContent = `$${formatPrice(liqPrice)}`;
+  }
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'orderSize') updateOrderInfo();
+});
+
+// ============================================================
+// TRADING ENGINE
+// ============================================================
+function placeOrder(side) {
+  const size = parseFloat(document.getElementById('orderSize').value);
+  if (!size || size <= 0) { notify('Tamaño inválido', 'red'); return; }
+  const margin = size / state.leverage;
+  const fee = size * 0.0005;ation');
+  notify(`💀 LIQUIDADO: ${pos.symbol} x${pos.leverage} | -$${pos.margin.toFixed(2)}`, 'red');
+  
+  // Flash effect
+  const overlay = document.createElement('div');
+  overlay.className = 'liquidation-overlay';
+  document.body.appendChild(overlay);
+  setTimeout(()
+  if (margin + fee > state.balance) { notify('Saldo insuficiente', 'red'); return; }
+  
+  const entryPrice = current => overlay.remove(), 1500);
+  
+  updateHeader();Asset.price;
+
+  renderBottomPanel();
+  checkAchievements();
+}
+
+function closePosition(id) {
+  const pos = state.positions.find(p => p.id === id);
+  if (!pos) return;
+  const coin = COINS.find(c => c  const liqDistance = 1 / state.leverage;
+  const liqPrice = side === 'long' ? entryPrice * (1 - liqDistance * 0.95) : entryPrice * (1 + liqDistance * 0.95);
+  
+  const position = {
+    id: Date.now(),
+    asset: currentAsset.id,
+    symbol: currentAsset.symbol,
+    side,
+    size,
+   .id === pos.asset margin,
+   );
+  const closePrice = coin.price;
+  const priceChange = pos.side === 'long'
+    ? (closePrice - pos.entryPrice) / pos.entryPrice
+    : (pos.entryPrice - closePrice) / pos leverage: state.leverage,
+    entryPrice,
+.entryPrice;
+  const pnl = pos.margin * priceChange * pos.leverage;
+  
+  state.balance += pos.margin + pnl;
+  state.history.unshift({
+    ...pos,
+    closePrice,
+    pnl,
+    closeTime: Date.now(),
+    closedBy: 'manual'
+  });
+  state.positions = state.positions.filter(p => p.id !== id);
+  
+  if (pnl > 0) {
+    state.wins++;
+    state.currentStreak++;
+    state.bestStreak = Math.max(state.bestStreak, state.currentStreak    liqPrice,
+    fee,
+    openTime: Date.now);
+  } else {
+    state.losses++;(),
+    pnl: 0
+  };
+  
+  state.balance -= (margin + fee);
+  state.positions.push(position);
+    state.current
+  state.totalStreak = Trades++;
+  saveState();
+  
+  playSound(side === 'long' ? 'buy' : 'sell');
+  notify(`${side === 'long0;
+  }
+  
+  saveState();
+  playSound(pnl > 0 ? 'buy' ? '📈 LONG' : '📉 SHORT'} ${currentAsset.symbol} x${state.leverage} | $${size}`, side === 'long' ? 'green' : 'red');
+  updateHeader();
+  renderBottomPanel();
+  checkAchievements();
+}
+
+function updatePositions' : 'sell');
+  notify(`${pnl >= 0 ? '✅' : '❌'} ${pos.symbolPnL() {
+  let totalPnl} cerrado | ${ = 0;
+  state.positions.forEach(p => {
+    const coin = COINS.find(c => c.idpnl >= 0 ? '+' : === p.asset);
+    if (!coin) return;
+    const currentPrice = coin.price;
+    const priceChange = p.side === 'long' 
+      ? (currentPrice - p.entryPrice) / p.entryPrice
+      : (p.entryPrice - currentPrice) / p.entryPrice;
+    p.pnl = p.size * priceChange * (p.size / p.margin) / p.size * ''}$${pnl.toFixed(2)}`, pnl >= 0 ? 'green' : 'red');
+  updateHeader();
+  renderBottomPanel();
+  checkAchievements();
+}
+
+// ============================================================
+// TABS & BOTTOM PANEL
+// ============================================================
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = tab.dataset.tab;
+      renderBottomPanel();
+    });
+  });
+}
+
+function renderBottomPanel() {
+  const container = document.getElementById('bottomContent');
+  document.getElementById('posCount').textContent = `(${state.positions.length})`;
+  
+  if (activeTab === 'positions') {
+    if (state p.margin;
+.positions.length === 0) {
+      container.innerHTML =    // Simplified: pnl = size * priceChange * leverage
+    p.pnl = p.margin * priceChange * p.leverage;
+    totalPnl += p.pnl;
+    
+    // Check liquidation
+    if ((p.side === 'long' && currentPrice <= p.liqPrice) ||
+        (p.side === 'short `<div class="' && currentPrice >= p.liqPrice)) {
+      liquidatePosition(p);
+    }
+  });
+  document.getElementById('headerPnl').textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`;
+  document.getElementById('headerPnl').className = `mono font-bold text-sm ${totalPnl >= 0 ? 'green' : 'red'}`;
+  if (activeTab === 'positions') renderBottomPanel();
+}
+
+function liquidatePosition(posp-8 text-center" style=") {
+  state.balance -= poscolor:.margin;
+var(--text-2);">Sin posiciones abiertas.  state.liquid ¡Abre tuations++;
+  state.currentStreak = primera operación!</div>`;
+      return;
+    }
+    container.innerHTML = `
+      <table class="w-full text-xs mono">
+        <thead style="color:var(--text-2);border-bottom:1px 0;
+ solid var(--border);">
+           state.losses++;
+  state.history.unshift({
+ <tr>
+            <th class="text-left p-2">PAR</th>
+            <th class="text-left p-2">TIPO</th>
+            <th class="text-right p-2">TAMAÑO</th>
+            <th class="text-right p-2">MARGEN</th>
+            <th class="text-right p-2">ENTRADA    ...</th>
+            <th class="text-right p-2">LIQ.</th>
+            <th class="pos,
+    closePrice: pos.liqPrice,
+    pnl: -pos.margin,
+    closeTime: Date.now(),
+    closedBy: 'liquidation'
+  });
+  state.positions = state.positions.filter(p => p.id !== pos.id);
+  saveState();
+  playSound('liquidation');
+ text-right p- notify(`💀 LIQUIDADO: ${pos.symbol} x${pos.leverage} | -$${pos.margin.toFixed(2)}`, 'red');
+  
+  // Flash effect
+  const overlay = document.createElement('div');
+  overlay.className = 'liquidation-overlay';
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 1500);
+  
+  updateHeader();
+  renderBottomPanel();
+  checkAchievements();
+}
+
+function closePosition(id) {
+ 2">Pn const pos = stateL</th>
+            <th class="text-right p-2">ROE%</th>
+            <th class="p-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.positions.map(p => {
+            const roe = (p.pnl / p.margin) * 100;
+            return `
+              <tr style="border-bottom:1px solid var(--border);">
+                <td class="p-2 font-semibold">${p.symbol}/USDT <span style="color:var(--yellow);">${.positions.find(p => p.id === id);
+  if (!pos) return;
+  constp.le coin = COINSverage}x</span></td>
+                <td.find(c => c class="p-2 ${p.side === 'long' ? 'green'.id === pos.asset);
+  const closePrice = coin.price;
+  const priceChange = pos.side === 'long'
+    ? (closePrice - pos.entryPrice) / pos.entryPrice
+    : (pos.entryPrice - closePrice) / pos.entryPrice;
+  const pnl = pos.margin * priceChange * pos.leverage;
+  
+  state.balance += pos.margin + pnl;
+  state.history.unshift({
+    ...pos,
+    closePrice,
+    pnl,
+    closeTime: Date.now(),
+    closed : 'red'}">${p.side === 'long' ? '📈 LONG' : '📉 SHORT'}</td>
+                <td class="p-2 text-right">$${p.size.toFixed(2)}</td>
+                <td class="p-2 text-right">$${p.margin.toFixed(2)}</td>
+                <td class="p-2 text-right">$${formatPrice(p.entryBy: 'manualPrice)}</td>
+                <td class="p-2 text-right red">$${formatPrice(p.liqPrice)}</td>
+                <td class="p-2 text-right ${p.pnl >= 0 ? 'green' : 'red'}">${p.pnl >= 0 ? '+' : ''}$${p.pnl.toFixed(2)}</td>
+                <td class="p-2 text-right ${roe >= 0 ?'
+  });
+  state.positions = state.positions.filter(p => p.id !== id);
+  
+  if (pnl > 0) {
+    state.wins++;
+    state.currentStreak++;
+    state.bestStreak = Math.max(state.bestStreak, state.currentStreak);
+  } else {
+    state.losses++; 'green' : 'red'}">${roe >= 0 ? '+' : ''}${roe.toFixed(2)}%</td>
+                <td class="p-2 text-right"><button class="btn" style="background:var(--bg-3);color:var(--text-0);padding:4px 8px;font-size:10px;" onclick="closePosition(${p.id})">
+    state.currentStreak = 0;
+  }
+  
+  saveState();
+  playSound(pnl > 0 ? 'buy' : 'sell');
+  notify(`${pnl >= 0 ? '✅' : '❌'} ${pos.symbol} cerrado | ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`, pnl >= 0 ? 'green' : 'red');
+  updateHeader();
+  renderBottomPanel();
+  checkAchievements();
+}
+
+//CERRAR</button></td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  } else if (activeTab === 'history') {
+    if (state.history.length === 0) {
+      container.innerHTML = `<div class="p-8 text-center" style="color:var(--text-2);">Sin operaciones cerradas aún.</div>`;
+      return;
+    }
+    container.innerHTML = `
+      <table class="w-full text-xs mono">
+        <thead style="color:var(--text-2);border-bottom:1px ============================================================
+// TABS & BOTTOM PANEL
+// ============================================================
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = tab.dataset.tab;
+      renderBottomPanel();
+    });
+ solid var(--border);">
+          <tr>
+            <th class="text-left p-2">PAR</th>
+            <th class="text-left p  });
+}-2">TIPO</th>
+            <th
+
+function renderBottomPanel() {
+  const container = document.getElementById('bottomContent');
+  document.getElementById('posCount').textContent = `(${state.positions.length})`;
+  
+  if (activeTab === 'positions') {
+    if (state.positions.length ===  class="text-right p-2">TAMAÑO</0) {
+      container.innerHTML = `<div class="p-8 text-center" style="color:var(--text-2);">Sin posiciones abiertas. ¡Abre tu primera operación!</div>`;
+      return;
+    }
+    container.innerHTML = `
+      <table class="wth>
+            <th class="text-right p-2">ENTRADA</th>
+            <th class="text-right p-2">CIERRE</th>
+            <th class="text-right p-2">PnL</th>
+            <th class="text-left p-2">ESTADO</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${state.history.slice(0, 50).map(h => `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td class="p-full text-xs mono-2 font-semibold">
+        <thead style="color:var(--text-2);border-bottom:1px solid var(--border);">
+          <tr>
+">${h.symbol}/            <th class="text-left p-2">PAR</th>
+            <th class="text-left p-2">TIPO</th>
+            <th class="text-right p-2">TAMAÑO</th>
+            <th class="text-right p-2">MARGEN</th>
+            <th class="text-right p-2">ENTRADA</th>
+            <th class="text-right p-2">LIQ.</th>
+            <th class="text-right p-2">PnL</th>
+            <th class="text-right p-2">ROE%</th>
+            <th class="p-2"></thUSDT <span style="color:var(--yellow);">${h.leverage}x</span></td>
+              <td class="p-2 ${h.side>
+          </ === 'long' ? 'green' : 'red'}">${h.side.toUpperCase()}</td>
+              <td class="p-2 text-right">$${h.size.toFixed(2)}</td>
+              <td class="p-2 text-right">$${formatPrice(h.entryPrice)}</tdtr>
+        </thead>
+        <tbody>
+          ${state.positions.map(p => {
+            const roe = (p.pnl / p.margin) * 100;
+            return `
+              <tr style="border-bottom:1px solid>
+              <td class="p-2 text-right">$${formatPrice(h.closePrice)}</td>
+              <td class="p-2 text-right ${h.pnl >= 0 ? 'green' : 'red'}">${h.pnl >= 0 ? '+' : ''}$${h.pnl.toFixed(2)}</td>
+              <td class="p-2">${h.closedBy === 'liquidation' ? '<span var(--border);">
+                <td class="p class="red">-2 font-semibold💀 LIQ">${p.symbol}/USDT <span</span>' : '<span class="green">✓ CERRADO</span>'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } else if (activeTab === style="color:var(--yellow);">${p.leverage}x</span></td>
+                <td class="p-2 ${p.side === 'long' ? 'green' : 'red'}">${p.side === 'long' ? '📈 LONG' : '📉 SHORT'}</td>
+                <td class="p-2 text-right">$${p.size.toFixed(2)}</td>
+                <td class="p-2 text-right">$${p.margin.toFixed(2)}</td>
+                <td class="p-2 text-right">$${formatPrice(p.entryPrice)}</td>
+                <td class="p-2 text-right red">$${formatPrice(p.liqPrice)}</td> 'ranking') {
+    const fakeUsers = generateFakeRanking();
+    container.innerHTML =
+                <td `
+      <table class="w-full text-xs mono">
+        <thead style="color class="p-:var(--text-2);border-bottom:1px solid var(--border);">
+          <tr>
+            <th class="text-left p-2">#</th>
+            <th class="text-left p-2">TRADER</th>
+            <th class2 text-right ${="text-right p-2">PnL 24H</th>
+            <th class="p.pnl >= 0 ? 'green' : 'red'}">${p.pnl >= 0 ? '+' : ''}$${p.pnl.toFixed(2)}</td>
+                <td class="p-2 text-right ${roe >= 0 ? 'green' : 'red'}">${roe >= 0 ? '+' : ''}${roe.toFixed(2)}%</td>
+                <td class="p-2 text-right"><button classtext-right p-2">WINRATE</th>
+            <th class="text-right p-2">RACHA</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${fakeUsers.map((u, i) => `
+            <tr style="border="btn" style="background:var(--bg--bottom:1px solid var(--border);${u.isMe ? 'background:rgba(240,185,11,3);color:var(--text-0);padding:4px 8px;font-size:10px;" onclick="closePosition(${p.id})">CERRAR</button></td>
+              </tr>
+            `;
+          }).join('')}
+0.1);' : ''}">
+              <td class="p-2 font-bold ${i < 3 ? 'yellow' : ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+              <td class="p        </tbody>
+      </table>
+    `;
+  } else if (activeTab ===-2 font-semibold">${u.name} ${u.isMe ? '<span class="yellow">(TÚ)</span>' : ''}</td>
+              <td class="p-2 text-right ${u.pnl >= 0 ? 'green' : 'red'}">${u.pnl >= 0 ? '+' : ''}$${u.pnl.toFixed(2)}</td>
+              <td class="p 'history') {
+    if (state.history.length === 0) {
+      container.innerHTML = `<div class="p-8 text-center" style="color:var(--text-2);">Sin operaciones cerradas aún.</div>`;
+      return;
+    }
+    container.innerHTML = `
+      <table class="w-full text-xs mono">
+        <thead style="color:var(--text-2);border-bottom:1px solid var(--border-2 text-right">${u.winrate}%</td>
+              <td class="p-2 text-right yellow">${u.streak}🔥</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } else if (activeTab === 'vip);">
+          <tr>
+            <th class="text-left p-2">PAR</th>
+            <th class="text-left p-2">TIPO</th>
+            <th class="text-right p-2">TAMAÑO</') {
+    if (!state.isth>
+            <th class="text-right p-2">ENTRADA</th>Vip) {
+            <th class="text-right p-2">CIERRE</th>
+            <th class="text-right p
+      container.innerHTML-2">P = `
+       nL</th>
+            <th class="text <div class="-left p-2">ESTADO</th>p-8 text-center">
+          <div class="text-5xl mb-3
+          </tr">🔒</div>
+          <h3 class="text-lg font-bold yellow mb-2">SEÑALES VIP B>
+        </LOQUEADAS</h3>
+          <pthead>
+        <tbody>
+          ${state.history.slice(0, 50).map(h => `
+            <tr style="border-bottom:1px solid class="text-sm mb-4" var(--border);">
+              < style="color:var(--text-1);">Nuestros analtd class="p-2 font-semibold">${h.symbol}/USDT <span style="color:var(--yellow);">${h.leverage}x</span></td>
+              <td class="p-2 ${h.side === 'long' ? 'green'istas detectan movimientos : 'red'} de ballenas y patrones institucionales con 87% de acierto.</p>
+          <button class="btn btn-vip" onclick="openVipModal()">DESBLOQUEAR POR $0.99</button>
+        </div>
+      `;
+    } else {
+      const signals = generateVipSignals();
+      container.innerHTML = `
+        <div class="p-3">
+          <div class="text-xs mb-2" style="color:var(--text-2);">🔥 SEÑALES EN VIVO (actualización cada 5 min)</div">${h.side.toUpperCase()}</td>
+              <td class="p-2 text-right">$${h.size.toFixed(2)}</td>>
+          ${
+              <td class="p-signals.map(s =>2 text-right">$${formatPrice(h.entryPrice)}</td `
+           >
+              <td class="p-2 text-right">$${formatPrice(h.closePrice)}</td>
+              <td class="p-2 text-right ${h.pnl >= 0 ? <div class="p-3 mb-2 rounded" style="background:var(--bg-2);border-left:3px solid ${s.side === 'LONG' ? 'var(--green)' : 'var(--red)'};">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold">${s.symbol}/ 'green' : 'red'}">${h.pnl >= 0 ? '+' :USDT <span class="${s.side ''}$${h.pnl.toFixed(2)}</td>
+              <td class="p-2">${h.closedBy === 'liquidation' ? '<span class="red">💀 LIQ</span>' : '<span class="green">✓ CERRADO</span>'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } else if (activeTab === === 'LONG' ? 'green' : 'red'}">${s.side}</span> <span class="yellow">${s.leverage}x</span></span>
+                <span class="text-xs" style="color:var(--text-2);">${s.time}</span>
+              </div>
+              <div class="text-xs mono" style="color: 'ranking') {
+    const fakeUsers = generateFakeRanking();
+    container.innerHTML = `
+      <table class="w-full text-xs mono">
+        <thead style="color:var(--text-2);bordervar(--text--bottom:1px solid var(--border);">
+          <tr>
+            <th class="text-left p-2">#</th>
+            <th class="1);">
+text-left p-                Entrada: $${formatPrice(s.entry)} | TP2">TRADER</th>
+            <th class="text-right p-2">P: $${formatPrice(s.tpnL 24H</th>
+            <th class=")} | SL: $${formatPrice(s.sl)}
+              </div>
+              <div class="text-xs mt-1" style="color:var(--yellow);">📊 Confianza: ${s.confidencetext-right p-}% | Ballena detectada: ${s.whale}</div>
+            </div>
+         2">WINRATE</th>
+            <th class="text-right p-2">RACHA</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${fake `).join('')}
+        </Users.map((u, i) => `
+            <tr style="border-bottom:1px solid var(--border);${u.isMe ? 'background:rgba(240,185,11,0.1);div>
+     ' : ''}">
+              <td class="p-2 font-bold ${i < 3 `;
+    }
+  } ? 'yellow' : ''}">${i === 0 ? '🥇' : i === 1 ? '🥈'
+}
+
+function generateFakeRanking() {
+  const names = ['CryptoKing99', 'WhaleHunter', 'DiamondHands', 'MoonBoi', 'SatoshiFan', 'BtcMaster', 'AltcoinAce', 'LeverageLord', 'ShortSeller', 'HodlWarrior', 'TurtleTrader', 'AlphaMale'];
+  const users = names.map(n => ({
+    name: n,
+    pnl: (Math.random() - 0.3) * 50000,
+    winrate: Math.floor(Math.random() * 40 + 50),
+    streak: Math.floor(Math.random() : i ===  * 20),
+    is2 ? '🥉' : i + 1}</td>
+              <td class="p-2 font-semiboldMe: false
+">${u.name}  }));
+  const me = {
+    name ${u.isMe ? '<span: 'TÚ class="yellow',
+    pnl">(TÚ)</span>' : ''}</td>
+              <td class="p-2 text-right ${u.pnl >= 0 ? 'green' : 'red'}">${u.pnl >= 0 ? '+' : ''}$${u.pnl.toFixed(2)}</td>
+              <td class="p-2 text-right">${u.winrate}%</td>
+              <td class="p-: state.balance - state.initialBalance,
+    winrate: state.totalTrades > 0 ? Math.round((state.wins / state.totalTrades) * 100) : 0,
+    streak2 text-right yellow">${u.streak: state.currentSt}🔥</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } else if (activeTab === 'vip') {
+    if (!state.isreak,
+   Vip) { isMe: true
+  };
+  users.push(me);
+  users
+      container.innerHTML = `
+        <div class="p-8 text-center">
+          <div class="text-5xl mb-3">🔒</div>
+          <h3 class="text-lg font-bold yellow mb-2">SEÑALES VIP BLOQUEADAS</h3>.sort((a, b) => b.pnl - a.pnl);
+  return users.slice(0, 15);
+}
+
+function generateVipSignals() {
+  const signals = [];
+  const now = new Date();
+  for (let i = 0; i < 5; i++) {
+    const coin = COINS[Math.floor(Math.random() * 6)];
+    const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
+
+          <p class="text-sm mb-4" style="color:var(--text-1);">Nuestros analistas detectan movimientos de ballenas y patrones institucionales con 87% de acierto.</p>
+          <button class="btn btn-vip    const price =" onclick="open coin.price;
+    const entry = price;
+    const tp = side === 'LONG' ? price * 1.05 : price * 0.95;
+    const sl = side === 'LONG' ? price * 0.98 : price * 1.02;
+    const time = new Date(now - i * 5 * 60000).toLocaleTimeString();
+    signals.push({
+      symbol: coin.symbol,
+      side,
+      leverage: [5, 10, 20, 50][Math.floor(Math.random() * 4)],
+VipModal()">      entry, tp, sl,
+      confidence: Math.floor(Math.random() * 15 + 80),
+      whale: ['Sí - 500 BTC movidos', 'Sí - AcumulaciónDESBLOQUEAR POR $0.99</button>
+        </div>
+      `;
+    } else {
+      const signals = generateVipSignals();
+      container.innerHTML = `
+        <div class="p-3">
+          <div class="text-xs mb-2" style="color:var(--text-2);">🔥 SEÑALES EN VIVO (actualización cada 5 min)</div>
+          ${signals.map(s => `
+            <div class="p-3 mb-2 rounded" style="background:var(--bg-2);border-left:3px solid ${s.side === 'LONG' ? 'var(--green)' : 'var(--red)'};">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold">${s detectada', 'No - Patrón técnico', 'Sí - Exchange outflow'][Math.floor(Math.random() * 4)],
+      time
+    });
+  }
+  return signals;
+}
+
+// ============================================================
+// ACHIEVEMENTS
+// ============================================================
+const ACHIEVEMENTS = [
+  { id: 'first_trade', icon: '🎯', title: 'Primer Trade', desc: '.symbol}/AbUSDT <span class="${s.side === 'LONG' ? 'green' : 'red'}">${s.side}</span> <span class="yellow">${s.leverage}x</span></span>
+                <span class="text-xs" style="color:var(--text-2);">${s.time}</span>
+              </div>
+              <div class="text-xs mono" style="color:var(--text-1);">
+                Entrada: $${formatPrice(s.entry)} | TP: $${formatPrice(s.tp)} | SL: $${formatPrice(s.sl)}
+              </div>re tu primera posición', check: () => state.totalTrades >= 1 },
+  { id: 'ten_trades', icon: '⚡', title: 'Trader Activo', desc: 'Completa 10 operaciones', check: () => state.totalTrades >= 10 },
+  { id: 'first_win', icon: '🏆', title: 'Primera Victoria', desc: 'Cierra tu primera operación en ganancias', check: () => state.wins >= 1 },
+  { id: 'streak_5', icon: '🔥', title: 'En Racha', desc: 'Consigue 5 victorias seguidas', check: () => state.bestStreak >= 5 },
+  { id: 'high_lev', icon: '🚀', title: 'Alto Voltaje', desc: 'Opera con apalancamiento x50+', check: () => state.positions.some(p => p.leverage >= 50) || state.history.some(h => h.leverage >= 50) },
+  { id: 'survivor', icon: '💀', title: 'Superviviente', desc: 'Sé liquidado y sigue operando', check
+              <div class="text-xs mt-1" style="color:var(--yellow);">📊 Confianza: ${s.confidence}% | Ballena detectada: ${s.whale}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
+}
+
+function generateFakeRanking() {
+  const names = ['CryptoKing99', 'WhaleHunter', 'DiamondHands', 'MoonBoi', 'SatoshiFan', 'BtcMaster', 'AltcoinAce', 'LeverageLord', 'ShortSeller', 'HodlWarrior', 'TurtleTrader', 'AlphaMale'];
+  const users = names.map(n => ({
+    name: n,
+    pnl: (Math.random() - 0.3) * 50000,
+    winrate: Math.floor(Math.random() * 40 + 50),
+    streak: Math.floor(Math.random() * 20),
+    isMe: false
+  }));
+  const me = {
+    name: 'TÚ',
+    pnl: state.balance - state.initialBalance,
+    winrate: state: () => state.totalTrades >.liquidations >= 1 && state.totalTrades >= 5 },
+  { id: 'whale', icon: ' 0 ? Math🐋', title: 'Ballena', desc: 'Abre una posición de $10,000+', check: () => state.positions.some(p => p.size >= 10000) || state.history.some(h =>.round((state.wins / state.totalTrades) * 100) h.size >= 10000) },
+  { id: 'profit_1k', icon: ' : 0,💎', title: '
+    streak: state.currentStreak,
+    isMe: trueMil Dólares', desc: 'Gana $1,000 en total', check: () => (state.balance - state.initialBalance) >= 1000 }
+];
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if (!state.achie
+  };
+  users.push(me);
+  users.sort((a, b) => b.pnl - a.pnl);
+  return users.slice(0, 15);
+}
+
+function generateVipSignals() {
+  const signals = [];
+  const now = new Date();
+  for (let i = vements.includes(a.id0; i < 5; i++) {
+    const coin = CO) && a.check()) {
+     INS[Math.floor(Math state.achievements.random() * .push(a.id);6)];
+    const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
+    const price = coin.price;
+    const entry = price;
+    const tp = side === 'LONG' ? price * 1.05 : price * 0.95;
+    const sl = side ===
+      saveState 'LONG' ? price * 0.98 : price * 1();
+      showAchievement(a);
+    }
+.02;  });
+    const time = new Date(now
+}
+
+function showAchievement(a) {
+  playSound('achieve');
+  document.getElementById('achieveIcon').textContent = a.icon;
+  document.getElementById('achieveTitle').textContent = a.title;
+  document.getElementById('achieveDesc').textContent = a.desc;
+  document.getElementById('achievementModal').style.display = 'flex';
+}
+
+// ============================================================
+// DEPOSIT & VIP
+// ============================================================
+function deposit(amount, cost = 0) {
+  if (cost > 0) {
+    // Aquí iría la redirección a Stripe - i * 5 *
+    if (!confirm(`Simular pago de $${cost} por 60000).toLocaleTimeString();
+    signals.push({
+      symbol: coin.symbol,
+      side,
+      leverage: [5, 10, 20, 50][Math.floor(Math.random() * 4)],
+      entry, tp, sl,
+      confidence: Math.floor(Math.random() * 15 + 80),
+      whale: ['Sí - 500 BTC movidos', 'Sí - Acumulación detectada', 'No - Patrón técnico', 'Sí - Exchange outflow'][Math.floor $${amount.toLocaleString()} virtuales?`)) return;
+  }
+  state(Math.random() *.balance += amount; 4)],
+      time
+   
+  saveState();
+  update });
+  }
+  return signals;
+}
+
+// ============================================================
+// ACHIEVEMENTS
+Header();
+  closeModal('depositModal');
+  notify(`✅ +$${amount.toLocaleString()} añadidos a tu balance`, 'green');
+  playSound('achieve');
+}
+
+function openDepositModal() { document.getElementById('depositModal').style.display = 'flex'; }
+function openVipModal() { document.getElementById('vipModal').style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+function processVipPayment() {
+ // ============================================================
+ // Aquí iría Stripe: window.location.href = 'TU_LINK_DE_STconst ACHIEVEMENTS = [
+  { id: 'first_trade', icon: '🎯', title: 'Primer TradeRIPE';
+', desc: '  if (!confirmAbre tu primera posición('', check: ()Simular pago VIP de $0. => state.totalTr99?'))ades >= 1 return;
+  state.isVip = true;
+  state.vip },
+  {Expiry = Date id: 'ten_trades', icon: '.now() + ⚡', title24 * 60 * 60 * 1000;
+  saveState();
+  closeModal('vipModal');
+  setupLeverageButtons();
+  renderBottomPanel();
+  notify('👑 ¡Bienvenido al club VIP!', 'yellow');
+  playSound('ach: 'Trader Actieve');
+}
+
+function checkVipStatus() {
+  if (state.isVip && state.vipivo', desc: 'Completa 10 operaciones', check: () => state.totalTrades >= 10 },
+  { id: 'first_win', icon: '🏆', title: 'Primera Victoria', desc: 'Cierra tu primera operación en ganancias', check: () => state.wins >= 1 },
+  { id: 'streakExpiry && Date_5', icon: '🔥', title: 'En Racha', desc: 'Consigue 5 victorias seguidas', check: () =>.now() > state.vipExpiry) {
+    state.isVip = false;
+ state.bestStreak >= 5 },    saveState();
+    setupLeverageButtons();
+  { id: 'high_lev', icon:
+  }
+ '🚀', title: 'Alto Volt}
+
+// ============================================================
+// UTILS
+// =================================================aje', desc: 'Opera con apalancamiento x50+', check: () => state.positions.some(p => p.leverage >= 50) || state.history.some(h => h.leverage >= 50) },
+===========
+function format  { id: 'survivorPrice(p) {
+  if (p >= 1000) return p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });', icon
+  if (p >= 1) return p.toFixed(4);
+  if (p >= 0.01) return p.toFixed(5);
+  return p.toFixed(8);
+}
+
+function updateHeader() {
+  document.getElementById('headerBalance').textContent = `$${state.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function: '💀', title: 'Superviviente', desc: 'Sé liquidado y sigue operando', check: () => state notify(msg, color) {
+  const n = document.createElement('div');
+  n.className = 'notification.liquidations >= 1 && state';
+  n.style.background = color === 'green' ? 'var(--green)' : color === 'red' ? 'var(--red)' : color === 'yellow' ? 'var(--yellow)' : 'var(--bg-2)';
+  n.style.color = color === 'yellow' ? '#000' : color === 'red' ? '#fff' : '#000';
+  n.textContent = msg;
+  document.body.totalTrades >= 5 },
+  { id: 'whale', icon: '🐋', title: 'Ballena', desc: 'Abre una posición de $10,000+', check: () => state.positions.some(p => p.size >= 10000) || state.appendChild(n);
+  setTimeout(() => n.remove(), 3500);
+}
+
+function setupTimeframeButtons() {
+  document.querySelectorAll('.tf-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+     .history.some(h => h.size >= 10000) },
+  { id: 'profit_1k', icon: ' playSound('click💎', title: 'Mil Dólares', desc: 'Gana $1,000 en total', check: () => (state.balance');
+      // - state.initialBalance) >= 1000 }
+];
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if En producción (!state.achievements.includes(a.id) && a.check()) {
+      state.achievements.push(a.id);
+      saveState();
+      showAchievement(a);
+    }
+  });
+}
+
+function showAchievement(a: recargar datos del) {
+  playSound('achieve');
+  document.getElementById('ach timeframe seleccionado
+   ieveIcon').textContent = a.icon;
+  document.getElementById('achieveTitle').textContent = a });
+.title;
+  document.getElementById('achieveDesc').textContent = a.desc;
+  document.getElementById('achievementModal').style.display = 'flex';
+}  });
+}
+
+function buildTickerTape() {
+  const tape = document.getElementById('tickerTape');
+  const items = COINS.map(c => `<span style="margin:0 20px;"><span class="font-semibold">${c.symbol
+
+// ============================================================
+// DEPOSIT}/USDT</span> <span class="mono">$${formatPrice(c.price || 0)}</span> <span class="${(c & VIP
+// ============================================================
+function deposit(amount, cost = 0) {
+  if (cost > 0) {
+    // Aquí iría la redirección a Stripe
+    if (!confirm(`Simular pago de $${cost} por $${amount.toLocaleString()} virtuales?`)) return;
+  }
+  state.balance += amount;
+  saveState();
+  updateHeader();
+  closeModal('depositModal');
+  notify(`✅ +$.change24h || 0) >= 0 ? 'green'${amount : 'red'}">${(c.change24h || 0) >= 0 ? '+' : ''}${(c.change24h || 0).toFixed(2)}%</span></span>`).join('');
+  tape.innerHTML = items + items; // Duplicado para loop infinito
+}
+
+function saveState() {
+  localStorage.setItem(STATE_KEY, JSON.stringify(state));
+}
+</script>
+
 </body>
 </html>
