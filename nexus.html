@@ -50,20 +50,27 @@
         }
         .prediccion-item {
             transition: all 0.3s ease;
+            cursor: default;
         }
         .prediccion-item:hover {
-            transform: scale(1.02);
-            background: rgba(251, 146, 60, 0.1);
+            transform: scale(1.01);
+            background: rgba(251, 146, 60, 0.08);
         }
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s infinite;
+        .scroll-predicciones {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
-        @keyframes dots {
-            0% { content: ''; }
-            33% { content: '.'; }
-            66% { content: '..'; }
-            100% { content: '...'; }
+        .scroll-predicciones::-webkit-scrollbar {
+            width: 4px;
+        }
+        .scroll-predicciones::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 10px;
+        }
+        .scroll-predicciones::-webkit-scrollbar-thumb {
+            background: #f7931a;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -184,10 +191,15 @@
     <div class="mt-10">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-bold">📋 Mis Predicciones</h3>
-            <span id="total-predicciones" class="text-sm text-gray-400"></span>
+            <div class="flex items-center gap-3">
+                <span id="total-predicciones" class="text-sm text-gray-400"></span>
+                <button onclick="recargarPredicciones()" class="text-sm text-amber-400 hover:text-amber-300 transition">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
         </div>
-        <div id="mis-predicciones" class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-            <p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>
+        <div id="mis-predicciones" class="space-y-3 scroll-predicciones">
+            <p class="text-gray-500 text-center py-4">Cargando predicciones...</p>
         </div>
     </div>
 </section>
@@ -252,6 +264,7 @@ let intervaloTiempo = null;
 let prediccionActivaId = null;
 let precioAnterior = 0;
 let unsubscribePredicciones = null;
+let todasLasPredicciones = [];
 
 const DURACIONES = {
     '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
@@ -272,7 +285,6 @@ const TIERS = [
 // ==============================================
 document.addEventListener('DOMContentLoaded', () => {
     cargarPrecioBTC();
-    // Actualizar precio cada 5 segundos
     setInterval(cargarPrecioBTC, 5000);
     verificarSesion();
 });
@@ -286,11 +298,9 @@ async function cargarPrecioBTC() {
         const data = await res.json();
         const nuevoPrecio = data.bitcoin.usd;
         
-        // Detectar cambio para animación
         if (precioAnterior > 0 && nuevoPrecio !== precioAnterior) {
             const precioEl = document.getElementById('price-value');
             precioEl.classList.remove('precio-flash');
-            // Forzar reflow para reiniciar animación
             void precioEl.offsetWidth;
             precioEl.classList.add('precio-flash');
         }
@@ -313,7 +323,6 @@ async function cargarPrecioBTC() {
         document.getElementById('price-change-movil').textContent = cambioTxt;
         document.getElementById('price-change-movil').className = `text-sm px-2 py-0.5 rounded-full ${clase}`;
         
-        // Actualizar timestamp
         const ahora = new Date();
         const horaStr = ahora.toLocaleTimeString();
         document.getElementById('price-updated').textContent = `🔄 ${horaStr}`;
@@ -321,7 +330,6 @@ async function cargarPrecioBTC() {
         
     } catch (e) { 
         console.log('Error precio', e); 
-        // Mostrar que el precio está offline
         document.getElementById('price-updated').textContent = '⏳ offline';
         document.getElementById('price-updated-movil').textContent = '⏳ offline';
     }
@@ -334,13 +342,13 @@ function verificarSesion() {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             await cargarUsuario(user);
-            // Iniciar escucha en tiempo real de predicciones
             iniciarEscuchaPredicciones();
         } else { 
             usuarioActual = null; 
             actualizarUI(); 
             document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
             document.getElementById('prediccion-activa').classList.add('hidden');
+            document.getElementById('total-predicciones').textContent = '';
             if (unsubscribePredicciones) {
                 unsubscribePredicciones();
                 unsubscribePredicciones = null;
@@ -368,7 +376,7 @@ async function cargarUsuario(user) {
         }
         actualizarUI();
         cargarRanking();
-        buscarPrediccionActiva();
+        await buscarPrediccionActiva();
     } catch (e) {
         console.log('Error cargando usuario:', e);
         mostrarToast('Error al cargar usuario', 'error');
@@ -418,6 +426,7 @@ async function logout() {
     actualizarUI();
     document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
     document.getElementById('prediccion-activa').classList.add('hidden');
+    document.getElementById('total-predicciones').textContent = '';
     if (intervaloTiempo) clearInterval(intervaloTiempo);
     mostrarToast('Sesión cerrada');
 }
@@ -446,141 +455,159 @@ function actualizarUI() {
 function iniciarEscuchaPredicciones() {
     if (!usuarioActual) return;
     
-    // Limpiar escucha anterior si existe
     if (unsubscribePredicciones) {
         unsubscribePredicciones();
         unsubscribePredicciones = null;
     }
     
-    // Crear escucha en tiempo real
+    // Escucha en tiempo real con límite de 50 predicciones
     unsubscribePredicciones = db.collection('predicciones')
         .where('usuarioId', '==', usuarioActual.uid)
         .orderBy('creado', 'desc')
-        .limit(20)
+        .limit(50)
         .onSnapshot((snapshot) => {
-            if (snapshot.empty) {
-                document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">No tienes predicciones</p>';
-                document.getElementById('total-predicciones').textContent = '0 predicciones';
-                return;
-            }
-            
-            let html = '';
+            todasLasPredicciones = [];
             snapshot.forEach((doc) => {
-                const p = doc.data();
-                const esActivo = p.estado === 'activo';
-                
-                let estadoClase, estadoTxt;
-                if (esActivo) {
-                    estadoClase = 'badge-pendiente';
-                    estadoTxt = '⏳ Pendiente';
-                } else if (p.resultado === 'acierto') {
-                    estadoClase = 'badge-activo';
-                    estadoTxt = '✅ Acertado';
-                } else {
-                    estadoClase = 'badge-cerrado';
-                    estadoTxt = '❌ Fallado';
-                }
-                
-                const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
-                const direccionIcon = p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
-                
-                // Mostrar tiempo restante si está activo
-                let tiempoInfo = '';
-                if (esActivo && p.cierre) {
-                    const tiempoRestante = calcularTiempoRestante(p.cierre);
-                    tiempoInfo = `<div class="text-xs text-amber-400 countdown">⏱ ${tiempoRestante}</div>`;
-                }
-                
-                // Mostrar resultado si está cerrado
-                let resultadoInfo = '';
-                if (!esActivo && p.precioFinal) {
-                    const subio = p.precioFinal > p.precioInicial;
-                    resultadoInfo = `<div class="text-xs text-gray-400">Final: $${Math.round(p.precioFinal)} (${subio ? '📈' : '📉'})</div>`;
-                }
-                
-                html += `
-                    <div class="card-glass rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 prediccion-item">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="font-bold text-sm sm:text-base">${p.periodo}</span>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700/50">${p.voto === 'sube' ? '📈' : '📉'}</span>
-                            <span class="${direccionClase} text-sm sm:text-base">${direccionIcon}</span>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3">
-                            <div class="text-right">
-                                <div class="px-2 py-0.5 rounded-full text-xs font-bold ${estadoClase}">${estadoTxt}</div>
-                                ${tiempoInfo}
-                                ${resultadoInfo}
-                                <div class="text-xs text-gray-500 mt-1">Inicio: $${Math.round(p.precioInicial || 0)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                todasLasPredicciones.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
             });
-            
-            document.getElementById('mis-predicciones').innerHTML = html;
-            document.getElementById('total-predicciones').textContent = `${snapshot.size} predicciones`;
-            
-            // Actualizar contadores de tiempo para predicciones activas
-            if (document.querySelector('.badge-pendiente')) {
-                if (intervaloTiempo) clearInterval(intervaloTiempo);
-                intervaloTiempo = setInterval(() => {
-                    // Actualizar todos los contadores
-                    document.querySelectorAll('.badge-pendiente').forEach((el, index) => {
-                        const parent = el.closest('.prediccion-item');
-                        if (parent) {
-                            const timeEl = parent.querySelector('.countdown');
-                            if (timeEl) {
-                                // Buscar el cierre en los datos de la predicción
-                                // Lo actualizaremos desde la escucha principal
-                            }
-                        }
-                    });
-                }, 1000);
-            }
+            renderizarPredicciones();
+            actualizarPrediccionActivaDesdeLista();
         }, (error) => {
             console.error('Error en escucha de predicciones:', error);
+            document.getElementById('mis-predicciones').innerHTML = `
+                <div class="text-center py-4 text-red-400">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Error al cargar predicciones: ${error.message}
+                </div>
+            `;
         });
 }
 
-// ==============================================
-// PREDICCIÓN ACTIVA (TIEMPO REAL)
-// ==============================================
-async function buscarPrediccionActiva() {
-    if (!usuarioActual) return;
+function renderizarPredicciones() {
+    const contenedor = document.getElementById('mis-predicciones');
     
-    try {
-        const snap = await db.collection('predicciones')
-            .where('usuarioId', '==', usuarioActual.uid)
-            .where('estado', '==', 'activo')
-            .orderBy('creado', 'desc')
-            .limit(1)
-            .get();
+    if (todasLasPredicciones.length === 0) {
+        contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No tienes predicciones aún. ¡Crea tu primera predicción!</p>';
+        document.getElementById('total-predicciones').textContent = '0 predicciones';
+        return;
+    }
+    
+    let html = '';
+    todasLasPredicciones.forEach((p) => {
+        const esActivo = p.estado === 'activo';
         
-        if (!snap.empty) {
-            const doc = snap.docs[0];
-            const pred = doc.data();
-            prediccionActivaId = doc.id;
-            mostrarPrediccionActiva(pred);
-            
-            // Iniciar contador
-            if (intervaloTiempo) clearInterval(intervaloTiempo);
-            intervaloTiempo = setInterval(() => {
-                actualizarTiempoRestante(pred.cierre);
-                // También actualizar los contadores en la lista
-                actualizarContadoresLista();
-            }, 1000);
+        let estadoClase, estadoTxt;
+        if (esActivo) {
+            estadoClase = 'badge-pendiente';
+            estadoTxt = '⏳ Pendiente';
+        } else if (p.resultado === 'acierto') {
+            estadoClase = 'badge-activo';
+            estadoTxt = '✅ Acertado';
         } else {
-            document.getElementById('prediccion-activa').classList.add('hidden');
-            if (intervaloTiempo) {
-                clearInterval(intervaloTiempo);
-                intervaloTiempo = null;
-            }
+            estadoClase = 'badge-cerrado';
+            estadoTxt = '❌ Fallado';
         }
-    } catch (e) {
-        console.log('Error buscando predicción activa:', e);
+        
+        const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+        const direccionIcon = p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
+        const direccionEmoji = p.voto === 'sube' ? '📈' : '📉';
+        
+        // Tiempo restante si está activo
+        let tiempoInfo = '';
+        if (esActivo && p.cierre) {
+            const tiempoRestante = calcularTiempoRestante(p.cierre);
+            tiempoInfo = `<div class="text-xs text-amber-400 countdown" data-cierre="${p.cierre.toDate ? p.cierre.toDate().toISOString() : p.cierre}">⏱ ${tiempoRestante}</div>`;
+        }
+        
+        // Resultado si está cerrado
+        let resultadoInfo = '';
+        if (!esActivo && p.precioFinal) {
+            const subio = p.precioFinal > p.precioInicial;
+            const ganancia = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2);
+            resultadoInfo = `
+                <div class="text-xs text-gray-400">
+                    Final: $${Math.round(p.precioFinal)} 
+                    <span class="${subio ? 'text-green-400' : 'text-red-400'}">${subio ? '📈' : '📉'} ${ganancia}%</span>
+                </div>
+            `;
+        }
+        
+        // Fecha de creación
+        const fecha = p.creado?.toDate ? p.creado.toDate() : new Date(p.creado);
+        const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        
+        html += `
+            <div class="card-glass rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 prediccion-item" data-id="${p.id}">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-bold text-sm sm:text-base">${p.periodo}</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-slate-700/50">${direccionEmoji}</span>
+                    <span class="${direccionClase} text-sm sm:text-base font-semibold">${direccionIcon}</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="text-right">
+                        <div class="px-2 py-0.5 rounded-full text-xs font-bold ${estadoClase}">${estadoTxt}</div>
+                        ${tiempoInfo}
+                        ${resultadoInfo}
+                        <div class="text-xs text-gray-500 mt-1">
+                            Inicio: $${Math.round(p.precioInicial || 0)} 
+                            <span class="text-gray-600">• ${fechaStr}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    contenedor.innerHTML = html;
+    document.getElementById('total-predicciones').textContent = `${todasLasPredicciones.length} predicciones`;
+    
+    // Iniciar contadores de tiempo para predicciones activas
+    if (document.querySelector('.badge-pendiente')) {
+        if (intervaloTiempo) clearInterval(intervaloTiempo);
+        intervaloTiempo = setInterval(() => {
+            actualizarContadoresTiempo();
+        }, 1000);
     }
 }
 
+function actualizarContadoresTiempo() {
+    document.querySelectorAll('.countdown').forEach(el => {
+        const cierreStr = el.getAttribute('data-cierre');
+        if (cierreStr) {
+            const cierre = new Date(cierreStr);
+            const tiempoRestante = calcularTiempoRestante(cierre);
+            el.textContent = `⏱ ${tiempoRestante}`;
+            
+            // Si se acabó el tiempo, actualizar estado
+            if (tiempoRestante === '⏰ Finalizado') {
+                el.closest('.prediccion-item').querySelector('.badge-pendiente')?.textContent = '⏳ Finalizando...';
+            }
+        }
+    });
+}
+
+function actualizarPrediccionActivaDesdeLista() {
+    const activa = todasLasPredicciones.find(p => p.estado === 'activo');
+    if (activa) {
+        prediccionActivaId = activa.id;
+        mostrarPrediccionActiva(activa);
+    } else {
+        prediccionActivaId = null;
+        document.getElementById('prediccion-activa').classList.add('hidden');
+        document.getElementById('botones-voto').classList.remove('hidden');
+        if (intervaloTiempo) {
+            clearInterval(intervaloTiempo);
+            intervaloTiempo = null;
+        }
+    }
+}
+
+// ==============================================
+// PREDICCIÓN ACTIVA
+// ==============================================
 function mostrarPrediccionActiva(pred) {
     const div = document.getElementById('prediccion-activa');
     div.classList.remove('hidden');
@@ -596,32 +623,32 @@ function mostrarPrediccionActiva(pred) {
     estadoSpan.className = 'px-2 py-1 rounded-full text-xs font-bold badge-pendiente';
 }
 
-function actualizarTiempoRestante(cierre) {
-    const tiempoStr = calcularTiempoRestante(cierre);
-    document.getElementById('tiempo-restante').textContent = tiempoStr;
+async function buscarPrediccionActiva() {
+    if (!usuarioActual) return;
     
-    // Si el tiempo se acabó, verificar resultado
-    const ahora = new Date();
-    const cierreDate = new Date(cierre);
-    if (ahora >= cierreDate) {
-        clearInterval(intervaloTiempo);
-        intervaloTiempo = null;
-        verificarResultado();
-    }
-}
-
-function actualizarContadoresLista() {
-    // Actualizar todos los contadores en la lista de predicciones
-    document.querySelectorAll('.badge-pendiente').forEach(el => {
-        const parent = el.closest('.prediccion-item');
-        if (parent) {
-            const timeEl = parent.querySelector('.countdown');
-            if (timeEl) {
-                // Intentar obtener el tiempo de cierre de los datos
-                // Como no tenemos acceso directo, lo dejamos
+    try {
+        const snap = await db.collection('predicciones')
+            .where('usuarioId', '==', usuarioActual.uid)
+            .where('estado', '==', 'activo')
+            .orderBy('creado', 'desc')
+            .limit(1)
+            .get();
+        
+        if (!snap.empty) {
+            const doc = snap.docs[0];
+            const pred = { id: doc.id, ...doc.data() };
+            prediccionActivaId = doc.id;
+            mostrarPrediccionActiva(pred);
+        } else {
+            document.getElementById('prediccion-activa').classList.add('hidden');
+            if (intervaloTiempo) {
+                clearInterval(intervaloTiempo);
+                intervaloTiempo = null;
             }
         }
-    });
+    } catch (e) {
+        console.log('Error buscando predicción activa:', e);
+    }
 }
 
 function calcularTiempoRestante(cierre) {
@@ -702,8 +729,8 @@ async function votar(direccion) {
         document.getElementById('mensaje').textContent = `✅ Voto registrado: ${direccion.toUpperCase()}`;
         document.getElementById('botones-voto').classList.add('hidden');
         
-        // La escucha en tiempo real actualizará automáticamente la lista
-        buscarPrediccionActiva();
+        // La escucha en tiempo real actualizará automáticamente
+        await buscarPrediccionActiva();
         
     } catch (e) {
         console.error('Error al votar:', e);
@@ -775,9 +802,17 @@ async function verificarResultado() {
             }
         }
         cargarRanking();
-        buscarPrediccionActiva();
+        await buscarPrediccionActiva();
     } catch (e) {
         console.error('Error verificando resultados:', e);
+    }
+}
+
+function recargarPredicciones() {
+    if (unsubscribePredicciones) {
+        unsubscribePredicciones();
+        iniciarEscuchaPredicciones();
+        mostrarToast('🔄 Predicciones actualizadas');
     }
 }
 
@@ -846,7 +881,9 @@ function switchTab(tab, event) {
     
     if (tab === 'ranking') cargarRanking();
     if (tab === 'predict' && usuarioActual) {
-        buscarPrediccionActiva();
+        if (todasLasPredicciones.length === 0) {
+            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Cargando predicciones...</p>';
+        }
     }
 }
 
