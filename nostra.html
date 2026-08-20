@@ -492,8 +492,7 @@
             .ticker-content { -webkit-animation: none; animation: none; }
         }
 
-        /* ===== FIX PARA IOS 14 ===== */
-        /* Asegurar que el modal funcione en iOS 14 */
+        /* ===== FIX PARA IOS 14 - MODAL ===== */
         #modal-auth {
             position: fixed !important;
             top: 0 !important;
@@ -503,24 +502,16 @@
             width: 100% !important;
             height: 100% !important;
             z-index: 9999 !important;
-            background: rgba(0,0,0,0.7) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
-            backdrop-filter: blur(8px) !important;
+            background: rgba(0,0,0,0.85) !important;
             display: none !important;
-            -webkit-box-align: center !important;
-            -webkit-align-items: center !important;
-            align-items: center !important;
-            -webkit-box-pack: center !important;
-            -webkit-justify-content: center !important;
-            justify-content: center !important;
-            padding: 16px !important;
+            padding: 20px !important;
             box-sizing: border-box !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
         }
 
         #modal-auth.visible {
-            display: -webkit-box !important;
-            display: -webkit-flex !important;
-            display: flex !important;
+            display: block !important;
         }
 
         #modal-content {
@@ -530,12 +521,10 @@
             padding: 24px !important;
             width: 100% !important;
             max-width: 400px !important;
-            margin: auto !important;
+            margin: 20px auto !important;
             position: relative !important;
-            max-height: 90vh !important;
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch !important;
             box-sizing: border-box !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important;
         }
 
         /* Fix para inputs en iOS 14 */
@@ -557,14 +546,22 @@
             outline: none !important;
         }
 
-        /* Fix para Safari en iOS 14 - evitar que el teclado empuje el contenido */
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-            #modal-auth {
-                -webkit-align-items: center !important;
-                align-items: center !important;
-                -webkit-justify-content: center !important;
-                justify-content: center !important;
-            }
+        #modal-auth button {
+            cursor: pointer !important;
+        }
+
+        .modal-close-btn {
+            background: none !important;
+            border: none !important;
+            font-size: 28px !important;
+            line-height: 1 !important;
+            padding: 0 8px !important;
+            cursor: pointer !important;
+            color: #94a3b8 !important;
+        }
+
+        .modal-close-btn:hover {
+            color: #fff !important;
         }
     </style>
 </head>
@@ -1271,42 +1268,40 @@
     </div>
 </section>
 
-<!-- MODAL - VERSION MEJORADA PARA IOS 14 -->
-<div id="modal-auth" class="fixed inset-0 hidden items-center justify-center z-50 p-4" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999; background:rgba(0,0,0,0.7); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:16px;">
-    <div id="modal-content" class="rounded-2xl p-6 w-full max-w-md fade-in" style="background:#111827; border:1px solid rgba(148,163,184,0.12); max-width:400px; width:100%; margin:auto; position:relative; max-height:90vh; overflow-y:auto; -webkit-overflow-scrolling:touch;">
+<!-- MODAL - VERSION SIMPLIFICADA PARA IOS 14 -->
+<div id="modal-auth">
+    <div id="modal-content">
         <div class="flex justify-between items-center mb-6">
-            <h2 id="modal-titulo" class="text-xl font-bold" style="color:#f1f5f9;">Iniciar Sesion</h2>
-            <button onclick="cerrarModal()" class="text-gray-500 hover:text-white text-xl transition no-select" style="background:none; border:none; font-size:28px; line-height:1; padding:0 8px; cursor:pointer; color:#94a3b8;">&times;</button>
+            <h2 id="modal-titulo" style="color:#f1f5f9; font-size:20px; font-weight:700; margin:0;">Iniciar Sesion</h2>
+            <button onclick="cerrarModal()" class="modal-close-btn" style="background:none; border:none; font-size:28px; line-height:1; padding:0 8px; cursor:pointer; color:#94a3b8;">&times;</button>
         </div>
         <div id="login-form">
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block" style="color:#64748b; display:block; margin-bottom:4px;">Correo Electronico</label>
-                    <input type="email" id="email" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block" style="color:#64748b; display:block; margin-bottom:4px;">Contrasena</label>
-                    <input type="password" id="pass" placeholder="********" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-                </div>
-                <button onclick="login()" class="w-full py-3 rounded-lg btn-primary text-sm no-select" style="width:100%; padding:12px; border-radius:8px; background:#f7931a; color:#000; font-weight:600; font-size:14px; border:none; cursor:pointer;">Entrar</button>
+            <div style="margin-bottom:16px;">
+                <label style="color:#64748b; display:block; margin-bottom:4px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Correo Electronico</label>
+                <input type="email" id="email" placeholder="tu@email.com" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
             </div>
-            <p class="text-center mt-4 text-gray-500 text-sm" style="text-align:center; margin-top:16px; color:#64748b; font-size:14px;">No tienes cuenta? <a href="#" onclick="openModal('register')" class="text-amber-400 hover:underline" style="color:#f7931a; text-decoration:none;">Registrarse</a></p>
+            <div style="margin-bottom:16px;">
+                <label style="color:#64748b; display:block; margin-bottom:4px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Contrasena</label>
+                <input type="password" id="pass" placeholder="********" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
+            </div>
+            <button onclick="login()" style="width:100%; padding:12px; border-radius:8px; background:#f7931a; color:#000; font-weight:600; font-size:14px; border:none; cursor:pointer;">Entrar</button>
+            <p style="text-align:center; margin-top:16px; color:#64748b; font-size:14px;">No tienes cuenta? <a href="#" onclick="openModal('register')" style="color:#f7931a; text-decoration:none;">Registrarse</a></p>
         </div>
-        <div id="register-form" class="hidden space-y-4" style="display:none;">
-            <div>
-                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block" style="color:#64748b; display:block; margin-bottom:4px;">Usuario</label>
-                <input type="text" id="username" placeholder="TraderPro" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
+        <div id="register-form" style="display:none;">
+            <div style="margin-bottom:16px;">
+                <label style="color:#64748b; display:block; margin-bottom:4px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Usuario</label>
+                <input type="text" id="username" placeholder="TraderPro" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
             </div>
-            <div>
-                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block" style="color:#64748b; display:block; margin-bottom:4px;">Correo Electronico</label>
-                <input type="email" id="email-reg" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
+            <div style="margin-bottom:16px;">
+                <label style="color:#64748b; display:block; margin-bottom:4px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Correo Electronico</label>
+                <input type="email" id="email-reg" placeholder="tu@email.com" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
             </div>
-            <div>
-                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block" style="color:#64748b; display:block; margin-bottom:4px;">Contrasena (min 6)</label>
-                <input type="password" id="pass-reg" placeholder="********" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
+            <div style="margin-bottom:16px;">
+                <label style="color:#64748b; display:block; margin-bottom:4px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">Contrasena (min 6)</label>
+                <input type="password" id="pass-reg" placeholder="********" style="width:100%; padding:12px 16px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
             </div>
-            <button onclick="register()" class="w-full py-3 rounded-lg btn-primary text-sm no-select" style="width:100%; padding:12px; border-radius:8px; background:#f7931a; color:#000; font-weight:600; font-size:14px; border:none; cursor:pointer;">Crear Cuenta</button>
-            <p class="text-center mt-4 text-gray-500 text-sm" style="text-align:center; margin-top:16px; color:#64748b; font-size:14px;">Ya tienes cuenta? <a href="#" onclick="openModal('login')" class="text-amber-400 hover:underline" style="color:#f7931a; text-decoration:none;">Iniciar Sesion</a></p>
+            <button onclick="register()" style="width:100%; padding:12px; border-radius:8px; background:#f7931a; color:#000; font-weight:600; font-size:14px; border:none; cursor:pointer;">Crear Cuenta</button>
+            <p style="text-align:center; margin-top:16px; color:#64748b; font-size:14px;">Ya tienes cuenta? <a href="#" onclick="openModal('login')" style="color:#f7931a; text-decoration:none;">Iniciar Sesion</a></p>
         </div>
     </div>
 </div>
@@ -2597,36 +2592,37 @@ async function cargarAnalisis() {
 }
 
 // ==============================================
-// MODAL FUNCTIONS (MEJORADAS PARA IOS 14)
+// MODAL FUNCTIONS (SIMPLIFICADAS PARA IOS 14)
 // ==============================================
 function openModal(tipo) {
-    const modal = document.getElementById('modal-auth');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const titulo = document.getElementById('modal-titulo');
+    var modal = document.getElementById('modal-auth');
+    var loginForm = document.getElementById('login-form');
+    var registerForm = document.getElementById('register-form');
+    var titulo = document.getElementById('modal-titulo');
     
     // Forzar display correcto para iOS 14
-    modal.style.display = 'flex';
+    modal.className = 'visible';
+    modal.style.display = 'block';
     modal.style.position = 'fixed';
     modal.style.top = '0';
     modal.style.left = '0';
     modal.style.right = '0';
     modal.style.bottom = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
     modal.style.zIndex = '9999';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    modal.style.padding = '16px';
-    modal.style.background = 'rgba(0,0,0,0.7)';
-    modal.style.webkitBackdropFilter = 'blur(8px)';
-    modal.style.backdropFilter = 'blur(8px)';
+    modal.style.background = 'rgba(0,0,0,0.85)';
+    modal.style.padding = '20px';
+    modal.style.boxSizing = 'border-box';
+    modal.style.overflowY = 'auto';
+    modal.style.webkitOverflowScrolling = 'touch';
     
     // Scroll al top del modal en iOS
-    const modalContent = document.getElementById('modal-content');
+    var modalContent = document.getElementById('modal-content');
     if (modalContent) {
         modalContent.scrollTop = 0;
-        modalContent.style.maxHeight = '90vh';
-        modalContent.style.overflowY = 'auto';
-        modalContent.style.webkitOverflowScrolling = 'touch';
+        modalContent.style.maxHeight = 'none';
+        modalContent.style.overflowY = 'visible';
     }
     
     // Mostrar el formulario correcto
@@ -2634,23 +2630,25 @@ function openModal(tipo) {
         loginForm.style.display = 'block';
         registerForm.style.display = 'none';
         titulo.textContent = 'Iniciar Sesion';
+        setTimeout(function() {
+            var input = document.getElementById('email');
+            if (input) input.focus();
+        }, 300);
     } else {
         loginForm.style.display = 'none';
         registerForm.style.display = 'block';
         titulo.textContent = 'Crear Cuenta';
+        setTimeout(function() {
+            var input = document.getElementById('username');
+            if (input) input.focus();
+        }, 300);
     }
-    
-    // Enfocar el primer input después de un pequeño delay
-    setTimeout(function() {
-        const firstInput = tipo === 'login' ? document.getElementById('email') : document.getElementById('username');
-        if (firstInput) firstInput.focus();
-    }, 300);
 }
 
 function cerrarModal() {
-    const modal = document.getElementById('modal-auth');
+    var modal = document.getElementById('modal-auth');
+    modal.className = '';
     modal.style.display = 'none';
-    modal.style.position = 'fixed';
     // Limpiar valores de inputs
     document.getElementById('email').value = '';
     document.getElementById('pass').value = '';
@@ -2677,12 +2675,12 @@ function switchTab(tab, event) {
 }
 
 function mostrarToast(mensaje, tipo) {
-    const toast = document.getElementById('toast');
+    var toast = document.getElementById('toast');
     document.getElementById('toast-text').textContent = mensaje;
-    const bg = tipo === 'success' ? 'border-green-500/30 text-green-400' : tipo === 'error' ? 'border-red-500/30 text-red-400' : 'border-amber-500/30 text-amber-400';
+    var bg = tipo === 'success' ? 'border-green-500/30 text-green-400' : tipo === 'error' ? 'border-red-500/30 text-red-400' : 'border-amber-500/30 text-amber-400';
     toast.className = 'toast glass px-6 py-3 rounded-xl text-sm font-medium border ' + bg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 4000);
+    setTimeout(function() { toast.classList.remove('show'); }, 4000);
 }
 
 // Event listeners mejorados para iOS 14
@@ -2692,9 +2690,9 @@ document.getElementById('modal-auth').addEventListener('click', function(e) {
     }
 });
 
-document.addEventListener('click', (e) => {
-    const panel = document.getElementById('notif-panel');
-    const btn = e.target.closest('button[onclick="toggleNotif()"]');
+document.addEventListener('click', function(e) {
+    var panel = document.getElementById('notif-panel');
+    var btn = e.target.closest('button[onclick="toggleNotif()"]');
     if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn) panel.classList.add('hidden');
 });
 </script>
