@@ -11,22 +11,18 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script>
-        // 👇 PEGA AQUÍ TU firebaseConfig DE FIREBASE
         const firebaseConfig = {
-          apiKey: "AIzaSyDm2idwM6HuDJlru_9kRMu5CetI8bgE3MU",
-    authDomain: "nexus-33500.firebaseapp.com",
-    projectId: "nexus-33500",
-    storageBucket: "nexus-33500.firebasestorage.app",
-    messagingSenderId: "847469417688",
-    appId: "1:847469417688:web:4c5e3b9d41b16dbfed73ad",
-    measurementId: "G-C7630S4H6V"
+            apiKey: "AIzaSyDm2idwM6HuDJlru_9kRMu5CetI8bgE3MU",
+            authDomain: "nexus-33500.firebaseapp.com",
+            projectId: "nexus-33500",
+            storageBucket: "nexus-33500.firebasestorage.app",
+            messagingSenderId: "847469417688",
+            appId: "1:847469417688:web:4c5e3b9d41b16dbfed73ad",
+            measurementId: "G-C7630S4H6V"
         };
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
-        // Guardar referencia a FieldValue para usarla globalmente
         const FieldValue = firebase.firestore.FieldValue;
     </script>
     <style>
@@ -43,6 +39,10 @@
         .periodo-btn { transition: all 0.2s; cursor: pointer; border: 2px solid transparent; }
         .periodo-btn:hover { border-color: rgba(251, 146, 60, 0.3); }
         .periodo-btn.selected { border-color: #f7931a; background: rgba(251, 146, 60, 0.1); }
+        .countdown { font-variant-numeric: tabular-nums; }
+        .badge-pendiente { background: #f59e0b; color: #000; }
+        .badge-activo { background: #10b981; color: #000; }
+        .badge-cerrado { background: #6b7280; color: #fff; }
     </style>
 </head>
 <body class="gradient-bg min-h-screen text-gray-100">
@@ -123,6 +123,25 @@
     <div class="card-glass rounded-2xl p-6 text-center">
         <p class="text-gray-400 mb-4" id="instruccion">Selecciona un periodo arriba</p>
         <p id="periodo-activo" class="text-lg font-semibold text-amber-400 hidden"></p>
+        
+        <!-- Info de la predicción activa -->
+        <div id="prediccion-activa" class="hidden mb-4 p-4 rounded-xl bg-slate-800/50">
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="text-sm text-gray-400">Tu voto:</span>
+                    <span id="mi-voto" class="font-bold"></span>
+                </div>
+                <div>
+                    <span class="text-sm text-gray-400">Tiempo restante:</span>
+                    <span id="tiempo-restante" class="font-bold text-amber-400 countdown"></span>
+                </div>
+                <div>
+                    <span class="text-sm text-gray-400">Estado:</span>
+                    <span id="estado-prediccion" class="px-2 py-1 rounded-full text-xs font-bold"></span>
+                </div>
+            </div>
+        </div>
+        
         <div class="grid grid-cols-2 gap-6 mt-6 hidden" id="botones-voto">
             <button onclick="votar('sube')" class="bg-green-500/20 hover:bg-green-500/30 text-green-400 py-6 rounded-xl text-2xl font-bold transition">
                 <i class="fas fa-arrow-up mr-2"></i> SUBE
@@ -199,11 +218,15 @@
 let usuarioActual = null;
 let periodoSeleccionado = null;
 let precioBTC = 0;
+let intervaloTiempo = null;
+let prediccionActivaId = null;
+
 const DURACIONES = {
     '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
     '1h': 60 * 60 * 1000, '4h': 4 * 60 * 60 * 1000, '24h': 24 * 60 * 60 * 1000,
     '1sem': 7 * 24 * 60 * 60 * 1000, '1mes': 30 * 24 * 60 * 60 * 1000
 };
+
 const TIERS = [
     { nombre: 'Bronce', min: 0, clase: 'bronze' },
     { nombre: 'Plata', min: 50, clase: 'silver' },
@@ -254,6 +277,7 @@ function verificarSesion() {
             usuarioActual = null; 
             actualizarUI(); 
             document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
+            document.getElementById('prediccion-activa').classList.add('hidden');
         }
     });
 }
@@ -278,6 +302,7 @@ async function cargarUsuario(user) {
         actualizarUI();
         cargarMisPredicciones();
         cargarRanking();
+        buscarPrediccionActiva();
     } catch (e) {
         console.log('Error cargando usuario:', e);
         mostrarToast('Error al cargar usuario', 'error');
@@ -322,6 +347,8 @@ async function logout() {
     usuarioActual = null;
     actualizarUI();
     document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
+    document.getElementById('prediccion-activa').classList.add('hidden');
+    if (intervaloTiempo) clearInterval(intervaloTiempo);
     mostrarToast('Sesión cerrada');
 }
 
@@ -344,9 +371,102 @@ function actualizarUI() {
 }
 
 // ==============================================
+// PREDICCIÓN ACTIVA (TIEMPO REAL)
+// ==============================================
+async function buscarPrediccionActiva() {
+    if (!usuarioActual) return;
+    
+    try {
+        const snap = await db.collection('predicciones')
+            .where('usuarioId', '==', usuarioActual.uid)
+            .where('estado', '==', 'activo')
+            .orderBy('creado', 'desc')
+            .limit(1)
+            .get();
+        
+        if (!snap.empty) {
+            const doc = snap.docs[0];
+            const pred = doc.data();
+            prediccionActivaId = doc.id;
+            mostrarPrediccionActiva(pred);
+            
+            // Iniciar contador
+            if (intervaloTiempo) clearInterval(intervaloTiempo);
+            intervaloTiempo = setInterval(() => {
+                actualizarTiempoRestante(pred.cierre);
+            }, 1000);
+        } else {
+            document.getElementById('prediccion-activa').classList.add('hidden');
+            if (intervaloTiempo) {
+                clearInterval(intervaloTiempo);
+                intervaloTiempo = null;
+            }
+        }
+    } catch (e) {
+        console.log('Error buscando predicción activa:', e);
+    }
+}
+
+function mostrarPrediccionActiva(pred) {
+    const div = document.getElementById('prediccion-activa');
+    div.classList.remove('hidden');
+    
+    const voto = pred.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
+    const votoClase = pred.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+    document.getElementById('mi-voto').innerHTML = `<span class="${votoClase}">${voto}</span>`;
+    document.getElementById('tiempo-restante').textContent = calcularTiempoRestante(pred.cierre);
+    
+    const estadoSpan = document.getElementById('estado-prediccion');
+    estadoSpan.textContent = '⏳ Pendiente';
+    estadoSpan.className = 'px-2 py-1 rounded-full text-xs font-bold badge-pendiente';
+}
+
+function actualizarTiempoRestante(cierre) {
+    const tiempoStr = calcularTiempoRestante(cierre);
+    document.getElementById('tiempo-restante').textContent = tiempoStr;
+    
+    // Si el tiempo se acabó, verificar resultado
+    const ahora = new Date();
+    const cierreDate = new Date(cierre);
+    if (ahora >= cierreDate) {
+        clearInterval(intervaloTiempo);
+        intervaloTiempo = null;
+        verificarResultado();
+    }
+}
+
+function calcularTiempoRestante(cierre) {
+    const ahora = new Date();
+    const diff = new Date(cierre) - ahora;
+    
+    if (diff <= 0) return '⏰ Finalizado';
+    
+    const segundos = Math.floor(diff / 1000);
+    const minutos = Math.floor(segundos / 60);
+    const horas = Math.floor(minutos / 60);
+    const dias = Math.floor(horas / 24);
+    
+    if (dias > 0) {
+        return `${dias}d ${horas % 24}h ${minutos % 60}m`;
+    } else if (horas > 0) {
+        return `${horas}h ${minutos % 60}m ${segundos % 60}s`;
+    } else if (minutos > 0) {
+        return `${minutos}m ${segundos % 60}s`;
+    } else {
+        return `${segundos}s`;
+    }
+}
+
+// ==============================================
 // VOTACIÓN
 // ==============================================
 function selectPeriodo(periodo, btn) {
+    // Si ya hay una predicción activa, no permitir votar
+    if (prediccionActivaId) {
+        mostrarToast('⚠️ Ya tienes una predicción activa', 'error');
+        return;
+    }
+    
     periodoSeleccionado = periodo;
     document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
@@ -366,6 +486,7 @@ async function votar(direccion) {
         return mostrarToast('Inicia sesión para votar', 'error');
     }
     if (!periodoSeleccionado) return mostrarToast('Selecciona un periodo', 'error');
+    if (prediccionActivaId) return mostrarToast('⚠️ Ya tienes una predicción activa', 'error');
     
     const ahora = new Date();
     const cierre = new Date(ahora.getTime() + DURACIONES[periodoSeleccionado]);
@@ -384,7 +505,7 @@ async function votar(direccion) {
         }
         
         // Guardar predicción
-        await db.collection('predicciones').add({
+        const docRef = await db.collection('predicciones').add({
             usuarioId: usuarioActual.uid,
             periodo: periodoSeleccionado,
             voto: direccion,
@@ -394,12 +515,32 @@ async function votar(direccion) {
             creado: new Date()
         });
         
-        console.log('Voto registrado con éxito');
+        prediccionActivaId = docRef.id;
+        console.log('Voto registrado con éxito, ID:', prediccionActivaId);
         mostrarToast(`✅ Voto registrado: ${direccion.toUpperCase()}`);
         document.getElementById('mensaje').textContent = `✅ Voto registrado: ${direccion.toUpperCase()}`;
         
-        // Programar verificación
-        setTimeout(() => verificarResultado(), DURACIONES[periodoSeleccionado] + 5000);
+        // Ocultar botones de voto
+        document.getElementById('botones-voto').classList.add('hidden');
+        
+        // Mostrar predicción activa
+        const pred = {
+            voto: direccion,
+            cierre: cierre
+        };
+        mostrarPrediccionActiva(pred);
+        
+        // Iniciar contador
+        if (intervaloTiempo) clearInterval(intervaloTiempo);
+        intervaloTiempo = setInterval(() => {
+            actualizarTiempoRestante(cierre);
+        }, 1000);
+        
+        // Programar verificación automática
+        const tiempoEspera = DURACIONES[periodoSeleccionado] + 5000;
+        setTimeout(() => {
+            verificarResultado();
+        }, tiempoEspera);
         
         cargarMisPredicciones();
         
@@ -447,6 +588,18 @@ async function verificarResultado() {
             
             console.log('Predicción cerrada:', doc.id, 'Acierto:', acierto);
             
+            // Si es la predicción activa del usuario actual, limpiar estado
+            if (prediccionActivaId === doc.id) {
+                prediccionActivaId = null;
+                document.getElementById('prediccion-activa').classList.add('hidden');
+                if (intervaloTiempo) {
+                    clearInterval(intervaloTiempo);
+                    intervaloTiempo = null;
+                }
+                // Mostrar botones de voto nuevamente
+                document.getElementById('botones-voto').classList.remove('hidden');
+            }
+            
             // Actualizar usuario
             const userRef = db.collection('usuarios').doc(pred.usuarioId);
             if (acierto) {
@@ -460,6 +613,7 @@ async function verificarResultado() {
                     usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
                     actualizarUI();
+                    mostrarToast(`🎉 ¡Acertaste! +1 punto`, 'success');
                 }
             } else {
                 await userRef.update({
@@ -467,16 +621,22 @@ async function verificarResultado() {
                 });
                 if (usuarioActual?.uid === pred.usuarioId) {
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+                    mostrarToast(`😞 Fallaste. El BTC ${subio ? 'subió' : 'bajó'}`, 'error');
                 }
             }
         }
         cargarMisPredicciones();
         cargarRanking();
+        // Buscar si hay nueva predicción activa
+        buscarPrediccionActiva();
     } catch (e) {
         console.error('Error verificando resultados:', e);
     }
 }
 
+// ==============================================
+// MIS PREDICCIONES
+// ==============================================
 async function cargarMisPredicciones() {
     if (!usuarioActual) {
         document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
@@ -499,10 +659,29 @@ async function cargarMisPredicciones() {
         contenedor.innerHTML = snap.docs.map(d => {
             const p = d.data();
             const esActivo = p.estado === 'activo';
-            const estadoClase = esActivo ? 'text-amber-400' : (p.resultado === 'acierto' ? 'text-green-400' : 'text-red-400');
-            const estadoTxt = esActivo ? '⏳ Pendiente' : (p.resultado === 'acierto' ? '✅ Acertado' : '❌ Fallado');
+            
+            let estadoClase, estadoTxt;
+            if (esActivo) {
+                estadoClase = 'badge-pendiente';
+                estadoTxt = '⏳ Pendiente';
+            } else if (p.resultado === 'acierto') {
+                estadoClase = 'badge-activo';
+                estadoTxt = '✅ Acertado';
+            } else {
+                estadoClase = 'badge-cerrado';
+                estadoTxt = '❌ Fallado';
+            }
+            
             const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
             const direccionIcon = p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
+            
+            // Mostrar tiempo restante si está activo
+            let tiempoInfo = '';
+            if (esActivo && p.cierre) {
+                const tiempoRestante = calcularTiempoRestante(p.cierre);
+                tiempoInfo = `<div class="text-xs text-amber-400">⏱ ${tiempoRestante}</div>`;
+            }
+            
             return `
                 <div class="card-glass rounded-xl p-4 flex justify-between items-center">
                     <div>
@@ -510,7 +689,8 @@ async function cargarMisPredicciones() {
                         <span class="ml-2 ${direccionClase}">${direccionIcon}</span>
                     </div>
                     <div class="text-right">
-                        <div class="${estadoClase} text-sm font-semibold">${estadoTxt}</div>
+                        <div class="px-2 py-0.5 rounded-full text-xs font-bold ${estadoClase}">${estadoTxt}</div>
+                        ${tiempoInfo}
                         <div class="text-xs text-gray-500">${p.precioInicial ? '$' + Math.round(p.precioInicial) : ''}</div>
                     </div>
                 </div>
@@ -585,7 +765,10 @@ function switchTab(tab, event) {
     }
     
     if (tab === 'ranking') cargarRanking();
-    if (tab === 'predict' && usuarioActual) cargarMisPredicciones();
+    if (tab === 'predict' && usuarioActual) {
+        cargarMisPredicciones();
+        buscarPrediccionActiva();
+    }
 }
 
 function openModal(tipo) {
