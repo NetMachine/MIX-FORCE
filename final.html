@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitcoin Predict Pro 🚀</title>
+    <title>Bitcoin Predict Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -26,349 +25,385 @@
         const FieldValue = firebase.firestore.FieldValue;
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #0f172a 100%); }
-        .card-glass { background: rgba(17,24,39,0.75); backdrop-filter: blur(16px); border: 1px solid rgba(148,163,184,0.15); }
-        .card-glass:hover { border-color: rgba(251,146,60,0.3); }
-        .tab-active { border-bottom: 3px solid #f7931a; color: #f7931a; }
-        .bronze { background: linear-gradient(135deg, #cd7f32, #b8860b); color: #000; }
-        .silver { background: linear-gradient(135deg, #c0c0c0, #808080); color: #000; }
-        .gold { background: linear-gradient(135deg, #ffd700, #ffb300); color: #000; }
-        .platinum { background: linear-gradient(135deg, #e5e4e2, #b9f2ff); color: #000; }
-        .master { background: linear-gradient(135deg, #9945ff, #ff0080); color: #fff; }
-        .legend { background: linear-gradient(135deg, #ff6b35, #f7931a, #ffd700); color: #000; }
-        .periodo-btn { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); cursor: pointer; border: 2px solid transparent; }
-        .periodo-btn:hover { border-color: rgba(251,146,60,0.4); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(251,146,60,0.15); }
-        .periodo-btn.selected { border-color: #f7931a; background: rgba(251,146,60,0.12); box-shadow: 0 0 20px rgba(251,146,60,0.2); }
-        .countdown { font-variant-numeric: tabular-nums; }
-        .badge-pendiente { background: #f59e0b; color: #000; }
-        .badge-activo { background: #10b981; color: #000; }
-        .badge-cerrado { background: #6b7280; color: #fff; }
-        .scroll-predicciones { max-height: 500px; overflow-y: auto; }
-        .scroll-predicciones::-webkit-scrollbar { width: 5px; }
-        .scroll-predicciones::-webkit-scrollbar-track { background: rgba(148,163,184,0.1); border-radius: 10px; }
-        .scroll-predicciones::-webkit-scrollbar-thumb { background: #f7931a; border-radius: 10px; }
-        .pred-item { transition: all 0.2s; }
-        .pred-item:hover { background: rgba(251,146,60,0.06); }
-        .stats-card { background: rgba(17,24,39,0.6); border-radius: 14px; padding: 14px; text-align: center; border: 1px solid rgba(148,163,184,0.1); transition: all 0.2s; }
-        .stats-card:hover { border-color: rgba(251,146,60,0.3); transform: translateY(-2px); }
-        .pulse-dot { animation: pulse-dot 2s infinite; }
-        @keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
-        .price-up { color: #10b981; }
-        .price-down { color: #ef4444; }
-        .glow-text { text-shadow: 0 0 20px rgba(247,147,26,0.3); }
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        .ticker-wrap { overflow: hidden; white-space: nowrap; }
-        .ticker { display: inline-block; animation: ticker 30s linear infinite; }
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17,24,39,0.85);
+            --border: rgba(148,163,184,0.12);
+            --accent: #f7931a;
+            --accent-hover: #e8850f;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        body { background: var(--bg-primary); color: var(--text-primary); }
+        .glass { background: var(--bg-card); backdrop-filter: blur(20px); border: 1px solid var(--border); }
+        .glass:hover { border-color: rgba(247,147,26,0.2); }
+        .tab-active { border-bottom: 2px solid var(--accent); color: var(--accent); }
+        .btn-primary { background: var(--accent); color: #000; font-weight: 600; transition: all 0.2s; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-outline { border: 1px solid rgba(247,147,26,0.4); color: var(--accent); transition: all 0.2s; }
+        .btn-outline:hover { background: rgba(247,147,26,0.1); border-color: var(--accent); }
+        .tier-bronze { background: linear-gradient(135deg, #8B6914, #CD7F32); color: #000; }
+        .tier-silver { background: linear-gradient(135deg, #8899a6, #c0c0c0); color: #000; }
+        .tier-gold { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; }
+        .tier-platinum { background: linear-gradient(135deg, #E5E4E2, #B0C4DE); color: #000; }
+        .tier-master { background: linear-gradient(135deg, #4B0082, #8A2BE2); color: #fff; }
+        .tier-legend { background: linear-gradient(135deg, #FF4500, #FFD700); color: #000; }
+        .period-btn { transition: all 0.2s; border: 1px solid var(--border); cursor: pointer; }
+        .period-btn:hover { border-color: rgba(247,147,26,0.3); background: rgba(247,147,26,0.05); }
+        .period-btn.selected { border-color: var(--accent); background: rgba(247,147,26,0.1); box-shadow: 0 0 16px rgba(247,147,26,0.15); }
+        .vote-up { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); color: var(--green); transition: all 0.3s; }
+        .vote-up:hover { background: rgba(34,197,94,0.15); border-color: var(--green); }
+        .vote-down { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: var(--red); transition: all 0.3s; }
+        .vote-down:hover { background: rgba(239,68,68,0.15); border-color: var(--red); }
+        .badge-pending { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-win { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .badge-loss { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .scroll-area { max-height: 480px; overflow-y: auto; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-container { width: 100%; height: 420px; }
+        .stat-card { background: rgba(17,24,39,0.6); border: 1px solid var(--border); border-radius: 12px; padding: 16px; transition: all 0.2s; }
+        .stat-card:hover { border-color: rgba(247,147,26,0.2); }
+        .progress-track { height: 3px; background: rgba(148,163,184,0.15); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+        .prediction-row { transition: all 0.15s; border-left: 2px solid transparent; }
+        .prediction-row:hover { background: rgba(247,147,26,0.03); border-left-color: var(--accent); }
+        .rank-glow:hover { background: rgba(247,147,26,0.04); }
+        input:focus { border-color: var(--accent) !important; outline: none; }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); z-index: 50; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .ticker-bar { background: rgba(10,14,23,0.9); border-bottom: 1px solid var(--border); }
+        .ticker-content { display: flex; animation: ticker 40s linear infinite; white-space: nowrap; }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .ticker-item { display: inline-block; padding: 0 20px; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
-        .modal-overlay { background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); }
-        .btn-voto { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
-        .btn-voto::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; background: rgba(255,255,255,0.1); border-radius: 50%; transform: translate(-50%,-50%); transition: width 0.6s, height 0.6s; }
-        .btn-voto:hover::before { width: 300px; height: 300px; }
-        .btn-voto:active { transform: scale(0.97); }
-        .rank-row { transition: all 0.2s; }
-        .rank-row:hover { background: rgba(251,146,60,0.05); }
-        .progress-bar { height: 4px; border-radius: 2px; background: rgba(148,163,184,0.2); overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
-        .skeleton { background: linear-gradient(90deg, rgba(148,163,184,0.1) 25%, rgba(148,163,184,0.2) 50%, rgba(148,163,184,0.1) 75%); background-size: 200% 100%; animation: skeleton 1.5s infinite; }
-        @keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .glass-panel { background: rgba(17,24,39,0.5); backdrop-filter: blur(12px); border: 1px solid rgba(148,163,184,0.1); }
+        .ticker-item { padding: 0 24px; font-size: 12px; }
+        .modal-bg { background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); }
+        .tv-chart { border-radius: 8px; overflow: hidden; }
     </style>
 </head>
-<body class="gradient-bg min-h-screen text-gray-100">
+<body class="min-h-screen">
 
-<nav class="card-glass sticky top-0 z-50 px-4 py-3">
+
+<!-- NAVBAR -->
+<nav class="glass sticky top-0 z-50 px-4 py-3">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <span class="text-2xl animate-float">₿</span>
-            <h1 class="text-xl font-bold text-amber-400 glow-text">BitcoinPredict <span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full ml-1">PRO</span></h1>
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black font-bold text-sm">B</div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight">BitcoinPredict <span class="text-xs font-medium text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">PRO</span></h1>
+            </div>
         </div>
-        <div id="btc-price" class="hidden md:flex items-center gap-3 text-lg">
-            <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
-            <span class="text-gray-400 text-sm">BTC/USD</span>
-            <span class="text-amber-400 font-mono font-bold text-xl" id="price-value">--</span>
-            <span id="price-change" class="text-sm px-2 py-0.5 rounded-full font-medium"></span>
-            <span class="text-xs text-gray-500" id="price-high-low"></span>
+        
+        <div id="btc-price" class="hidden md:flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="live-dot"></div>
+                <span class="text-xs text-gray-500 uppercase tracking-wider">BTC/USD</span>
+            </div>
+            <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="price-value">--</span>
+            <span id="price-change" class="text-xs px-2 py-1 rounded-md font-medium"></span>
+            <span class="text-xs text-gray-600 font-mono" id="price-range"></span>
         </div>
-        <div id="auth-buttons" class="flex gap-3">
-            <button onclick="openModal('login')" class="px-4 py-2 rounded-lg border border-amber-400/50 text-amber-400 hover:bg-amber-400/10 transition text-sm font-medium">Iniciar</button>
-            <button onclick="openModal('register')" class="px-4 py-2 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition text-sm">Registrar</button>
+        
+        <div id="auth-buttons" class="flex gap-2">
+            <button onclick="openModal('login')" class="btn-outline px-4 py-2 rounded-lg text-sm">Iniciar Sesion</button>
+            <button onclick="openModal('register')" class="btn-primary px-4 py-2 rounded-lg text-sm">Registrarse</button>
         </div>
+        
         <div id="user-menu" class="hidden items-center gap-3">
             <div class="text-right">
-                <div id="user-name" class="font-semibold text-sm"></div>
-                <div id="user-tier" class="text-xs"></div>
+                <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
+                <div id="user-tier" class="text-[10px] font-medium mt-0.5"></div>
             </div>
             <div class="relative">
-                <button onclick="toggleNotificaciones()" class="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition relative">
-                    <i class="fas fa-bell text-gray-400"></i>
-                    <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center">0</span>
+                <button onclick="toggleNotif()" class="p-2 rounded-lg hover:bg-white/5 transition relative">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] flex items-center justify-center font-bold">0</span>
                 </button>
-                <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-72 card-glass rounded-xl p-3 z-50 max-h-64 overflow-y-auto">
-                    <div class="text-sm font-semibold mb-2 text-gray-300">Notificaciones</div>
+                <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-80 glass rounded-xl p-4 z-50 max-h-72 overflow-y-auto">
+                    <div class="text-sm font-semibold mb-3 text-gray-300 uppercase tracking-wider text-xs">Notificaciones</div>
                     <div id="notif-list" class="space-y-2"></div>
                 </div>
             </div>
-            <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-sm hover:bg-red-500/30 transition" title="Cerrar sesion">
-                <i class="fas fa-sign-out-alt"></i>
+            <button onclick="logout()" class="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition" title="Cerrar sesion">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
             </button>
         </div>
     </div>
 </nav>
 
-<div class="bg-slate-900/50 border-b border-slate-800 py-2 overflow-hidden">
-    <div class="ticker-wrap">
-        <div class="ticker text-sm" id="market-ticker">
-            <span class="ticker-item text-gray-400">Cargando datos del mercado...</span>
-        </div>
+<!-- TICKER -->
+<div class="ticker-bar py-2 overflow-hidden">
+    <div class="ticker-content" id="market-ticker">
+        <span class="ticker-item text-gray-500">Cargando mercado...</span>
     </div>
 </div>
 
-<div class="md:hidden card-glass mx-4 mt-3 p-3 rounded-xl flex justify-center gap-3 items-center">
-    <span class="w-2 h-2 rounded-full bg-green-400 pulse-dot"></span>
-    <span class="text-amber-400 font-bold text-lg font-mono" id="price-value-movil">--</span>
-    <span id="price-change-movil" class="text-sm px-2 py-0.5 rounded-full font-medium"></span>
+<!-- MOBILE PRICE -->
+<div class="md:hidden glass mx-4 mt-3 p-3 rounded-xl flex justify-center gap-3 items-center">
+    <div class="live-dot"></div>
+    <span class="text-amber-400 font-bold text-base font-mono" id="price-value-movil">--</span>
+    <span id="price-change-movil" class="text-xs px-2 py-0.5 rounded-md font-medium"></span>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 mt-4">
-    <div class="flex border-b border-gray-700/50 gap-6 text-sm font-medium overflow-x-auto">
-        <button class="py-3 px-1 tab-active whitespace-nowrap" onclick="switchTab('predict', event)">Predecir</button>
-        <button class="py-3 px-1 text-gray-400 whitespace-nowrap" onclick="switchTab('mercado', event)">Mercado</button>
-        <button class="py-3 px-1 text-gray-400 whitespace-nowrap" onclick="switchTab('ranking', event)">Ranking</button>
-        <button class="py-3 px-1 text-gray-400 whitespace-nowrap" onclick="switchTab('global', event)">En Vivo</button>
-        <button class="py-3 px-1 text-gray-400 whitespace-nowrap" onclick="switchTab('analisis', event)">Analisis</button>
+<!-- TABS -->
+<div class="max-w-7xl mx-auto px-4 mt-2">
+    <div class="flex border-b border-gray-800 gap-1 text-sm font-medium overflow-x-auto">
+        <button class="py-3 px-4 tab-active whitespace-nowrap" onclick="switchTab('predict', event)">Predecir</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition" onclick="switchTab('mercado', event)">Mercado</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition" onclick="switchTab('ranking', event)">Ranking</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition" onclick="switchTab('global', event)">En Vivo</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition" onclick="switchTab('analisis', event)">Analisis</button>
     </div>
 </div>
-<!-- TAB: PREDECIR -->
-<section id="tab-predict" class="max-w-5xl mx-auto px-4 py-6">
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6" id="market-quick-stats">
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Cap. Mercado</div>
-            <div class="text-sm font-bold text-gray-200" id="quick-mcap">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Volumen 24h</div>
-            <div class="text-sm font-bold text-gray-200" id="quick-vol">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Dominancia</div>
-            <div class="text-sm font-bold text-amber-400" id="quick-dom">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">ATH</div>
-            <div class="text-sm font-bold text-green-400" id="quick-ath">--</div>
-        </div>
-    </div>
 
-    <h2 class="text-2xl font-bold mb-4 text-center">Elige el periodo y vota</h2>
+<!-- ==================== TAB: PREDECIR ==================== -->
+<section id="tab-predict" class="max-w-6xl mx-auto px-4 py-6">
     
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div>
+            <div class="text-sm font-bold text-gray-200 font-mono" id="quick-mcap">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div>
+            <div class="text-sm font-bold text-gray-200 font-mono" id="quick-vol">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div>
+            <div class="text-sm font-bold text-amber-400 font-mono" id="quick-dom">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div>
+            <div class="text-sm font-bold text-green-400 font-mono" id="quick-ath">--</div>
+        </div>
+    </div>
+
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Selecciona un Periodo</h2>
+        <p class="text-sm text-gray-500 mt-1">Mayor periodo, mayores recompensas</p>
+    </div>
+    
+    <!-- Period Selector -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('5m', this)">
-            <div class="text-2xl mb-1">⚡</div>
-            <div class="text-lg font-bold">5 min</div>
-            <div class="text-xs text-gray-400">Ultra rapido</div>
-            <div class="text-[10px] text-amber-400 mt-1">+1 punto</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('5m', this)">
+            <div class="text-lg font-bold">5m</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Ultra Rapido</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+1 pt</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('15m', this)">
-            <div class="text-2xl mb-1">🚀</div>
-            <div class="text-lg font-bold">15 min</div>
-            <div class="text-xs text-gray-400">Corto plazo</div>
-            <div class="text-[10px] text-amber-400 mt-1">+2 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('15m', this)">
+            <div class="text-lg font-bold">15m</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Corto Plazo</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+2 pts</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('30m', this)">
-            <div class="text-2xl mb-1">📈</div>
-            <div class="text-lg font-bold">30 min</div>
-            <div class="text-xs text-gray-400">Medio plazo</div>
-            <div class="text-[10px] text-amber-400 mt-1">+3 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('30m', this)">
+            <div class="text-lg font-bold">30m</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Medio Plazo</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+3 pts</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('1h', this)">
-            <div class="text-2xl mb-1">🕐</div>
-            <div class="text-lg font-bold">1 hora</div>
-            <div class="text-xs text-gray-400">Intradia</div>
-            <div class="text-[10px] text-amber-400 mt-1">+4 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('1h', this)">
+            <div class="text-lg font-bold">1h</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Intradia</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+4 pts</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('4h', this)">
-            <div class="text-2xl mb-1">🌅</div>
-            <div class="text-lg font-bold">4 horas</div>
-            <div class="text-xs text-gray-400">Swing</div>
-            <div class="text-[10px] text-amber-400 mt-1">+5 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('4h', this)">
+            <div class="text-lg font-bold">4h</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Swing</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+5 pts</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('24h', this)">
-            <div class="text-2xl mb-1">🌙</div>
-            <div class="text-lg font-bold">24 horas</div>
-            <div class="text-xs text-gray-400">Diario</div>
-            <div class="text-[10px] text-amber-400 mt-1">+8 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('24h', this)">
+            <div class="text-lg font-bold">24h</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Diario</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+8 pts</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('1sem', this)">
-            <div class="text-2xl mb-1">📅</div>
-            <div class="text-lg font-bold">1 Semana</div>
-            <div class="text-xs text-gray-400">Semanal</div>
-            <div class="text-[10px] text-amber-400 mt-1">+15 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('1sem', this)">
+            <div class="text-lg font-bold">7d</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Semanal</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+15 pts</div>
         </button>
-        <button class="periodo-btn card-glass p-4 rounded-xl text-center" onclick="selectPeriodo('1mes', this)">
-            <div class="text-2xl mb-1">🎯</div>
-            <div class="text-lg font-bold">1 Mes</div>
-            <div class="text-xs text-gray-400">Mensual</div>
-            <div class="text-[10px] text-amber-400 mt-1">+30 puntos</div>
+        <button class="period-btn glass p-4 rounded-xl text-center" onclick="selectPeriodo('1mes', this)">
+            <div class="text-lg font-bold">30d</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Mensual</div>
+            <div class="text-[10px] text-amber-400 font-medium mt-1">+30 pts</div>
         </button>
     </div>
 
-    <div class="card-glass rounded-2xl p-6 text-center">
-        <p class="text-gray-400 mb-4" id="instruccion">Selecciona un periodo arriba para comenzar</p>
-        <p id="periodo-activo" class="text-lg font-semibold text-amber-400 hidden mb-2"></p>
+    <!-- Voting Panel -->
+    <div class="glass rounded-2xl p-6 text-center">
+        <p class="text-gray-500 text-sm mb-4" id="instruccion">Selecciona un periodo para comenzar a predecir</p>
+        <p id="periodo-activo" class="text-base font-semibold text-amber-400 hidden mb-3"></p>
         
-        <div id="prediccion-activa" class="hidden mb-4 p-4 rounded-xl bg-slate-800/50 border border-amber-500/20">
+        <!-- Active Prediction -->
+        <div id="prediccion-activa" class="hidden mb-4 p-4 rounded-xl bg-black/20 border border-amber-500/10">
             <div class="flex justify-between items-center flex-wrap gap-3">
                 <div class="text-left">
-                    <span class="text-sm text-gray-400">Tu voto:</span>
-                    <span id="mi-voto" class="font-bold text-lg ml-2"></span>
+                    <span class="text-xs text-gray-500 uppercase tracking-wider">Tu Voto</span>
+                    <div id="mi-voto" class="font-bold text-base mt-1"></div>
                 </div>
                 <div class="text-center">
-                    <span class="text-sm text-gray-400">Tiempo restante:</span>
-                    <span id="tiempo-restante" class="font-bold text-amber-400 countdown text-lg ml-1"></span>
+                    <span class="text-xs text-gray-500 uppercase tracking-wider">Tiempo Restante</span>
+                    <div id="tiempo-restante" class="font-bold text-amber-400 font-mono text-lg mt-1"></div>
                 </div>
                 <div class="text-right">
-                    <span class="text-sm text-gray-400">Estado:</span>
-                    <span id="estado-prediccion" class="px-3 py-1 rounded-full text-xs font-bold ml-1"></span>
+                    <span class="text-xs text-gray-500 uppercase tracking-wider">Estado</span>
+                    <div id="estado-prediccion" class="mt-1"></div>
                 </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between text-sm text-gray-400 flex-wrap gap-2">
-                <span>Precio inicial: <span id="pred-precio-inicial" class="text-gray-200 font-mono">--</span></span>
-                <span>Precio actual: <span id="pred-precio-actual" class="text-amber-400 font-mono">--</span></span>
+            <div class="mt-3 pt-3 border-t border-white/5 flex justify-between text-xs text-gray-500 flex-wrap gap-2 font-mono">
+                <span>Inicio: <span id="pred-precio-inicial" class="text-gray-300">--</span></span>
+                <span>Actual: <span id="pred-precio-actual" class="text-amber-400">--</span></span>
                 <span id="pred-diferencia">--</span>
             </div>
         </div>
         
-        <div class="grid grid-cols-2 gap-6 mt-6 hidden" id="botones-voto">
-            <button onclick="votar('sube')" class="btn-voto bg-green-500/15 hover:bg-green-500/25 text-green-400 py-7 rounded-2xl text-2xl font-bold transition border border-green-500/30">
-                <i class="fas fa-arrow-trend-up mr-2"></i> SUBE
-                <div class="text-xs font-normal text-green-400/60 mt-1">El precio subira</div>
+        <!-- Vote Buttons -->
+        <div class="grid grid-cols-2 gap-4 mt-4 hidden" id="botones-voto">
+            <button onclick="votar('sube')" class="vote-up py-6 rounded-xl text-xl font-bold">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    SUBE
+                </div>
+                <div class="text-xs font-normal opacity-60 mt-1">El precio subira</div>
             </button>
-            <button onclick="votar('baja')" class="btn-voto bg-red-500/15 hover:bg-red-500/25 text-red-400 py-7 rounded-2xl text-2xl font-bold transition border border-red-500/30">
-                <i class="fas fa-arrow-trend-down mr-2"></i> BAJA
-                <div class="text-xs font-normal text-red-400/60 mt-1">El precio bajara</div>
+            <button onclick="votar('baja')" class="vote-down py-6 rounded-xl text-xl font-bold">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                    BAJA
+                </div>
+                <div class="text-xs font-normal opacity-60 mt-1">El precio bajara</div>
             </button>
         </div>
-        <p id="mensaje" class="mt-4 text-gray-300 min-h-[24px]"></p>
+        <p id="mensaje" class="mt-4 text-gray-400 text-sm min-h-[20px]"></p>
         
-        <div id="user-pred-stats" class="hidden mt-6 pt-4 border-t border-slate-700/30">
+        <!-- User Stats -->
+        <div id="user-pred-stats" class="hidden mt-6 pt-4 border-t border-white/5">
             <div class="grid grid-cols-3 gap-4">
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-amber-400" id="user-total-preds">0</div>
-                    <div class="text-xs text-gray-500">Total</div>
+                    <div class="text-xl font-bold text-amber-400 font-mono" id="user-total-preds">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Total</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-green-400" id="user-win-preds">0</div>
-                    <div class="text-xs text-gray-500">Ganadas</div>
+                    <div class="text-xl font-bold text-green-400 font-mono" id="user-win-preds">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Ganadas</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-400" id="user-winrate-preds">0%</div>
-                    <div class="text-xs text-gray-500">Winrate</div>
+                    <div class="text-xl font-bold text-blue-400 font-mono" id="user-winrate-preds">0%</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Winrate</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- My Predictions -->
     <div class="mt-8">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold">Mis Predicciones</h3>
-            <div class="flex gap-2">
-                <button onclick="filtrarMisPreds('todos')" class="px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400" id="misfiltro-todos">Todos</button>
-                <button onclick="filtrarMisPreds('activos')" class="px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400" id="misfiltro-activos">Activos</button>
-                <button onclick="filtrarMisPreds('cerrados')" class="px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400" id="misfiltro-cerrados">Cerrados</button>
+            <h3 class="text-base font-bold uppercase tracking-wider text-gray-400 text-xs">Mis Predicciones</h3>
+            <div class="flex gap-1">
+                <button onclick="filtrarMisPreds('todos')" class="px-3 py-1 rounded-md text-xs bg-amber-500/20 text-amber-400 font-medium" id="misfiltro-todos">Todos</button>
+                <button onclick="filtrarMisPreds('activos')" class="px-3 py-1 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition" id="misfiltro-activos">Activos</button>
+                <button onclick="filtrarMisPreds('cerrados')" class="px-3 py-1 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition" id="misfiltro-cerrados">Cerrados</button>
             </div>
         </div>
-        <div id="mis-predicciones" class="space-y-3 scroll-predicciones">
-            <p class="text-gray-500 text-center py-4">No tienes predicciones</p>
+        <div id="mis-predicciones" class="space-y-2 scroll-area">
+            <p class="text-gray-600 text-center py-6 text-sm">No tienes predicciones registradas</p>
         </div>
     </div>
 </section>
 
-<!-- TAB: MERCADO -->
-<section id="tab-mercado" class="max-w-5xl mx-auto px-4 py-6 hidden">
-    <h2 class="text-2xl font-bold mb-6 text-center">Datos del Mercado en Tiempo Real</h2>
+
+
+<!-- ==================== TAB: MERCADO ==================== -->
+<section id="tab-mercado" class="max-w-6xl mx-auto px-4 py-6 hidden">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Analisis de Mercado</h2>
+        <p class="text-sm text-gray-500 mt-1">Datos en tiempo real del mercado cripto</p>
+    </div>
     
-    <div class="card-glass rounded-2xl p-4 mb-6">
-        <div class="flex justify-between items-center mb-4">
+    <!-- Candlestick Chart -->
+    <div class="glass rounded-2xl p-4 mb-6">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
             <div>
-                <h3 class="font-bold text-lg">Grafico de Precio BTC/USD</h3>
-                <p class="text-xs text-gray-500">Actualizado cada 30 segundos</p>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">BTC/USD - Grafico de Velas</h3>
+                <p class="text-xs text-gray-600 mt-0.5">Actualizacion en tiempo real via WebSocket</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="cambiarTimeframeChart('1h')" class="px-3 py-1 rounded-lg text-xs bg-amber-500/20 text-amber-400" id="chart-1h">1H</button>
-                <button onclick="cambiarTimeframeChart('24h')" class="px-3 py-1 rounded-lg text-xs bg-slate-700/50 text-gray-400" id="chart-24h">24H</button>
-                <button onclick="cambiarTimeframeChart('7d')" class="px-3 py-1 rounded-lg text-xs bg-slate-700/50 text-gray-400" id="chart-7d">7D</button>
+            <div class="flex gap-1">
+                <button onclick="cambiarTimeframe('1s')" class="px-2.5 py-1 rounded text-[10px] font-medium bg-amber-500/20 text-amber-400" id="tf-1s">1s</button>
+                <button onclick="cambiarTimeframe('1m')" class="px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition" id="tf-1m">1m</button>
+                <button onclick="cambiarTimeframe('5m')" class="px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition" id="tf-5m">5m</button>
+                <button onclick="cambiarTimeframe('15m')" class="px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition" id="tf-15m">15m</button>
+                <button onclick="cambiarTimeframe('1h')" class="px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition" id="tf-1h">1h</button>
+                <button onclick="cambiarTimeframe('4h')" class="px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition" id="tf-4h">4h</button>
             </div>
         </div>
-        <div class="chart-container">
-            <canvas id="priceChart"></canvas>
+        <div id="candlestick-chart" class="chart-container tv-chart"></div>
+    </div>
+    
+    <!-- Market Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div>
+            <div class="text-base font-bold text-gray-200 font-mono" id="det-mcap">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div>
+            <div class="text-base font-bold text-gray-200 font-mono" id="det-vol">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Ranking</div>
+            <div class="text-base font-bold text-amber-400 font-mono">#1</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Max 24h</div>
+            <div class="text-base font-bold text-green-400 font-mono" id="det-high">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Min 24h</div>
+            <div class="text-base font-bold text-red-400 font-mono" id="det-low">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div>
+            <div class="text-base font-bold text-amber-400 font-mono" id="det-ath">--</div>
+            <div class="text-[10px] text-gray-600 mt-0.5" id="det-ath-date">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Supply</div>
+            <div class="text-base font-bold text-gray-200 font-mono" id="det-supply">--</div>
+            <div class="progress-track mt-1.5"><div class="progress-fill bg-amber-400" id="det-supply-bar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div>
+            <div class="text-base font-bold text-amber-400 font-mono" id="det-dom">--</div>
+            <div class="progress-track mt-1.5"><div class="progress-fill bg-amber-400" id="det-dom-bar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sentimiento</div>
+            <div class="text-base font-bold text-gray-200" id="det-sentiment">--</div>
         </div>
     </div>
     
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-chart-line mr-1"></i>Cap. de Mercado</div>
-            <div class="text-lg font-bold text-gray-200" id="det-mcap">--</div>
-            <div class="text-xs text-gray-600" id="det-mcap-change">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-exchange-alt mr-1"></i>Volumen 24h</div>
-            <div class="text-lg font-bold text-gray-200" id="det-vol">--</div>
-            <div class="text-xs text-gray-600" id="det-vol-change">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-crown mr-1"></i>Ranking</div>
-            <div class="text-lg font-bold text-amber-400" id="det-rank">#1</div>
-            <div class="text-xs text-gray-600">Bitcoin</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-arrow-up mr-1"></i>Maximo 24h</div>
-            <div class="text-lg font-bold text-green-400" id="det-high">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-arrow-down mr-1"></i>Minimo 24h</div>
-            <div class="text-lg font-bold text-red-400" id="det-low">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-trophy mr-1"></i>ATH</div>
-            <div class="text-lg font-bold text-amber-400" id="det-ath">--</div>
-            <div class="text-xs text-gray-600" id="det-ath-date">--</div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-percentage mr-1"></i>Supply Circulante</div>
-            <div class="text-lg font-bold text-gray-200" id="det-supply">--</div>
-            <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" id="det-supply-bar" style="width:0%"></div></div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-globe mr-1"></i>Dominancia BTC</div>
-            <div class="text-lg font-bold text-amber-400" id="det-dom">--</div>
-            <div class="progress-bar mt-1"><div class="progress-fill bg-amber-400" id="det-dom-bar" style="width:0%"></div></div>
-        </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-fire mr-1"></i>Sentimiento</div>
-            <div class="text-lg font-bold" id="det-sentiment">--</div>
-            <div class="text-xs text-gray-600" id="det-fear-greed">--</div>
-        </div>
-    </div>
-    
-    <div class="card-glass rounded-2xl p-4">
-        <h3 class="font-bold text-lg mb-4">Top 10 Criptomonedas</h3>
+    <!-- Top Cryptos -->
+    <div class="glass rounded-2xl p-4">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Top 10 Criptomonedas</h3>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead class="text-gray-500 text-xs uppercase">
+                <thead class="text-gray-600 text-[10px] uppercase tracking-wider">
                     <tr>
-                        <th class="py-2 px-3 text-left">#</th>
-                        <th class="py-2 px-3 text-left">Moneda</th>
-                        <th class="py-2 px-3 text-right">Precio</th>
-                        <th class="py-2 px-3 text-right">24h %</th>
-                        <th class="py-2 px-3 text-right hidden sm:table-cell">Cap. Mercado</th>
-                        <th class="py-2 px-3 text-right hidden md:table-cell">Volumen 24h</th>
+                        <th class="py-2 px-3 text-left font-medium">#</th>
+                        <th class="py-2 px-3 text-left font-medium">Activo</th>
+                        <th class="py-2 px-3 text-right font-medium">Precio</th>
+                        <th class="py-2 px-3 text-right font-medium">24h</th>
+                        <th class="py-2 px-3 text-right font-medium hidden sm:table-cell">Cap. Mercado</th>
+                        <th class="py-2 px-3 text-right font-medium hidden md:table-cell">Volumen</th>
                     </tr>
                 </thead>
                 <tbody id="top-crypto-table"></tbody>
@@ -377,33 +412,35 @@
     </div>
 </section>
 
-<!-- TAB: RANKING -->
-<section id="tab-ranking" class="max-w-5xl mx-auto px-4 py-6 hidden">
-    <h2 class="text-2xl font-bold mb-2 text-center">Ranking Global</h2>
-    <p class="text-center text-gray-500 text-sm mb-6">Compite con otros predictores y sube de tier</p>
-    
-    <div class="flex flex-wrap justify-center gap-2 mb-6">
-        <span class="px-3 py-1 rounded-full text-xs font-bold bronze">Bronce 0+</span>
-        <span class="px-3 py-1 rounded-full text-xs font-bold silver">Plata 50+</span>
-        <span class="px-3 py-1 rounded-full text-xs font-bold gold">Oro 200+</span>
-        <span class="px-3 py-1 rounded-full text-xs font-bold platinum">Platino 500+</span>
-        <span class="px-3 py-1 rounded-full text-xs font-bold master">Maestro 1000+</span>
-        <span class="px-3 py-1 rounded-full text-xs font-bold legend">Leyenda 5000+</span>
+<!-- ==================== TAB: RANKING ==================== -->
+<section id="tab-ranking" class="max-w-6xl mx-auto px-4 py-6 hidden">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Ranking Global</h2>
+        <p class="text-sm text-gray-500 mt-1">Compite y sube de nivel</p>
     </div>
     
-    <div class="card-glass rounded-xl overflow-hidden">
+    <div class="flex flex-wrap justify-center gap-2 mb-6">
+        <span class="px-3 py-1 rounded-md text-[10px] font-bold tier-bronze">BRONCE 0+</span>
+        <span class="px-3 py-1 rounded-md text-[10px] font-bold tier-silver">PLATA 50+</span>
+        <span class="px-3 py-1 rounded-md text-[10px] font-bold tier-gold">ORO 200+</span>
+        <span class="px-3 py-1 rounded-md text-[10px] font-bold tier-platinum">PLATINO 500+</span>
+        <span class="px-3 py-1 rounded-md text-[10px] font-bold tier-master">MAESTRO 1000+</span>
+        <span class="px-3 py-1 rounded-md text-[10px] font-bold tier-legend">LEYENDA 5000+</span>
+    </div>
+    
+    <div class="glass rounded-xl overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-slate-800/50 text-xs uppercase text-gray-500">
+            <table class="w-full text-sm">
+                <thead class="bg-white/5 text-[10px] uppercase tracking-wider text-gray-500">
                     <tr>
-                        <th class="py-3 px-4 text-left">#</th>
-                        <th class="py-3 px-4 text-left">Usuario</th>
-                        <th class="py-3 px-4 text-center">Tier</th>
-                        <th class="py-3 px-4 text-center">Puntos</th>
-                        <th class="py-3 px-4 text-center">Aciertos</th>
-                        <th class="py-3 px-4 text-center">Total</th>
-                        <th class="py-3 px-4 text-center">Winrate</th>
-                        <th class="py-3 px-4 text-center hidden sm:table-cell">Racha</th>
+                        <th class="py-3 px-4 text-left font-medium">Pos</th>
+                        <th class="py-3 px-4 text-left font-medium">Usuario</th>
+                        <th class="py-3 px-4 text-center font-medium">Nivel</th>
+                        <th class="py-3 px-4 text-center font-medium">Pts</th>
+                        <th class="py-3 px-4 text-center font-medium">Win</th>
+                        <th class="py-3 px-4 text-center font-medium">Total</th>
+                        <th class="py-3 px-4 text-center font-medium">Rate</th>
+                        <th class="py-3 px-4 text-center font-medium hidden sm:table-cell">Racha</th>
                     </tr>
                 </thead>
                 <tbody id="ranking-body"></tbody>
@@ -411,168 +448,167 @@
         </div>
     </div>
     
-    <div id="mi-posicion" class="mt-6 card-glass rounded-xl p-4 hidden">
-        <h3 class="font-bold mb-3">Tu Posicion</h3>
+    <div id="mi-posicion" class="mt-6 glass rounded-xl p-5 hidden">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-3">Tu Posicion</h3>
         <div class="flex items-center gap-4">
-            <div class="text-3xl font-bold text-amber-400" id="mi-rank-pos">--</div>
+            <div class="text-3xl font-bold text-amber-400 font-mono" id="mi-rank-pos">--</div>
             <div class="flex-1">
-                <div class="flex justify-between text-sm mb-1">
-                    <span class="text-gray-400">Progreso al siguiente tier</span>
-                    <span class="text-amber-400" id="tier-progreso-text">--</span>
+                <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-gray-500">Progreso al siguiente nivel</span>
+                    <span class="text-amber-400 font-mono" id="tier-progreso-text">--</span>
                 </div>
-                <div class="progress-bar"><div class="progress-fill bg-amber-400" id="tier-progreso-bar" style="width:0%"></div></div>
+                <div class="progress-track"><div class="progress-fill bg-amber-400" id="tier-progreso-bar" style="width:0%"></div></div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- TAB: GLOBAL -->
-<section id="tab-global" class="max-w-5xl mx-auto px-4 py-6 hidden">
-    <h2 class="text-2xl font-bold mb-2 text-center">Todas las predicciones en vivo</h2>
-    <p class="text-center text-gray-500 text-sm mb-6">Vota y observa las predicciones de la comunidad</p>
+<!-- ==================== TAB: GLOBAL ==================== -->
+<section id="tab-global" class="max-w-6xl mx-auto px-4 py-6 hidden">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Predicciones en Vivo</h2>
+        <p class="text-sm text-gray-500 mt-1">Actividad de la comunidad en tiempo real</p>
+    </div>
     
     <div id="user-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div class="stats-card">
-            <div class="text-xs text-gray-400">Puntos</div>
-            <div class="text-2xl font-bold text-amber-400" id="stats-puntos">0</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Puntos</div>
+            <div class="text-xl font-bold text-amber-400 font-mono" id="stats-puntos">0</div>
         </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-400">Aciertos</div>
-            <div class="text-2xl font-bold text-green-400" id="stats-aciertos">0</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Aciertos</div>
+            <div class="text-xl font-bold text-green-400 font-mono" id="stats-aciertos">0</div>
         </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-400">Fallos</div>
-            <div class="text-2xl font-bold text-red-400" id="stats-fallos">0</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Fallos</div>
+            <div class="text-xl font-bold text-red-400 font-mono" id="stats-fallos">0</div>
         </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-400">Winrate</div>
-            <div class="text-2xl font-bold text-blue-400" id="stats-winrate">0%</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Winrate</div>
+            <div class="text-xl font-bold text-blue-400 font-mono" id="stats-winrate">0%</div>
         </div>
     </div>
     
-    <div class="flex gap-2 mb-4 flex-wrap">
-        <button class="px-3 py-1.5 rounded-full text-xs bg-amber-500/20 text-amber-400 font-medium" onclick="filtrarGlobal('todos')" id="filtro-todos">Todos</button>
-        <button class="px-3 py-1.5 rounded-full text-xs bg-slate-700/50 text-gray-400 font-medium" onclick="filtrarGlobal('activos')" id="filtro-activos">Activos</button>
-        <button class="px-3 py-1.5 rounded-full text-xs bg-slate-700/50 text-gray-400 font-medium" onclick="filtrarGlobal('cerrados')" id="filtro-cerrados">Cerrados</button>
-        <button class="px-3 py-1.5 rounded-full text-xs bg-slate-700/50 text-gray-400 font-medium" onclick="filtrarGlobal('sube')" id="filtro-sube">Solo Subidas</button>
-        <button class="px-3 py-1.5 rounded-full text-xs bg-slate-700/50 text-gray-400 font-medium" onclick="filtrarGlobal('baja')" id="filtro-baja">Solo Bajadas</button>
+    <div class="flex gap-1 mb-4 flex-wrap">
+        <button class="px-3 py-1.5 rounded-md text-xs bg-amber-500/20 text-amber-400 font-medium" onclick="filtrarGlobal('todos')" id="filtro-todos">Todos</button>
+        <button class="px-3 py-1.5 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium" onclick="filtrarGlobal('activos')" id="filtro-activos">Activos</button>
+        <button class="px-3 py-1.5 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium" onclick="filtrarGlobal('cerrados')" id="filtro-cerrados">Cerrados</button>
+        <button class="px-3 py-1.5 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium" onclick="filtrarGlobal('sube')" id="filtro-sube">Subidas</button>
+        <button class="px-3 py-1.5 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium" onclick="filtrarGlobal('baja')" id="filtro-baja">Bajadas</button>
     </div>
     
     <div class="flex justify-between items-center mb-3">
-        <span class="text-xs text-gray-500" id="global-count">0 predicciones</span>
-        <span class="text-xs text-gray-500" id="global-activas-count">0 activas</span>
+        <span class="text-xs text-gray-600 font-mono" id="global-count">0 predicciones</span>
+        <span class="text-xs text-gray-600 font-mono" id="global-activas-count">0 activas</span>
     </div>
     
-    <div id="global-predicciones" class="space-y-3 scroll-predicciones">
-        <p class="text-gray-500 text-center py-4">Cargando predicciones...</p>
+    <div id="global-predicciones" class="space-y-2 scroll-area">
+        <p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones...</p>
     </div>
 </section>
 
-<!-- TAB: ANALISIS -->
-<section id="tab-analisis" class="max-w-5xl mx-auto px-4 py-6 hidden">
-    <h2 class="text-2xl font-bold mb-2 text-center">Analisis de Predicciones</h2>
-    <p class="text-center text-gray-500 text-sm mb-6">Estadisticas y tendencias de la comunidad</p>
+<!-- ==================== TAB: ANALISIS ==================== -->
+<section id="tab-analisis" class="max-w-6xl mx-auto px-4 py-6 hidden">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Analisis de la Comunidad</h2>
+        <p class="text-sm text-gray-500 mt-1">Estadisticas y tendencias globales</p>
+    </div>
     
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Total Predicciones</div>
-            <div class="text-xl font-bold text-gray-200" id="anal-total">0</div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Predicciones</div>
+            <div class="text-lg font-bold text-gray-200 font-mono" id="anal-total">0</div>
         </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Tasa de Acierto Global</div>
-            <div class="text-xl font-bold text-green-400" id="anal-winrate">0%</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Winrate Global</div>
+            <div class="text-lg font-bold text-green-400 font-mono" id="anal-winrate">0%</div>
         </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Predicciones Activas</div>
-            <div class="text-xl font-bold text-amber-400" id="anal-activas">0</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Activas</div>
+            <div class="text-lg font-bold text-amber-400 font-mono" id="anal-activas">0</div>
         </div>
-        <div class="stats-card">
-            <div class="text-xs text-gray-500 mb-1">Usuarios Activos</div>
-            <div class="text-xl font-bold text-blue-400" id="anal-usuarios">0</div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Usuarios</div>
+            <div class="text-lg font-bold text-blue-400 font-mono" id="anal-usuarios">0</div>
         </div>
     </div>
     
-    <div class="grid md:grid-cols-2 gap-6 mb-6">
-        <div class="card-glass rounded-2xl p-4">
-            <h3 class="font-bold mb-4">Distribucion de Votos</h3>
-            <div class="flex items-center gap-4 mb-3">
-                <span class="text-green-400 text-sm font-medium w-16">SUBE</span>
-                <div class="flex-1 progress-bar h-3"><div class="progress-fill bg-green-500" id="dist-sube-bar" style="width:50%"></div></div>
-                <span class="text-sm font-bold w-12 text-right" id="dist-sube-pct">50%</span>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Distribucion de Votos</h3>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-green-400 text-xs font-medium w-12">SUBE</span>
+                <div class="flex-1 progress-track h-2"><div class="progress-fill bg-green-500" id="dist-sube-bar" style="width:50%"></div></div>
+                <span class="text-xs font-bold w-10 text-right font-mono" id="dist-sube-pct">50%</span>
             </div>
-            <div class="flex items-center gap-4">
-                <span class="text-red-400 text-sm font-medium w-16">BAJA</span>
-                <div class="flex-1 progress-bar h-3"><div class="progress-fill bg-red-500" id="dist-baja-bar" style="width:50%"></div></div>
-                <span class="text-sm font-bold w-12 text-right" id="dist-baja-pct">50%</span>
+            <div class="flex items-center gap-3">
+                <span class="text-red-400 text-xs font-medium w-12">BAJA</span>
+                <div class="flex-1 progress-track h-2"><div class="progress-fill bg-red-500" id="dist-baja-bar" style="width:50%"></div></div>
+                <span class="text-xs font-bold w-10 text-right font-mono" id="dist-baja-pct">50%</span>
             </div>
         </div>
         
-        <div class="card-glass rounded-2xl p-4">
-            <h3 class="font-bold mb-4">Mejores Periodos</h3>
+        <div class="glass rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mejores Periodos</h3>
             <div id="mejores-periodos" class="space-y-2">
-                <p class="text-gray-500 text-sm">Cargando...</p>
+                <p class="text-gray-600 text-sm">Cargando datos...</p>
             </div>
         </div>
     </div>
     
-    <div class="card-glass rounded-2xl p-4 mb-6">
-        <h3 class="font-bold mb-4">Historial de Precios (Ultimas 24h)</h3>
-        <div class="chart-container" style="height:250px">
-            <canvas id="historyChart"></canvas>
-        </div>
-    </div>
-    
-    <div class="card-glass rounded-2xl p-4">
-        <h3 class="font-bold mb-4">Ultimos Resultados</h3>
-        <div id="ultimos-resultados" class="space-y-2">
-            <p class="text-gray-500 text-sm">Cargando...</p>
+    <div class="glass rounded-2xl p-5">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Ultimos Resultados</h3>
+        <div id="ultimos-resultados" class="space-y-1.5">
+            <p class="text-gray-600 text-sm">Cargando resultados...</p>
         </div>
     </div>
 </section>
 
 <!-- MODAL -->
-<div id="modal-auth" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50 p-4">
-    <div class="card-glass rounded-2xl p-6 w-full max-w-md fade-in">
+<div id="modal-auth" class="fixed inset-0 modal-bg hidden items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-md fade-in">
         <div class="flex justify-between items-center mb-6">
-            <h2 id="modal-titulo" class="text-2xl font-bold">Iniciar Sesion</h2>
-            <button onclick="cerrarModal()" class="text-gray-400 hover:text-white text-2xl transition">&times;</button>
+            <h2 id="modal-titulo" class="text-xl font-bold">Iniciar Sesion</h2>
+            <button onclick="cerrarModal()" class="text-gray-500 hover:text-white text-xl transition">&times;</button>
         </div>
         <div id="login-form">
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs text-gray-500 mb-1 block">Correo electronico</label>
-                    <input type="email" id="email" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none transition">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Correo Electronico</label>
+                    <input type="email" id="email" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-500 mb-1 block">Contrasena</label>
-                    <input type="password" id="pass" placeholder="********" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none transition">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Contrasena</label>
+                    <input type="password" id="pass" placeholder="********" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition">
                 </div>
-                <button onclick="login()" class="w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition">Entrar</button>
+                <button onclick="login()" class="w-full py-3 rounded-lg btn-primary text-sm">Entrar</button>
             </div>
-            <p class="text-center mt-4 text-gray-400 text-sm">No tienes cuenta? <a href="#" onclick="openModal('register')" class="text-amber-400 hover:underline">Registrarse</a></p>
+            <p class="text-center mt-4 text-gray-500 text-sm">No tienes cuenta? <a href="#" onclick="openModal('register')" class="text-amber-400 hover:underline">Registrarse</a></p>
         </div>
         <div id="register-form" class="hidden space-y-4">
             <div>
-                <label class="text-xs text-gray-500 mb-1 block">Nombre de usuario</label>
-                <input type="text" id="username" placeholder="TraderPro123" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none transition">
+                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Usuario</label>
+                <input type="text" id="username" placeholder="TraderPro" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition">
             </div>
             <div>
-                <label class="text-xs text-gray-500 mb-1 block">Correo electronico</label>
-                <input type="email" id="email-reg" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none transition">
+                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Correo Electronico</label>
+                <input type="email" id="email-reg" placeholder="tu@email.com" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition">
             </div>
             <div>
-                <label class="text-xs text-gray-500 mb-1 block">Contrasena (minimo 6 caracteres)</label>
-                <input type="password" id="pass-reg" placeholder="********" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none transition">
+                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Contrasena (min 6)</label>
+                <input type="password" id="pass-reg" placeholder="********" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm focus:border-amber-400 transition">
             </div>
-            <button onclick="register()" class="w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition">Crear Cuenta</button>
-            <p class="text-center mt-4 text-gray-400 text-sm">Ya tienes cuenta? <a href="#" onclick="openModal('login')" class="text-amber-400 hover:underline">Iniciar sesion</a></p>
+            <button onclick="register()" class="w-full py-3 rounded-lg btn-primary text-sm">Crear Cuenta</button>
+            <p class="text-center mt-4 text-gray-500 text-sm">Ya tienes cuenta? <a href="#" onclick="openModal('login')" class="text-amber-400 hover:underline">Iniciar Sesion</a></p>
         </div>
     </div>
 </div>
 
-<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-40 max-w-sm text-center">
+<!-- TOAST -->
+<div id="toast" class="toast glass px-6 py-3 rounded-xl text-sm font-medium">
     <span id="toast-text"></span>
 </div>
+
 
 <script>
 // ==============================================
@@ -590,12 +626,12 @@ let filtroMisPreds = 'todos';
 let todasPrediccionesGlobal = [];
 let intervalosGlobales = [];
 let notificaciones = [];
-let priceChart = null;
-let historyChart = null;
-let chartTimeframe = '1h';
-let priceHistory = [];
-let marketData = {};
-let topCryptos = [];
+let candleSeries = null;
+let chartTV = null;
+let wsBinance = null;
+let currentTF = '1m';
+let candleData = {};
+let lastCandle = null;
 
 const DURACIONES = {
     '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
@@ -608,13 +644,17 @@ const PUNTOS_POR_PERIODO = {
 };
 
 const TIERS = [
-    { nombre: 'Bronce', min: 0, clase: 'bronze' },
-    { nombre: 'Plata', min: 50, clase: 'silver' },
-    { nombre: 'Oro', min: 200, clase: 'gold' },
-    { nombre: 'Platino', min: 500, clase: 'platinum' },
-    { nombre: 'Maestro', min: 1000, clase: 'master' },
-    { nombre: 'Leyenda', min: 5000, clase: 'legend' }
+    { nombre: 'Bronce', min: 0, clase: 'tier-bronze' },
+    { nombre: 'Plata', min: 50, clase: 'tier-silver' },
+    { nombre: 'Oro', min: 200, clase: 'tier-gold' },
+    { nombre: 'Platino', min: 500, clase: 'tier-platinum' },
+    { nombre: 'Maestro', min: 1000, clase: 'tier-master' },
+    { nombre: 'Leyenda', min: 5000, clase: 'tier-legend' }
 ];
+
+const TF_MAP = {
+    '1s': '1s', '1m': '1m', '5m': '5m', '15m': '15m', '1h': '1h', '4h': '4h'
+};
 
 // ==============================================
 // INICIO
@@ -623,21 +663,188 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarPrecioBTC();
     cargarDatosMercado();
     cargarTopCryptos();
-    setInterval(cargarPrecioBTC, 15000);
+    setInterval(cargarPrecioBTC, 10000);
     setInterval(cargarDatosMercado, 60000);
     setInterval(cargarTopCryptos, 60000);
     verificarSesion();
-    
-    setInterval(() => {
-        if (precioBTC > 0) {
-            priceHistory.push({ time: new Date(), price: precioBTC });
-            if (priceHistory.length > 288) priceHistory.shift();
-        }
-    }, 300000);
 });
 
 // ==============================================
-// PRECIO DE BITCOIN - MULTIPLES FUENTES
+// GRAFICO DE VELAS - TRADINGVIEW LIGHTWEIGHT
+// ==============================================
+function initCandlestickChart() {
+    if (chartTV) return;
+    
+    const chartContainer = document.getElementById('candlestick-chart');
+    if (!chartContainer) return;
+    
+    chartTV = LightweightCharts.createChart(chartContainer, {
+        layout: {
+            background: { color: 'transparent' },
+            textColor: '#94a3b8',
+            fontFamily: 'Inter, sans-serif',
+        },
+        grid: {
+            vertLines: { color: 'rgba(148,163,184,0.06)' },
+            horzLines: { color: 'rgba(148,163,184,0.06)' },
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+            vertLine: { color: 'rgba(247,147,26,0.3)', width: 1 },
+            horzLine: { color: 'rgba(247,147,26,0.3)', width: 1 },
+        },
+        rightPriceScale: {
+            borderColor: 'rgba(148,163,184,0.1)',
+            scaleMargins: { top: 0.1, bottom: 0.1 },
+        },
+        timeScale: {
+            borderColor: 'rgba(148,163,184,0.1)',
+            timeVisible: true,
+            secondsVisible: currentTF === '1s',
+        },
+        handleScroll: { vertTouchDrag: false },
+    });
+    
+    candleSeries = chartTV.addCandlestickSeries({
+        upColor: '#22c55e',
+        downColor: '#ef4444',
+        borderUpColor: '#22c55e',
+        borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e',
+        wickDownColor: '#ef4444',
+    });
+    
+    // Volume series
+    const volumeSeries = chartTV.addHistogramSeries({
+        color: '#22c55e',
+        priceFormat: { type: 'volume' },
+        priceScaleId: '',
+        scaleMargins: { top: 0.85, bottom: 0 },
+    });
+    
+    chartTV.volumeSeries = volumeSeries;
+    
+    // Resize observer
+    new ResizeObserver(() => chartTV.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight })).observe(chartContainer);
+    
+    // Load historical data
+    loadCandleHistory(currentTF);
+    
+    // Connect WebSocket
+    connectWebSocket();
+}
+
+async function loadCandleHistory(tf) {
+    try {
+        const interval = tf === '1s' ? '1s' : TF_MAP[tf] || '1m';
+        const limit = 500;
+        
+        const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=' + interval + '&limit=' + limit);
+        const data = await res.json();
+        
+        const candles = data.map(d => ({
+            time: tf === '1s' ? d[0] / 1000 : d[0] / 1000,
+            open: parseFloat(d[1]),
+            high: parseFloat(d[2]),
+            low: parseFloat(d[3]),
+            close: parseFloat(d[4]),
+        }));
+        
+        const volumes = data.map(d => ({
+            time: tf === '1s' ? d[0] / 1000 : d[0] / 1000,
+            value: parseFloat(d[5]),
+            color: parseFloat(d[4]) >= parseFloat(d[1]) ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)',
+        }));
+        
+        candleSeries.setData(candles);
+        if (chartTV.volumeSeries) chartTV.volumeSeries.setData(volumes);
+        
+        lastCandle = candles[candles.length - 1];
+        chartTV.timeScale().fitContent();
+        
+    } catch (e) { console.error('Error cargando velas:', e); }
+}
+
+function connectWebSocket() {
+    if (wsBinance) { wsBinance.close(); wsBinance = null; }
+    
+    const stream = currentTF === '1s' ? 'btcusdt@aggTrade' : 'btcusdt@kline_' + (TF_MAP[currentTF] || '1m');
+    wsBinance = new WebSocket('wss://stream.binance.com:9443/ws/' + stream);
+    
+    wsBinance.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        
+        if (currentTF === '1s') {
+            // Aggregate trades for 1-second candles
+            const price = parseFloat(msg.p);
+            const time = Math.floor(msg.T / 1000);
+            
+            if (!lastCandle || time > lastCandle.time) {
+                if (lastCandle) {
+                    candleSeries.update(lastCandle);
+                    if (chartTV.volumeSeries) {
+                        chartTV.volumeSeries.update({
+                            time: lastCandle.time,
+                            value: msg.q * price,
+                            color: lastCandle.close >= lastCandle.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)',
+                        });
+                    }
+                }
+                lastCandle = { time: time, open: price, high: price, low: price, close: price };
+            } else {
+                lastCandle.high = Math.max(lastCandle.high, price);
+                lastCandle.low = Math.min(lastCandle.low, price);
+                lastCandle.close = price;
+                candleSeries.update(lastCandle);
+            }
+        } else {
+            const k = msg.k;
+            const candle = {
+                time: k.t / 1000,
+                open: parseFloat(k.o),
+                high: parseFloat(k.h),
+                low: parseFloat(k.l),
+                close: parseFloat(k.c),
+            };
+            candleSeries.update(candle);
+            
+            if (chartTV.volumeSeries) {
+                chartTV.volumeSeries.update({
+                    time: k.t / 1000,
+                    value: parseFloat(k.v),
+                    color: candle.close >= candle.open ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)',
+                });
+            }
+        }
+    };
+    
+    wsBinance.onerror = (e) => console.log('WS Error:', e);
+    wsBinance.onclose = () => setTimeout(connectWebSocket, 3000);
+}
+
+function cambiarTimeframe(tf) {
+    currentTF = tf;
+    ['1s','1m','5m','15m','1h','4h'].forEach(t => {
+        const btn = document.getElementById('tf-' + t);
+        if (btn) {
+            btn.className = t === tf 
+                ? 'px-2.5 py-1 rounded text-[10px] font-medium bg-amber-500/20 text-amber-400'
+                : 'px-2.5 py-1 rounded text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition';
+        }
+    });
+    
+    if (chartTV) {
+        chartTV.applyOptions({
+            timeScale: { secondsVisible: tf === '1s', timeVisible: true }
+        });
+    }
+    
+    loadCandleHistory(tf);
+    connectWebSocket();
+}
+
+// ==============================================
+// PRECIO BTC
 // ==============================================
 async function cargarPrecioBTC() {
     try {
@@ -647,212 +854,119 @@ async function cargarPrecioBTC() {
         if (data.bitcoin) {
             precioAnterior = precioBTC;
             precioBTC = data.bitcoin.usd;
-            const cambio = data.bitcoin.usd_24h_change;
-            const cambioFmt = cambio !== undefined ? cambio.toFixed(2) : '0.00';
-            const esPositivo = cambio >= 0;
-            const cambioTxt = (esPositivo ? '+' : '') + cambioFmt + '%';
-            const clase = esPositivo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
+            const cambio = data.bitcoin.usd_24h_change || 0;
+            const esPos = cambio >= 0;
+            const txt = (esPos ? '+' : '') + cambio.toFixed(2) + '%';
+            const cls = esPos ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400';
+            const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(precioBTC);
             
-            const precioFmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(precioBTC);
+            document.getElementById('price-value').textContent = fmt;
+            document.getElementById('price-value-movil').textContent = fmt;
+            document.getElementById('price-change').textContent = txt;
+            document.getElementById('price-change').className = 'text-xs px-2 py-1 rounded-md font-medium ' + cls;
+            document.getElementById('price-change-movil').textContent = txt;
+            document.getElementById('price-change-movil').className = 'text-xs px-2 py-0.5 rounded-md font-medium ' + cls;
             
-            document.getElementById('price-value').textContent = precioFmt;
-            document.getElementById('price-value-movil').textContent = precioFmt;
-            
-            document.getElementById('price-change').textContent = cambioTxt;
-            document.getElementById('price-change').className = 'text-sm px-2 py-0.5 rounded-full font-medium ' + clase;
-            document.getElementById('price-change-movil').textContent = cambioTxt;
-            document.getElementById('price-change-movil').className = 'text-sm px-2 py-0.5 rounded-full font-medium ' + clase;
-            
-            const predPrecioActual = document.getElementById('pred-precio-actual');
-            if (predPrecioActual) predPrecioActual.textContent = precioFmt;
-            
+            const predAct = document.getElementById('pred-precio-actual');
+            if (predAct) predAct.textContent = fmt;
             actualizarDiferenciaPrediccion();
-            
-            priceHistory.push({ time: new Date(), price: precioBTC });
-            if (priceHistory.length > 288) priceHistory.shift();
         }
-    } catch (e) { 
-        console.log('Error CoinGecko, intentando Binance...', e);
+    } catch (e) {
         try {
             const res2 = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-            const data2 = await res2.json();
-            precioBTC = parseFloat(data2.lastPrice);
-            const cambio = parseFloat(data2.priceChangePercent);
-            const esPositivo = cambio >= 0;
-            const cambioTxt = (esPositivo ? '+' : '') + cambio.toFixed(2) + '%';
-            const clase = esPositivo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
-            const precioFmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:0}).format(precioBTC);
-            
-            document.getElementById('price-value').textContent = precioFmt;
-            document.getElementById('price-value-movil').textContent = precioFmt;
-            document.getElementById('price-change').textContent = cambioTxt;
-            document.getElementById('price-change').className = 'text-sm px-2 py-0.5 rounded-full font-medium ' + clase;
-            document.getElementById('price-change-movil').textContent = cambioTxt;
-            document.getElementById('price-change-movil').className = 'text-sm px-2 py-0.5 rounded-full font-medium ' + clase;
-        } catch (e2) {
-            console.log('Error Binance tambien:', e2);
-        }
+            const d2 = await res2.json();
+            precioBTC = parseFloat(d2.lastPrice);
+            const cambio = parseFloat(d2.priceChangePercent);
+            const esPos = cambio >= 0;
+            const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:0}).format(precioBTC);
+            document.getElementById('price-value').textContent = fmt;
+            document.getElementById('price-value-movil').textContent = fmt;
+            document.getElementById('price-change').textContent = (esPos ? '+' : '') + cambio.toFixed(2) + '%';
+            document.getElementById('price-change').className = 'text-xs px-2 py-1 rounded-md font-medium ' + (esPos ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400');
+        } catch (e2) {}
     }
 }
 
 // ==============================================
-// DATOS DE MERCADO DETALLADOS
+// DATOS MERCADO
 // ==============================================
 async function cargarDatosMercado() {
     try {
         const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false');
         const data = await res.json();
-        marketData = data.market_data;
+        const md = data.market_data;
         
-        const mcap = marketData.market_cap ? marketData.market_cap.usd || 0 : 0;
-        const vol = marketData.total_volume ? marketData.total_volume.usd || 0 : 0;
-        const dom = marketData.market_cap_dominance || 0;
-        const ath = marketData.ath ? marketData.ath.usd || 0 : 0;
-        const high24 = marketData.high_24h ? marketData.high_24h.usd || 0 : 0;
-        const low24 = marketData.low_24h ? marketData.low_24h.usd || 0 : 0;
-        const supply = marketData.circulating_supply || 0;
-        const maxSupply = marketData.max_supply || 21000000;
+        const mcap = md.market_cap?.usd || 0;
+        const vol = md.total_volume?.usd || 0;
+        const dom = md.market_cap_dominance || 0;
+        const ath = md.ath?.usd || 0;
+        const high24 = md.high_24h?.usd || 0;
+        const low24 = md.low_24h?.usd || 0;
+        const supply = md.circulating_supply || 0;
+        const maxSupply = md.max_supply || 21000000;
         
-        document.getElementById('quick-mcap').textContent = formatearNumero(mcap);
-        document.getElementById('quick-vol').textContent = formatearNumero(vol);
+        document.getElementById('quick-mcap').textContent = fmtNum(mcap);
+        document.getElementById('quick-vol').textContent = fmtNum(vol);
         document.getElementById('quick-dom').textContent = dom.toFixed(1) + '%';
         document.getElementById('quick-ath').textContent = '$' + Math.round(ath).toLocaleString();
         
-        document.getElementById('det-mcap').textContent = formatearNumero(mcap);
-        document.getElementById('det-vol').textContent = formatearNumero(vol);
+        document.getElementById('det-mcap').textContent = fmtNum(mcap);
+        document.getElementById('det-vol').textContent = fmtNum(vol);
         document.getElementById('det-high').textContent = '$' + Math.round(high24).toLocaleString();
         document.getElementById('det-low').textContent = '$' + Math.round(low24).toLocaleString();
         document.getElementById('det-ath').textContent = '$' + Math.round(ath).toLocaleString();
-        document.getElementById('det-ath-date').textContent = marketData.ath_date && marketData.ath_date.usd ? new Date(marketData.ath_date.usd).toLocaleDateString('es-ES') : '--';
-        document.getElementById('det-supply').textContent = (supply / 1000000).toFixed(2) + 'M BTC';
-        document.getElementById('det-supply-bar').style.width = ((supply / maxSupply) * 100).toFixed(1) + '%';
+        document.getElementById('det-ath-date').textContent = md.ath_date?.usd ? new Date(md.ath_date.usd).toLocaleDateString('es-ES') : '--';
+        document.getElementById('det-supply').textContent = (supply/1e6).toFixed(2) + 'M';
+        document.getElementById('det-supply-bar').style.width = Math.min(100, (supply/maxSupply)*100).toFixed(1) + '%';
         document.getElementById('det-dom').textContent = dom.toFixed(1) + '%';
-        document.getElementById('det-dom-bar').style.width = dom.toFixed(1) + '%';
+        document.getElementById('det-dom-bar').style.width = Math.min(100, dom).toFixed(1) + '%';
+        document.getElementById('price-range').textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
         
-        document.getElementById('price-high-low').textContent = 'H: $' + Math.round(high24/1000) + 'k L: $' + Math.round(low24/1000) + 'k';
-        
-    } catch (e) { console.log('Error datos mercado:', e); }
+    } catch (e) {}
 }
 
 async function cargarTopCryptos() {
     try {
         const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h');
-        topCryptos = await res.json();
+        const cryptos = await res.json();
         
-        let tickerHTML = '';
-        topCryptos.forEach(c => {
-            const change = c.price_change_percentage_24h || 0;
-            const color = change >= 0 ? 'text-green-400' : 'text-red-400';
-            const arrow = change >= 0 ? '▲' : '▼';
-            tickerHTML += '<span class="ticker-item">' + c.symbol.toUpperCase() + ' <span class="' + color + '">' + arrow + ' ' + Math.abs(change).toFixed(1) + '%</span> $' + Math.round(c.current_price).toLocaleString() + '</span>';
+        let ticker = '';
+        cryptos.forEach(c => {
+            const ch = c.price_change_percentage_24h || 0;
+            const col = ch >= 0 ? 'text-green-400' : 'text-red-400';
+            const ar = ch >= 0 ? '+' : '-';
+            ticker += '<span class="ticker-item">' + c.symbol.toUpperCase() + ' <span class="' + col + '">' + ar + Math.abs(ch).toFixed(1) + '%</span> <span class="text-gray-400">$' + Math.round(c.current_price).toLocaleString() + '</span></span>';
         });
-        document.getElementById('market-ticker').innerHTML = tickerHTML + tickerHTML;
+        document.getElementById('market-ticker').innerHTML = ticker + ticker;
         
-        const tbody = document.getElementById('top-crypto-table');
-        tbody.innerHTML = topCryptos.map((c, i) => {
-            const change = c.price_change_percentage_24h || 0;
-            const color = change >= 0 ? 'text-green-400' : 'text-red-400';
-            return '<tr class="border-t border-slate-800/50 hover:bg-slate-800/30 transition">' +
-                '<td class="py-2 px-3 text-gray-500">' + (i+1) + '</td>' +
-                '<td class="py-2 px-3"><div class="flex items-center gap-2"><img src="' + c.image + '" class="w-5 h-5 rounded-full" alt="' + c.name + '"><span class="font-medium">' + c.name + '</span><span class="text-xs text-gray-500">' + c.symbol.toUpperCase() + '</span></div></td>' +
-                '<td class="py-2 px-3 text-right font-mono">$' + c.current_price.toLocaleString() + '</td>' +
-                '<td class="py-2 px-3 text-right ' + color + ' font-medium">' + (change >= 0 ? '+' : '') + change.toFixed(2) + '%</td>' +
-                '<td class="py-2 px-3 text-right hidden sm:table-cell text-gray-400">$' + formatearNumero(c.market_cap) + '</td>' +
-                '<td class="py-2 px-3 text-right hidden md:table-cell text-gray-400">$' + formatearNumero(c.total_volume) + '</td>' +
+        document.getElementById('top-crypto-table').innerHTML = cryptos.map((c, i) => {
+            const ch = c.price_change_percentage_24h || 0;
+            const col = ch >= 0 ? 'text-green-400' : 'text-red-400';
+            return '<tr class="border-t border-white/5 hover:bg-white/[0.02] transition">' +
+                '<td class="py-2.5 px-3 text-gray-600 text-xs">' + (i+1) + '</td>' +
+                '<td class="py-2.5 px-3"><div class="flex items-center gap-2.5"><img src="' + c.image + '" class="w-5 h-5 rounded-full" alt=""><span class="font-medium text-sm">' + c.name + '</span><span class="text-xs text-gray-600">' + c.symbol.toUpperCase() + '</span></div></td>' +
+                '<td class="py-2.5 px-3 text-right font-mono text-sm">$' + c.current_price.toLocaleString() + '</td>' +
+                '<td class="py-2.5 px-3 text-right ' + col + ' font-medium text-sm">' + (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%</td>' +
+                '<td class="py-2.5 px-3 text-right hidden sm:table-cell text-gray-500 text-xs font-mono">$' + fmtNum(c.market_cap) + '</td>' +
+                '<td class="py-2.5 px-3 text-right hidden md:table-cell text-gray-500 text-xs font-mono">$' + fmtNum(c.total_volume) + '</td>' +
                 '</tr>';
         }).join('');
-        
-    } catch (e) { console.log('Error top cryptos:', e); }
+    } catch (e) {}
 }
 
-function formatearNumero(num) {
-    if (num >= 1e12) return '$' + (num / 1e12).toFixed(2) + 'T';
-    if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
-    return '$' + num.toLocaleString();
+function fmtNum(n) {
+    if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+    if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    return '$' + n.toLocaleString();
 }
 
-
-// ==============================================
-// GRAFICOS
-// ==============================================
-function inicializarCharts() {
-    if (priceChart) return;
-    
-    const ctx = document.getElementById('priceChart').getContext('2d');
-    priceChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [{
-                label: 'BTC/USD',
-                data: [],
-                borderColor: '#f7931a',
-                backgroundColor: 'rgba(247,147,26,0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(17,24,39,0.9)',
-                    borderColor: 'rgba(148,163,184,0.2)',
-                    borderWidth: 1,
-                    titleColor: '#f7931a',
-                    bodyColor: '#e5e7eb',
-                    callbacks: {
-                        label: (ctx) => '$' + ctx.parsed.y.toLocaleString()
-                    }
-                }
-            },
-            scales: {
-                x: { display: false },
-                y: {
-                    grid: { color: 'rgba(148,163,184,0.1)' },
-                    ticks: {
-                        color: '#6b7280',
-                        callback: (v) => '$' + (v / 1000).toFixed(0) + 'k'
-                    }
-                }
-            },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
-        }
-    });
+function fmtCompact(n) {
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+    return n.toString();
 }
 
-function actualizarChart() {
-    if (!priceChart || priceHistory.length < 2) return;
-    
-    const labels = priceHistory.map(p => p.time.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'}));
-    const data = priceHistory.map(p => p.price);
-    
-    priceChart.data.labels = labels;
-    priceChart.data.datasets[0].data = data;
-    priceChart.update('none');
-}
-
-function cambiarTimeframeChart(tf) {
-    chartTimeframe = tf;
-    ['1h','24h','7d'].forEach(t => {
-        const btn = document.getElementById('chart-' + t);
-        if (btn) {
-            if (t === tf) {
-                btn.className = 'px-3 py-1 rounded-lg text-xs bg-amber-500/20 text-amber-400';
-            } else {
-                btn.className = 'px-3 py-1 rounded-lg text-xs bg-slate-700/50 text-gray-400';
-            }
-        }
-    });
-}
 
 // ==============================================
 // AUTENTICACION
@@ -863,10 +977,10 @@ function verificarSesion() {
             await cargarUsuario(user);
             iniciarEscuchaGlobal();
             setInterval(() => verificarResultadosPendientes(), 15000);
-        } else { 
-            usuarioActual = null; 
-            actualizarUI(); 
-            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesion para ver tus predicciones</p>';
+        } else {
+            usuarioActual = null;
+            actualizarUI();
+            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
             document.getElementById('prediccion-activa').classList.add('hidden');
             if (unsubscribeGlobal) { unsubscribeGlobal(); unsubscribeGlobal = null; }
             actualizarStatsUsuario();
@@ -881,16 +995,10 @@ async function cargarUsuario(user) {
         if (!doc.exists) {
             const username = user.displayName || user.email.split('@')[0];
             await db.collection('usuarios').doc(user.uid).set({
-                email: user.email,
-                username: username,
-                puntos: 0,
-                aciertos: 0,
-                total_votos: 0,
-                racha: 0,
-                mejor_racha: 0,
-                creado: new Date()
+                email: user.email, username: username, puntos: 0, aciertos: 0,
+                total_votos: 0, racha: 0, mejor_racha: 0, creado: new Date()
             });
-            usuarioActual = { uid: user.uid, email: user.email, username: username, puntos: 0, aciertos: 0, total_votos: 0, racha: 0, mejor_racha: 0 };
+            usuarioActual = { uid: user.uid, email: user.email, username, puntos: 0, aciertos: 0, total_votos: 0, racha: 0, mejor_racha: 0 };
         } else {
             usuarioActual = { uid: user.uid, ...doc.data() };
         }
@@ -902,60 +1010,46 @@ async function cargarUsuario(user) {
         cargarAnalisis();
         
         db.collection('usuarios').doc(user.uid).onSnapshot((doc) => {
-            if (doc.exists) {
-                usuarioActual = { uid: user.uid, ...doc.data() };
-                actualizarUI();
-                actualizarStatsUsuario();
-            }
+            if (doc.exists) { usuarioActual = { uid: user.uid, ...doc.data() }; actualizarUI(); actualizarStatsUsuario(); }
         });
-    } catch (e) {
-        console.log('Error cargando usuario:', e);
-        mostrarToast('Error al cargar usuario', 'error');
-    }
+    } catch (e) { mostrarToast('Error al cargar usuario', 'error'); }
 }
 
 async function register() {
     const email = document.getElementById('email-reg').value.trim();
     const pass = document.getElementById('pass-reg').value;
     const username = document.getElementById('username').value.trim();
-    
     if (!email || !pass || !username) return mostrarToast('Completa todos los campos', 'error');
     if (pass.length < 6) return mostrarToast('Contrasena minimo 6 caracteres', 'error');
     if (username.length < 3) return mostrarToast('Usuario minimo 3 caracteres', 'error');
-    
     try {
-        const result = await auth.createUserWithEmailAndPassword(email, pass);
-        await result.user.updateProfile({ displayName: username });
-        mostrarToast('Cuenta creada con exito!');
+        const r = await auth.createUserWithEmailAndPassword(email, pass);
+        await r.user.updateProfile({ displayName: username });
+        mostrarToast('Cuenta creada exitosamente');
         cerrarModal();
-    } catch (e) {
-        mostrarToast('Error: ' + e.message, 'error');
-    }
+    } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
 }
 
 async function login() {
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('pass').value;
-    
     if (!email || !pass) return mostrarToast('Completa todos los campos', 'error');
-    
     try {
         await auth.signInWithEmailAndPassword(email, pass);
-        mostrarToast('Bienvenido!');
+        mostrarToast('Bienvenido');
         cerrarModal();
-    } catch (e) {
-        mostrarToast('Error: ' + e.message, 'error');
-    }
+    } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
 }
 
 async function logout() {
     if (unsubscribeGlobal) { unsubscribeGlobal(); unsubscribeGlobal = null; }
+    if (wsBinance) { wsBinance.close(); wsBinance = null; }
     intervalosGlobales.forEach(id => clearInterval(id));
     intervalosGlobales = [];
     await auth.signOut();
     usuarioActual = null;
     actualizarUI();
-    document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesion para ver tus predicciones</p>';
+    document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
     document.getElementById('prediccion-activa').classList.add('hidden');
     if (intervaloTiempo) clearInterval(intervaloTiempo);
     actualizarStatsUsuario();
@@ -965,7 +1059,6 @@ async function logout() {
 function actualizarUI() {
     const authBtns = document.getElementById('auth-buttons');
     const userMenu = document.getElementById('user-menu');
-    
     if (usuarioActual) {
         authBtns.classList.add('hidden');
         userMenu.classList.remove('hidden');
@@ -973,7 +1066,7 @@ function actualizarUI() {
         document.getElementById('user-name').textContent = usuarioActual.username;
         const tier = getTier(usuarioActual.puntos || 0);
         document.getElementById('user-tier').textContent = tier.nombre;
-        document.getElementById('user-tier').className = 'text-xs px-2 py-0.5 rounded-full ' + tier.clase;
+        document.getElementById('user-tier').className = 'text-[10px] font-medium px-2 py-0.5 rounded ' + tier.clase;
         document.getElementById('user-pred-stats').classList.remove('hidden');
     } else {
         authBtns.classList.remove('hidden');
@@ -985,29 +1078,23 @@ function actualizarUI() {
 
 function actualizarStatsUsuario() {
     if (!usuarioActual) {
-        document.getElementById('stats-puntos').textContent = '0';
-        document.getElementById('stats-aciertos').textContent = '0';
-        document.getElementById('stats-fallos').textContent = '0';
-        document.getElementById('stats-winrate').textContent = '0%';
-        document.getElementById('user-total-preds').textContent = '0';
-        document.getElementById('user-win-preds').textContent = '0';
-        document.getElementById('user-winrate-preds').textContent = '0%';
+        ['stats-puntos','stats-aciertos','stats-fallos','stats-winrate','user-total-preds','user-win-preds','user-winrate-preds'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = id.includes('winrate') ? '0%' : '0';
+        });
         return;
     }
-    
-    const puntos = usuarioActual.puntos || 0;
-    const aciertos = usuarioActual.aciertos || 0;
-    const total = usuarioActual.total_votos || 0;
-    const fallos = total - aciertos;
-    const winrate = total > 0 ? ((aciertos / total) * 100).toFixed(1) : 0;
-    
-    document.getElementById('stats-puntos').textContent = puntos;
-    document.getElementById('stats-aciertos').textContent = aciertos;
-    document.getElementById('stats-fallos').textContent = fallos;
-    document.getElementById('stats-winrate').textContent = winrate + '%';
-    document.getElementById('user-total-preds').textContent = total;
-    document.getElementById('user-win-preds').textContent = aciertos;
-    document.getElementById('user-winrate-preds').textContent = winrate + '%';
+    const pts = usuarioActual.puntos || 0;
+    const ac = usuarioActual.aciertos || 0;
+    const tot = usuarioActual.total_votos || 0;
+    const wr = tot > 0 ? ((ac/tot)*100).toFixed(1) : 0;
+    document.getElementById('stats-puntos').textContent = pts;
+    document.getElementById('stats-aciertos').textContent = ac;
+    document.getElementById('stats-fallos').textContent = tot - ac;
+    document.getElementById('stats-winrate').textContent = wr + '%';
+    document.getElementById('user-total-preds').textContent = tot;
+    document.getElementById('user-win-preds').textContent = ac;
+    document.getElementById('user-winrate-preds').textContent = wr + '%';
 }
 
 function getTier(puntos) {
@@ -1019,37 +1106,31 @@ function getTier(puntos) {
 // ==============================================
 // NOTIFICACIONES
 // ==============================================
-function toggleNotificaciones() {
-    const panel = document.getElementById('notif-panel');
-    panel.classList.toggle('hidden');
+function toggleNotif() {
+    document.getElementById('notif-panel').classList.toggle('hidden');
 }
 
-function agregarNotificacion(mensaje, tipo) {
-    notificaciones.unshift({ mensaje, tipo, time: new Date() });
+function agregarNotif(msg, tipo) {
+    notificaciones.unshift({ msg, tipo, time: new Date() });
     if (notificaciones.length > 20) notificaciones.pop();
-    
     const badge = document.getElementById('notif-badge');
     badge.textContent = notificaciones.length;
     badge.classList.remove('hidden');
-    badge.classList.add('notification-badge');
-    setTimeout(() => badge.classList.remove('notification-badge'), 500);
-    
-    renderizarNotificaciones();
+    renderizarNotif();
 }
 
-function renderizarNotificaciones() {
+function renderizarNotif() {
     const list = document.getElementById('notif-list');
     if (notificaciones.length === 0) {
-        list.innerHTML = '<p class="text-gray-500 text-xs text-center">Sin notificaciones</p>';
+        list.innerHTML = '<p class="text-gray-600 text-xs text-center">Sin notificaciones</p>';
         document.getElementById('notif-badge').classList.add('hidden');
         return;
     }
-    
     list.innerHTML = notificaciones.map(n => {
-        const color = n.tipo === 'success' ? 'text-green-400' : n.tipo === 'error' ? 'text-red-400' : 'text-amber-400';
-        const icon = n.tipo === 'success' ? '✅' : n.tipo === 'error' ? '❌' : '🔔';
-        const time = n.time.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
-        return '<div class="text-xs p-2 rounded-lg bg-slate-800/50 ' + color + '">' + icon + ' ' + n.mensaje + '<span class="text-gray-500 ml-2">' + time + '</span></div>';
+        const col = n.tipo === 'success' ? 'text-green-400' : n.tipo === 'error' ? 'text-red-400' : 'text-amber-400';
+        const icon = n.tipo === 'success' ? 'ACIERTO' : n.tipo === 'error' ? 'FALLO' : 'INFO';
+        const t = n.time.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+        return '<div class="text-xs p-2.5 rounded-lg bg-white/5 ' + col + ' border border-white/5"><div class="flex justify-between"><span class="font-bold">' + icon + '</span><span class="text-gray-600">' + t + '</span></div><div class="mt-0.5 text-gray-300">' + n.msg + '</div></div>';
     }).join('');
 }
 
@@ -1058,49 +1139,31 @@ function renderizarNotificaciones() {
 // ==============================================
 async function buscarPrediccionActiva() {
     if (!usuarioActual) return;
-    
     try {
-        const snap = await db.collection('predicciones')
-            .where('usuarioId', '==', usuarioActual.uid)
-            .where('estado', '==', 'activo')
-            .orderBy('creado', 'desc')
-            .limit(1)
-            .get();
-        
+        const snap = await db.collection('predicciones').where('usuarioId', '==', usuarioActual.uid).where('estado', '==', 'activo').orderBy('creado', 'desc').limit(1).get();
         if (!snap.empty) {
             const doc = snap.docs[0];
             const pred = doc.data();
             prediccionActivaId = doc.id;
-            mostrarPrediccionActiva(pred);
-            
+            mostrarPredActiva(pred);
             if (intervaloTiempo) clearInterval(intervaloTiempo);
-            intervaloTiempo = setInterval(() => {
-                actualizarTiempoRestante(pred.cierre);
-            }, 1000);
+            intervaloTiempo = setInterval(() => actualizarTiempoRestante(pred.cierre), 1000);
         } else {
             document.getElementById('prediccion-activa').classList.add('hidden');
             document.getElementById('botones-voto').classList.remove('hidden');
             if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
         }
-    } catch (e) {
-        console.log('Error buscando prediccion activa:', e);
-    }
+    } catch (e) {}
 }
 
-function mostrarPrediccionActiva(pred) {
-    const div = document.getElementById('prediccion-activa');
-    div.classList.remove('hidden');
-    
+function mostrarPredActiva(pred) {
+    document.getElementById('prediccion-activa').classList.remove('hidden');
     const voto = pred.voto === 'sube' ? 'SUBE' : 'BAJA';
-    const votoClase = pred.voto === 'sube' ? 'text-green-400' : 'text-red-400';
-    const votoIcon = pred.voto === 'sube' ? '▲' : '▼';
-    document.getElementById('mi-voto').innerHTML = '<span class="' + votoClase + '">' + votoIcon + ' ' + voto + '</span>';
-    document.getElementById('tiempo-restante').textContent = calcularTiempoRestante(pred.cierre);
-    
-    const estadoSpan = document.getElementById('estado-prediccion');
-    estadoSpan.textContent = 'Pendiente';
-    estadoSpan.className = 'px-2 py-1 rounded-full text-xs font-bold badge-pendiente';
-    
+    const cls = pred.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+    const icon = pred.voto === 'sube' ? '▲' : '▼';
+    document.getElementById('mi-voto').innerHTML = '<span class="' + cls + '">' + icon + ' ' + voto + '</span>';
+    document.getElementById('tiempo-restante').textContent = calcTiempoRestante(pred.cierre);
+    document.getElementById('estado-prediccion').innerHTML = '<span class="px-2.5 py-1 rounded-md text-[10px] font-bold badge-pending">PENDIENTE</span>';
     document.getElementById('pred-precio-inicial').textContent = '$' + Math.round(pred.precioInicial || 0).toLocaleString();
     document.getElementById('pred-precio-actual').textContent = precioBTC > 0 ? '$' + Math.round(precioBTC).toLocaleString() : '--';
     actualizarDiferenciaPrediccion();
@@ -1109,63 +1172,42 @@ function mostrarPrediccionActiva(pred) {
 function actualizarDiferenciaPrediccion() {
     const diffEl = document.getElementById('pred-diferencia');
     if (!diffEl || !prediccionActivaId) return;
-    
     const inicialEl = document.getElementById('pred-precio-inicial');
     if (!inicialEl || inicialEl.textContent === '--') return;
-    
     const inicial = parseFloat(inicialEl.textContent.replace(/[$,]/g, ''));
     if (!inicial || precioBTC === 0) return;
-    
     const diff = ((precioBTC - inicial) / inicial) * 100;
-    const color = diff >= 0 ? 'text-green-400' : 'text-red-400';
-    const arrow = diff >= 0 ? '▲' : '▼';
-    diffEl.innerHTML = '<span class="' + color + '">' + arrow + ' ' + Math.abs(diff).toFixed(2) + '%</span>';
+    const col = diff >= 0 ? 'text-green-400' : 'text-red-400';
+    const ar = diff >= 0 ? '▲' : '▼';
+    diffEl.innerHTML = '<span class="' + col + '">' + ar + ' ' + Math.abs(diff).toFixed(2) + '%</span>';
 }
 
 function actualizarTiempoRestante(cierre) {
-    const tiempoStr = calcularTiempoRestante(cierre);
-    document.getElementById('tiempo-restante').textContent = tiempoStr;
-    
-    const ahora = new Date();
-    const cierreDate = new Date(cierre);
-    if (ahora >= cierreDate) {
-        clearInterval(intervaloTiempo);
-        intervaloTiempo = null;
-        verificarResultadosPendientes();
-    }
+    document.getElementById('tiempo-restante').textContent = calcTiempoRestante(cierre);
+    if (new Date() >= new Date(cierre)) { clearInterval(intervaloTiempo); intervaloTiempo = null; verificarResultadosPendientes(); }
 }
 
-function calcularTiempoRestante(cierre) {
-    const ahora = new Date();
-    const diff = new Date(cierre) - ahora;
-    
+function calcTiempoRestante(cierre) {
+    const diff = new Date(cierre) - new Date();
     if (diff <= 0) return 'Finalizado';
-    
-    const segundos = Math.floor(diff / 1000);
-    const minutos = Math.floor(segundos / 60);
-    const horas = Math.floor(minutos / 60);
-    const dias = Math.floor(horas / 24);
-    
-    if (dias > 0) return dias + 'd ' + (horas % 24) + 'h ' + (minutos % 60) + 'm';
-    if (horas > 0) return horas + 'h ' + (minutos % 60) + 'm ' + (segundos % 60) + 's';
-    if (minutos > 0) return minutos + 'm ' + (segundos % 60) + 's';
-    return segundos + 's';
+    const s = Math.floor(diff / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    const d = Math.floor(h / 24);
+    if (d > 0) return d + 'd ' + (h % 24) + 'h ' + (m % 60) + 'm';
+    if (h > 0) return h + 'h ' + (m % 60) + 'm ' + (s % 60) + 's';
+    if (m > 0) return m + 'm ' + (s % 60) + 's';
+    return s + 's';
 }
-
 
 // ==============================================
 // VOTACION
 // ==============================================
 function selectPeriodo(periodo, btn) {
-    if (prediccionActivaId) {
-        mostrarToast('Ya tienes una prediccion activa', 'error');
-        return;
-    }
-    
+    if (prediccionActivaId) { mostrarToast('Ya tienes una prediccion activa', 'error'); return; }
     periodoSeleccionado = periodo;
-    document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    
     document.getElementById('botones-voto').classList.remove('hidden');
     document.getElementById('periodo-activo').classList.remove('hidden');
     document.getElementById('periodo-activo').textContent = 'Periodo: ' + periodo + ' (+' + PUNTOS_POR_PERIODO[periodo] + ' pts)';
@@ -1174,141 +1216,74 @@ function selectPeriodo(periodo, btn) {
 }
 
 async function votar(direccion) {
-    if (!usuarioActual) {
-        openModal('login');
-        return mostrarToast('Inicia sesion para votar', 'error');
-    }
+    if (!usuarioActual) { openModal('login'); return mostrarToast('Inicia sesion para votar', 'error'); }
     if (!periodoSeleccionado) return mostrarToast('Selecciona un periodo', 'error');
     if (prediccionActivaId) return mostrarToast('Ya tienes una prediccion activa', 'error');
-    
-    const ahora = new Date();
-    const cierre = new Date(ahora.getTime() + DURACIONES[periodoSeleccionado]);
-    
+    const cierre = new Date(Date.now() + DURACIONES[periodoSeleccionado]);
     try {
-        const snap = await db.collection('predicciones')
-            .where('usuarioId', '==', usuarioActual.uid)
-            .where('periodo', '==', periodoSeleccionado)
-            .where('estado', '==', 'activo')
-            .get();
-        
-        if (!snap.empty) {
-            return mostrarToast('Ya votaste en este periodo', 'error');
-        }
-        
+        const snap = await db.collection('predicciones').where('usuarioId', '==', usuarioActual.uid).where('periodo', '==', periodoSeleccionado).where('estado', '==', 'activo').get();
+        if (!snap.empty) return mostrarToast('Ya votaste en este periodo', 'error');
         await db.collection('predicciones').add({
-            usuarioId: usuarioActual.uid,
-            periodo: periodoSeleccionado,
-            voto: direccion,
-            precioInicial: precioBTC,
-            cierre: cierre,
-            estado: 'activo',
-            creado: new Date()
+            usuarioId: usuarioActual.uid, periodo: periodoSeleccionado, voto: direccion,
+            precioInicial: precioBTC, cierre: cierre, estado: 'activo', creado: new Date()
         });
-        
         mostrarToast('Voto registrado: ' + direccion.toUpperCase());
-        document.getElementById('mensaje').textContent = 'Voto registrado: ' + direccion.toUpperCase();
+        document.getElementById('mensaje').textContent = 'Voto registrado exitosamente';
         document.getElementById('botones-voto').classList.add('hidden');
-        
         buscarPrediccionActiva();
         cargarMisPredicciones();
-        
-    } catch (e) {
-        console.error('Error al votar:', e);
-        mostrarToast('Error al registrar voto: ' + e.message, 'error');
-    }
+    } catch (e) { mostrarToast('Error al registrar voto', 'error'); }
 }
 
 // ==============================================
-// VERIFICACION DE RESULTADOS - CORREGIDA Y MEJORADA
+// VERIFICACION RESULTADOS
 // ==============================================
 async function verificarResultadosPendientes() {
-    console.log('Verificando predicciones pendientes...', new Date().toLocaleTimeString());
-    
     try {
-        const snap = await db.collection('predicciones')
-            .where('estado', '==', 'activo')
-            .get();
-        
+        const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
         if (snap.empty) return;
-        
-        let algunaCerrada = false;
+        let alguna = false;
         const ahora = new Date();
-        
         for (const doc of snap.docs) {
             const pred = doc.data();
             const cierre = pred.cierre.toDate ? pred.cierre.toDate() : new Date(pred.cierre);
-            
             if (cierre > ahora) continue;
-            
-            algunaCerrada = true;
-            console.log('Cerrando prediccion:', doc.id, 'Periodo:', pred.periodo);
-            
+            alguna = true;
             let precioFinal = precioBTC;
             if (precioFinal === 0) {
-                try {
-                    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-                    const data = await res.json();
-                    precioFinal = data.bitcoin.usd;
-                } catch (e) {
-                    console.log('No se pudo obtener precio final, usando cache');
-                    precioFinal = pred.precioInicial;
-                }
+                try { const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'); const d = await r.json(); precioFinal = d.bitcoin.usd; } catch (e) { precioFinal = pred.precioInicial; }
             }
-            
             const subio = precioFinal > pred.precioInicial;
             const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
-            const puntosGanados = acierto ? PUNTOS_POR_PERIODO[pred.periodo] || 1 : 0;
-            
-            await db.collection('predicciones').doc(doc.id).update({
-                precioFinal: precioFinal,
-                estado: 'cerrado',
-                resultado: acierto ? 'acierto' : 'fallo',
-                puntosGanados: puntosGanados,
-                cerrado: new Date()
-            });
+            const pts = acierto ? PUNTOS_POR_PERIODO[pred.periodo] || 1 : 0;
+            await db.collection('predicciones').doc(doc.id).update({ precioFinal, estado: 'cerrado', resultado: acierto ? 'acierto' : 'fallo', puntosGanados: pts, cerrado: new Date() });
             
             const userRef = db.collection('usuarios').doc(pred.usuarioId);
             const userDoc = await userRef.get();
-            const userData = userDoc.data() || {};
-            
+            const ud = userDoc.data() || {};
             if (acierto) {
-                const nuevaRacha = (userData.racha || 0) + 1;
-                const nuevaMejorRacha = Math.max(nuevaRacha, userData.mejor_racha || 0);
-                
-                await userRef.update({
-                    puntos: FieldValue.increment(puntosGanados),
-                    aciertos: FieldValue.increment(1),
-                    total_votos: FieldValue.increment(1),
-                    racha: nuevaRacha,
-                    mejor_racha: nuevaMejorRacha
-                });
-                
+                const nr = (ud.racha || 0) + 1;
+                const nmr = Math.max(nr, ud.mejor_racha || 0);
+                await userRef.update({ puntos: FieldValue.increment(pts), aciertos: FieldValue.increment(1), total_votos: FieldValue.increment(1), racha: nr, mejor_racha: nmr });
                 if (usuarioActual && usuarioActual.uid === pred.usuarioId) {
-                    usuarioActual.puntos = (usuarioActual.puntos || 0) + puntosGanados;
+                    usuarioActual.puntos = (usuarioActual.puntos || 0) + pts;
                     usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
-                    usuarioActual.racha = nuevaRacha;
-                    usuarioActual.mejor_racha = nuevaMejorRacha;
-                    actualizarUI();
-                    actualizarStatsUsuario();
-                    mostrarToast('Acertaste! +' + puntosGanados + ' puntos', 'success');
-                    agregarNotificacion('Acertaste en ' + pred.periodo + '! +' + puntosGanados + ' pts', 'success');
+                    usuarioActual.racha = nr; usuarioActual.mejor_racha = nmr;
+                    actualizarUI(); actualizarStatsUsuario();
+                    mostrarToast('Acertaste! +' + pts + ' puntos', 'success');
+                    agregarNotif('+' + pts + ' pts en ' + pred.periodo, 'success');
                 }
             } else {
-                await userRef.update({
-                    total_votos: FieldValue.increment(1),
-                    racha: 0
-                });
-                
+                await userRef.update({ total_votos: FieldValue.increment(1), racha: 0 });
                 if (usuarioActual && usuarioActual.uid === pred.usuarioId) {
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
                     usuarioActual.racha = 0;
                     actualizarStatsUsuario();
-                    mostrarToast('Fallaste. El BTC ' + (subio ? 'subio' : 'bajo'), 'error');
-                    agregarNotificacion('Fallaste en ' + pred.periodo, 'error');
+                    mostrarToast('Fallaste. BTC ' + (subio ? 'subio' : 'bajo'), 'error');
+                    agregarNotif('Fallo en ' + pred.periodo, 'error');
                 }
             }
-            
             if (prediccionActivaId === doc.id) {
                 prediccionActivaId = null;
                 document.getElementById('prediccion-activa').classList.add('hidden');
@@ -1316,167 +1291,97 @@ async function verificarResultadosPendientes() {
                 if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
             }
         }
-        
-        if (algunaCerrada) {
-            cargarMisPredicciones();
-            cargarRanking();
-            buscarPrediccionActiva();
-            cargarAnalisis();
-        }
-    } catch (e) {
-        console.error('Error verificando resultados:', e);
-    }
+        if (alguna) { cargarMisPredicciones(); cargarRanking(); buscarPrediccionActiva(); cargarAnalisis(); }
+    } catch (e) { console.error(e); }
 }
 
+
 // ==============================================
-// MIS PREDICCIONES CON FILTROS
+// MIS PREDICCIONES
 // ==============================================
 async function cargarMisPredicciones() {
-    if (!usuarioActual) {
-        document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesion para ver tus predicciones</p>';
-        return;
-    }
-    
+    if (!usuarioActual) { document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>'; return; }
     try {
-        let query = db.collection('predicciones')
-            .where('usuarioId', '==', usuarioActual.uid)
-            .orderBy('creado', 'desc')
-            .limit(50);
-        
-        const snap = await query.get();
-        
-        const contenedor = document.getElementById('mis-predicciones');
-        if (snap.empty) {
-            contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No tienes predicciones</p>';
-            return;
-        }
-        
+        const snap = await db.collection('predicciones').where('usuarioId', '==', usuarioActual.uid).orderBy('creado', 'desc').limit(50).get();
+        const cont = document.getElementById('mis-predicciones');
+        if (snap.empty) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No tienes predicciones registradas</p>'; return; }
         let docs = snap.docs;
-        if (filtroMisPreds === 'activos') {
-            docs = docs.filter(d => d.data().estado === 'activo');
-        } else if (filtroMisPreds === 'cerrados') {
-            docs = docs.filter(d => d.data().estado === 'cerrado');
-        }
+        if (filtroMisPreds === 'activos') docs = docs.filter(d => d.data().estado === 'activo');
+        else if (filtroMisPreds === 'cerrados') docs = docs.filter(d => d.data().estado === 'cerrado');
+        if (docs.length === 0) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones en esta categoria</p>'; return; }
         
-        if (docs.length === 0) {
-            contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No hay predicciones en esta categoria</p>';
-            return;
-        }
-        
-        contenedor.innerHTML = docs.map(d => {
+        cont.innerHTML = docs.map(d => {
             const p = d.data();
-            const esActivo = p.estado === 'activo';
-            
-            let estadoClase, estadoTxt;
-            if (esActivo) {
-                estadoClase = 'badge-pendiente';
-                estadoTxt = 'Pendiente';
-            } else if (p.resultado === 'acierto') {
-                estadoClase = 'badge-activo';
-                estadoTxt = 'Acertado +' + (p.puntosGanados || 1);
-            } else {
-                estadoClase = 'badge-cerrado';
-                estadoTxt = 'Fallado';
-            }
-            
-            const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
-            const direccionIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
-            
-            let tiempoInfo = '';
-            if (esActivo && p.cierre) {
-                const cierreDate = p.cierre.toDate ? p.cierre.toDate() : new Date(p.cierre);
-                const tiempoRestante = calcularTiempoRestante(cierreDate);
-                tiempoInfo = '<div class="text-xs text-amber-400">' + tiempoRestante + '</div>';
-            }
-            
-            let resultadoInfo = '';
-            if (!esActivo && p.precioFinal) {
+            const activo = p.estado === 'activo';
+            let estadoCls, estadoTxt;
+            if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
+            else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO +' + (p.puntosGanados || 1); }
+            else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
+            const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+            const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
+            let tiempo = '';
+            if (activo && p.cierre) { tiempo = '<div class="text-xs text-amber-400 font-mono mt-1">' + calcTiempoRestante(p.cierre.toDate ? p.cierre.toDate() : new Date(p.cierre)) + '</div>'; }
+            let resultado = '';
+            if (!activo && p.precioFinal) {
                 const subio = p.precioFinal > p.precioInicial;
                 const cambio = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2);
-                resultadoInfo = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + '">→ $' + Math.round(p.precioFinal) + ' (' + (subio ? '▲' : '▼') + ' ' + cambio + '%)</span>';
+                resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precioFinal).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
             }
-            
             const fecha = p.creado && p.creado.toDate ? p.creado.toDate() : new Date(p.creado);
             const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) + ' ' + fecha.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
-            
-            return '<div class="card-glass rounded-xl p-4 flex justify-between items-center fade-in">' +
-                '<div><span class="font-bold">' + p.periodo + '</span><span class="ml-2 ' + direccionClase + '">' + direccionIcon + '</span></div>' +
-                '<div class="text-right"><div class="px-2 py-0.5 rounded-full text-xs font-bold ' + estadoClase + '">' + estadoTxt + '</div>' + tiempoInfo + resultadoInfo + '<div class="text-xs text-gray-500">' + fechaStr + '</div></div>' +
+            return '<div class="prediction-row glass rounded-lg p-3.5 flex justify-between items-center fade-in">' +
+                '<div><span class="font-bold text-sm">' + p.periodo + '</span><span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span></div>' +
+                '<div class="text-right"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' + tiempo + resultado + '<div class="text-[10px] text-gray-600 mt-1">' + fechaStr + '</div></div>' +
                 '</div>';
         }).join('');
-    } catch (e) {
-        console.error('Error cargando predicciones:', e);
-    }
+    } catch (e) {}
 }
 
 function filtrarMisPreds(filtro) {
     filtroMisPreds = filtro;
     ['todos','activos','cerrados'].forEach(f => {
         const btn = document.getElementById('misfiltro-' + f);
-        if (btn) {
-            if (f === filtro) {
-                btn.className = 'px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400';
-            } else {
-                btn.className = 'px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400';
-            }
-        }
+        if (btn) btn.className = f === filtro ? 'px-3 py-1 rounded-md text-xs bg-amber-500/20 text-amber-400 font-medium' : 'px-3 py-1 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition';
     });
     cargarMisPredicciones();
 }
-
 
 // ==============================================
 // GLOBAL EN VIVO
 // ==============================================
 function iniciarEscuchaGlobal() {
     if (unsubscribeGlobal) { unsubscribeGlobal(); unsubscribeGlobal = null; }
-    
     intervalosGlobales.forEach(id => clearInterval(id));
     intervalosGlobales = [];
-    
-    unsubscribeGlobal = db.collection('predicciones')
-        .orderBy('creado', 'desc')
-        .limit(100)
-        .onSnapshot((snapshot) => {
-            todasPrediccionesGlobal = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                todasPrediccionesGlobal.push({ id: doc.id, ...data });
-            });
-            renderizarGlobal();
-            actualizarContadoresGlobal();
-            
-            intervalosGlobales.forEach(id => clearInterval(id));
-            intervalosGlobales = [];
-            const intervalo = setInterval(() => { actualizarContadoresGlobales(); }, 1000);
-            intervalosGlobales.push(intervalo);
-            
-        }, (error) => { console.error('Error en escucha global:', error); });
+    unsubscribeGlobal = db.collection('predicciones').orderBy('creado', 'desc').limit(100).onSnapshot((snap) => {
+        todasPrediccionesGlobal = [];
+        snap.forEach(d => todasPrediccionesGlobal.push({ id: d.id, ...d.data() }));
+        renderizarGlobal();
+        actualizarContGlobal();
+        intervalosGlobales.forEach(id => clearInterval(id));
+        intervalosGlobales = [];
+        intervalosGlobales.push(setInterval(actualizarContadoresGlobales, 1000));
+    }, (e) => console.error(e));
 }
 
 function actualizarContadoresGlobales() {
     document.querySelectorAll('.countdown-tiempo').forEach(el => {
         const cierreStr = el.getAttribute('data-cierre');
         if (cierreStr) {
-            const cierre = new Date(cierreStr);
-            const tiempoRestante = calcularTiempoRestante(cierre);
-            el.textContent = tiempoRestante;
-            
-            if (tiempoRestante === 'Finalizado') {
-                const parent = el.closest('.pred-item');
+            const tr = calcTiempoRestante(new Date(cierreStr));
+            el.textContent = tr;
+            if (tr === 'Finalizado') {
+                const parent = el.closest('.prediction-row');
                 if (parent) {
-                    const badge = parent.querySelector('.badge-pendiente');
-                    if (badge) {
-                        badge.textContent = 'Finalizando...';
-                        badge.className = 'px-2 py-0.5 rounded-full text-xs font-bold badge-cerrado';
-                    }
+                    const badge = parent.querySelector('.badge-pending');
+                    if (badge) { badge.textContent = 'FINALIZANDO'; badge.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold badge-loss'; }
                 }
             }
         }
     });
 }
 
-function actualizarContadoresGlobal() {
+function actualizarContGlobal() {
     const activas = todasPrediccionesGlobal.filter(p => p.estado === 'activo').length;
     document.getElementById('global-count').textContent = todasPrediccionesGlobal.length + ' predicciones';
     document.getElementById('global-activas-count').textContent = activas + ' activas';
@@ -1484,103 +1389,59 @@ function actualizarContadoresGlobal() {
 
 function filtrarGlobal(filtro) {
     filtroGlobal = filtro;
-    
     ['todos','activos','cerrados','sube','baja'].forEach(f => {
         const btn = document.getElementById('filtro-' + f);
-        if (btn) {
-            if (f === filtro) {
-                btn.className = 'px-3 py-1.5 rounded-full text-xs bg-amber-500/20 text-amber-400 font-medium';
-            } else {
-                btn.className = 'px-3 py-1.5 rounded-full text-xs bg-slate-700/50 text-gray-400 font-medium';
-            }
-        }
+        if (btn) btn.className = f === filtro ? 'px-3 py-1.5 rounded-md text-xs bg-amber-500/20 text-amber-400 font-medium' : 'px-3 py-1.5 rounded-md text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium';
     });
-    
     renderizarGlobal();
 }
 
 function renderizarGlobal() {
-    const contenedor = document.getElementById('global-predicciones');
-    
+    const cont = document.getElementById('global-predicciones');
     let filtradas = todasPrediccionesGlobal;
     if (filtroGlobal === 'activos') filtradas = filtradas.filter(p => p.estado === 'activo');
     else if (filtroGlobal === 'cerrados') filtradas = filtradas.filter(p => p.estado === 'cerrado');
     else if (filtroGlobal === 'sube') filtradas = filtradas.filter(p => p.voto === 'sube');
     else if (filtroGlobal === 'baja') filtradas = filtradas.filter(p => p.voto === 'baja');
+    if (filtradas.length === 0) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones que mostrar</p>'; return; }
     
-    if (filtradas.length === 0) {
-        contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No hay predicciones que mostrar</p>';
-        return;
-    }
-    
-    let usuariosCache = {};
-    
-    const promesas = filtradas.map(async (p) => {
+    let cache = {};
+    Promise.all(filtradas.map(async (p) => {
         let username = 'Anonimo';
         if (p.usuarioId) {
-            if (!usuariosCache[p.usuarioId]) {
-                try {
-                    const doc = await db.collection('usuarios').doc(p.usuarioId).get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        usuariosCache[p.usuarioId] = data.username || 'Anonimo';
-                    } else {
-                        usuariosCache[p.usuarioId] = 'Anonimo';
-                    }
-                } catch (e) { usuariosCache[p.usuarioId] = 'Anonimo'; }
+            if (!cache[p.usuarioId]) {
+                try { const d = await db.collection('usuarios').doc(p.usuarioId).get(); cache[p.usuarioId] = d.exists ? (d.data().username || 'Anonimo') : 'Anonimo'; } catch (e) { cache[p.usuarioId] = 'Anonimo'; }
             }
-            username = usuariosCache[p.usuarioId];
+            username = cache[p.usuarioId];
         }
-        
-        const esActivo = p.estado === 'activo';
-        const esMiPrediccion = usuarioActual && p.usuarioId === usuarioActual.uid;
-        
-        let estadoClase, estadoTxt;
-        if (esActivo) { estadoClase = 'badge-pendiente'; estadoTxt = 'Pendiente'; }
-        else if (p.resultado === 'acierto') { estadoClase = 'badge-activo'; estadoTxt = 'Acertado'; }
-        else { estadoClase = 'badge-cerrado'; estadoTxt = 'Fallado'; }
-        
-        const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
-        const direccionIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
-        
-        let tiempoInfo = '';
-        if (esActivo && p.cierre) {
-            const cierreDate = p.cierre.toDate ? p.cierre.toDate() : new Date(p.cierre);
-            const tiempoRestante = calcularTiempoRestante(cierreDate);
-            tiempoInfo = '<span class="text-xs text-amber-400 countdown-tiempo" data-cierre="' + cierreDate.toISOString() + '">' + tiempoRestante + '</span>';
-        }
-        
-        let resultadoInfo = '';
-        if (!esActivo && p.precioFinal) {
-            const subio = p.precioFinal > p.precioInicial;
-            const cambio = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2);
-            resultadoInfo = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + '">→ $' + Math.round(p.precioFinal) + ' (' + (subio ? '▲' : '▼') + ' ' + cambio + '%)</span>';
-        }
-        
+        const activo = p.estado === 'activo';
+        const esMio = usuarioActual && p.usuarioId === usuarioActual.uid;
+        let estadoCls, estadoTxt;
+        if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
+        else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO'; }
+        else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
+        const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+        const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
+        let tiempo = '';
+        if (activo && p.cierre) { const cd = p.cierre.toDate ? p.cierre.toDate() : new Date(p.cierre); tiempo = '<span class="text-xs text-amber-400 countdown-tiempo font-mono" data-cierre="' + cd.toISOString() + '">' + calcTiempoRestante(cd) + '</span>'; }
+        let resultado = '';
+        if (!activo && p.precioFinal) { const subio = p.precioFinal > p.precioInicial; const cambio = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2); resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precioFinal).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>'; }
         const fecha = p.creado && p.creado.toDate ? p.creado.toDate() : new Date(p.creado);
-        const fechaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        
+        const fechaStr = fecha.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
         const precioInicio = p.precioInicial ? '$' + Math.round(p.precioInicial).toLocaleString() : '--';
-        
-        return '<div class="card-glass rounded-xl p-4 pred-item ' + (esMiPrediccion ? 'border border-amber-500/30' : '') + '">' +
+        return '<div class="prediction-row glass rounded-lg p-3.5 ' + (esMio ? 'border-l-2 border-amber-500/50' : '') + '">' +
             '<div class="flex justify-between items-center flex-wrap gap-2">' +
             '<div class="flex items-center gap-2 flex-wrap">' +
-            '<span class="font-bold text-sm">' + username + '</span>' +
-            (esMiPrediccion ? '<span class="text-xs text-amber-400">(Tu)</span>' : '') +
-            '<span class="text-xs text-gray-500">' + p.periodo + '</span>' +
-            '<span class="' + direccionClase + ' text-sm font-semibold">' + direccionIcon + '</span>' +
+            '<span class="font-bold text-sm text-gray-200">' + username + '</span>' + (esMio ? '<span class="text-[10px] text-amber-400 font-medium">TU</span>' : '') +
+            '<span class="text-[10px] text-gray-600 font-medium">' + p.periodo + '</span>' +
+            '<span class="' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span>' +
             '</div>' +
             '<div class="flex items-center gap-2 flex-wrap">' +
-            '<span class="px-2 py-0.5 rounded-full text-xs font-bold ' + estadoClase + '">' + estadoTxt + '</span>' +
-            tiempoInfo + resultadoInfo +
-            '<span class="text-xs text-gray-500">' + fechaStr + '</span>' +
+            '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
+            tiempo + resultado + '<span class="text-[10px] text-gray-600">' + fechaStr + '</span>' +
             '</div></div>' +
-            '<div class="text-xs text-gray-500 mt-1">Inicio: ' + precioInicio + '</div></div>';
-    });
-    
-    Promise.all(promesas).then(resultados => {
-        contenedor.innerHTML = resultados.join('');
-    });
+            '<div class="text-[10px] text-gray-600 mt-1 font-mono">Inicio: ' + precioInicio + '</div></div>';
+    })).then(res => { cont.innerHTML = res.join(''); });
 }
 
 // ==============================================
@@ -1588,70 +1449,50 @@ function renderizarGlobal() {
 // ==============================================
 async function cargarRanking() {
     try {
-        const snap = await db.collection('usuarios')
-            .orderBy('puntos', 'desc')
-            .limit(50)
-            .get();
-        
+        const snap = await db.collection('usuarios').orderBy('puntos', 'desc').limit(50).get();
         const tbody = document.getElementById('ranking-body');
-        if (snap.empty) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-500">Sin usuarios registrados</td></tr>';
-            return;
-        }
-        
-        let miPosicion = -1;
-        const usuarios = snap.docs.map((doc, i) => {
-            const u = { uid: doc.id, ...doc.data() };
-            if (usuarioActual && u.uid === usuarioActual.uid) miPosicion = i + 1;
-            return u;
-        });
-        
+        if (snap.empty) { tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-600">Sin usuarios registrados</td></tr>'; return; }
+        let miPos = -1;
+        const usuarios = snap.docs.map((d, i) => { const u = { uid: d.id, ...d.data() }; if (usuarioActual && u.uid === usuarioActual.uid) miPos = i + 1; return u; });
         tbody.innerHTML = usuarios.map((u, i) => {
             const tier = getTier(u.puntos || 0);
-            const winrate = u.total_votos ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : 0;
+            const wr = u.total_votos ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : 0;
             const esYo = usuarioActual && u.uid === usuarioActual.uid;
             const racha = u.racha || 0;
-            const rachaIcon = racha >= 5 ? '🔥' : racha >= 3 ? '⚡' : '';
-            
-            let rankIcon = '';
-            if (i === 0) rankIcon = '🥇';
-            else if (i === 1) rankIcon = '🥈';
-            else if (i === 2) rankIcon = '🥉';
-            
-            return '<tr class="rank-row ' + (esYo ? 'bg-amber-500/10' : '') + ' border-t border-slate-700/50">' +
-                '<td class="py-3 px-4 font-bold">' + rankIcon + ' ' + (i + 1) + '</td>' +
-                '<td class="py-3 px-4"><span class="font-semibold">' + (u.username || 'Anonimo') + '</span>' + (esYo ? '<span class="ml-2 text-xs text-amber-400">(Tu)</span>' : '') + '</td>' +
-                '<td class="py-3 px-4 text-center"><span class="px-2 py-1 rounded-full text-xs font-bold ' + tier.clase + '">' + tier.nombre + '</span></td>' +
-                '<td class="py-3 px-4 text-center font-bold text-amber-400">' + (u.puntos || 0) + '</td>' +
-                '<td class="py-3 px-4 text-center text-green-400">' + (u.aciertos || 0) + '</td>' +
-                '<td class="py-3 px-4 text-center">' + (u.total_votos || 0) + '</td>' +
-                '<td class="py-3 px-4 text-center font-medium">' + winrate + '%</td>' +
-                '<td class="py-3 px-4 text-center hidden sm:table-cell">' + rachaIcon + ' ' + racha + '</td>' +
+            const rachaIcon = racha >= 5 ? 'FUEGO' : racha >= 3 ? 'RAYO' : '';
+            let rank = '';
+            if (i === 0) rank = '1';
+            else if (i === 1) rank = '2';
+            else if (i === 2) rank = '3';
+            else rank = (i + 1).toString();
+            return '<tr class="rank-glow ' + (esYo ? 'bg-amber-500/5' : '') + ' border-t border-white/5 transition">' +
+                '<td class="py-3 px-4 font-bold text-xs ' + (i < 3 ? 'text-amber-400' : 'text-gray-500') + '">' + rank + '</td>' +
+                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
+                '<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold ' + tier.clase + '">' + tier.nombre.toUpperCase() + '</span></td>' +
+                '<td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">' + (u.puntos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center text-green-400 font-mono text-sm">' + (u.aciertos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center text-gray-500 font-mono text-sm">' + (u.total_votos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center font-medium text-sm">' + wr + '%</td>' +
+                '<td class="py-3 px-4 text-center hidden sm:table-cell text-xs text-gray-500">' + (racha > 0 ? rachaIcon + ' ' + racha : '-') + '</td>' +
                 '</tr>';
         }).join('');
         
-        // Mostrar mi posicion
-        if (miPosicion > 0 && usuarioActual) {
+        if (miPos > 0 && usuarioActual) {
             document.getElementById('mi-posicion').classList.remove('hidden');
-            document.getElementById('mi-rank-pos').textContent = '#' + miPosicion;
-            
+            document.getElementById('mi-rank-pos').textContent = '#' + miPos;
             const tierActual = getTier(usuarioActual.puntos || 0);
             const tierIdx = TIERS.indexOf(tierActual);
-            const siguienteTier = tierIdx < TIERS.length - 1 ? TIERS[tierIdx + 1] : null;
-            
-            if (siguienteTier) {
-                const progreso = Math.min(100, ((usuarioActual.puntos || 0) / siguienteTier.min) * 100);
-                document.getElementById('tier-progreso-text').textContent = (usuarioActual.puntos || 0) + '/' + siguienteTier.min + ' pts';
-                document.getElementById('tier-progreso-bar').style.width = progreso + '%';
+            const sigTier = tierIdx < TIERS.length - 1 ? TIERS[tierIdx + 1] : null;
+            if (sigTier) {
+                const prog = Math.min(100, ((usuarioActual.puntos || 0) / sigTier.min) * 100);
+                document.getElementById('tier-progreso-text').textContent = (usuarioActual.puntos || 0) + ' / ' + sigTier.min + ' pts';
+                document.getElementById('tier-progreso-bar').style.width = prog + '%';
             } else {
-                document.getElementById('tier-progreso-text').textContent = 'Maximo alcanzado!';
+                document.getElementById('tier-progreso-text').textContent = 'NIVEL MAXIMO';
                 document.getElementById('tier-progreso-bar').style.width = '100%';
             }
-        } else {
-            document.getElementById('mi-posicion').classList.add('hidden');
-        }
-        
-    } catch (e) { console.error('Error cargando ranking:', e); }
+        } else document.getElementById('mi-posicion').classList.add('hidden');
+    } catch (e) {}
 }
 
 // ==============================================
@@ -1661,106 +1502,62 @@ async function cargarAnalisis() {
     try {
         const snap = await db.collection('predicciones').get();
         const preds = snap.docs.map(d => d.data());
-        
         const total = preds.length;
         const activas = preds.filter(p => p.estado === 'activo').length;
         const cerradas = preds.filter(p => p.estado === 'cerrado');
         const aciertos = cerradas.filter(p => p.resultado === 'acierto').length;
-        const winrateGlobal = cerradas.length > 0 ? ((aciertos / cerradas.length) * 100).toFixed(1) : 0;
-        
+        const wrGlobal = cerradas.length > 0 ? ((aciertos / cerradas.length) * 100).toFixed(1) : 0;
         const usuariosUnicos = new Set(preds.map(p => p.usuarioId)).size;
         
         document.getElementById('anal-total').textContent = total;
-        document.getElementById('anal-winrate').textContent = winrateGlobal + '%';
+        document.getElementById('anal-winrate').textContent = wrGlobal + '%';
         document.getElementById('anal-activas').textContent = activas;
         document.getElementById('anal-usuarios').textContent = usuariosUnicos;
         
-        // Distribucion de votos
         const subidas = preds.filter(p => p.voto === 'sube').length;
         const bajadas = preds.filter(p => p.voto === 'baja').length;
-        const totalVotos = subidas + bajadas;
-        
-        if (totalVotos > 0) {
-            const pctSube = ((subidas / totalVotos) * 100).toFixed(1);
-            const pctBaja = ((bajadas / totalVotos) * 100).toFixed(1);
-            document.getElementById('dist-sube-bar').style.width = pctSube + '%';
-            document.getElementById('dist-sube-pct').textContent = pctSube + '%';
-            document.getElementById('dist-baja-bar').style.width = pctBaja + '%';
-            document.getElementById('dist-baja-pct').textContent = pctBaja + '%';
+        const totalV = subidas + bajadas;
+        if (totalV > 0) {
+            const ps = ((subidas / totalV) * 100).toFixed(1);
+            const pb = ((bajadas / totalV) * 100).toFixed(1);
+            document.getElementById('dist-sube-bar').style.width = ps + '%';
+            document.getElementById('dist-sube-pct').textContent = ps + '%';
+            document.getElementById('dist-baja-bar').style.width = pb + '%';
+            document.getElementById('dist-baja-pct').textContent = pb + '%';
         }
         
-        // Mejores periodos
         const periodosStats = {};
         cerradas.forEach(p => {
             if (!periodosStats[p.periodo]) periodosStats[p.periodo] = { total: 0, aciertos: 0 };
             periodosStats[p.periodo].total++;
             if (p.resultado === 'acierto') periodosStats[p.periodo].aciertos++;
         });
+        const mejores = Object.entries(periodosStats).map(([periodo, s]) => ({ periodo, winrate: s.total > 0 ? ((s.aciertos / s.total) * 100).toFixed(1) : 0, total: s.total })).sort((a, b) => parseFloat(b.winrate) - parseFloat(a.winrate)).slice(0, 5);
+        document.getElementById('mejores-periodos').innerHTML = mejores.length > 0 ? mejores.map(p => '<div class="flex justify-between items-center text-sm"><span class="text-gray-500">' + p.periodo + '</span><span class="font-bold font-mono ' + (p.winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + p.winrate + '% <span class="text-gray-600 text-xs">(' + p.total + ')</span></span></div>').join('') : '<p class="text-gray-600 text-sm">Sin datos suficientes</p>';
         
-        const mejoresPeriodos = Object.entries(periodosStats)
-            .map(([periodo, stats]) => ({
-                periodo,
-                winrate: stats.total > 0 ? ((stats.aciertos / stats.total) * 100).toFixed(1) : 0,
-                total: stats.total
-            }))
-            .sort((a, b) => parseFloat(b.winrate) - parseFloat(a.winrate))
-            .slice(0, 5);
-        
-        document.getElementById('mejores-periodos').innerHTML = mejoresPeriodos.length > 0 
-            ? mejoresPeriodos.map(p => '<div class="flex justify-between items-center text-sm"><span class="text-gray-400">' + p.periodo + '</span><span class="font-bold ' + (p.winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + p.winrate + '% (' + p.total + ')</span></div>').join('')
-            : '<p class="text-gray-500 text-sm">Sin datos suficientes</p>';
-        
-        // Ultimos resultados
-        const ultimos = cerradas
-            .sort((a, b) => new Date(b.cerrado || b.creado) - new Date(a.cerrado || a.creado))
-            .slice(0, 10);
-        
-        document.getElementById('ultimos-resultados').innerHTML = ultimos.length > 0
-            ? ultimos.map(p => {
-                const esAcierto = p.resultado === 'acierto';
-                const color = esAcierto ? 'text-green-400' : 'text-red-400';
-                const icon = esAcierto ? '✅' : '❌';
-                return '<div class="flex justify-between items-center text-sm p-2 rounded-lg ' + (esAcierto ? 'bg-green-500/5' : 'bg-red-500/5') + '">' +
-                    '<span>' + icon + ' ' + p.periodo + ' - ' + (p.voto === 'sube' ? '▲' : '▼') + '</span>' +
-                    '<span class="' + color + ' font-medium">' + (esAcierto ? '+' + (p.puntosGanados || 1) : 'Fallo') + '</span>' +
-                    '</div>';
-            }).join('')
-            : '<p class="text-gray-500 text-sm">Sin resultados aun</p>';
-        
-    } catch (e) { console.error('Error cargando analisis:', e); }
+        const ultimos = cerradas.sort((a, b) => new Date(b.cerrado || b.creado) - new Date(a.cerrado || a.creado)).slice(0, 10);
+        document.getElementById('ultimos-resultados').innerHTML = ultimos.length > 0 ? ultimos.map(p => {
+            const esA = p.resultado === 'acierto';
+            return '<div class="flex justify-between items-center text-xs p-2.5 rounded-lg ' + (esA ? 'bg-green-500/5 border border-green-500/10' : 'bg-red-500/5 border border-red-500/10') + '">' +
+                '<span class="text-gray-400">' + p.periodo + ' - ' + (p.voto === 'sube' ? '▲' : '▼') + '</span>' +
+                '<span class="' + (esA ? 'text-green-400' : 'text-red-400') + ' font-bold font-mono">' + (esA ? '+' + (p.puntosGanados || 1) : 'FALLO') + '</span>' +
+                '</div>';
+        }).join('') : '<p class="text-gray-600 text-sm">Sin resultados aun</p>';
+    } catch (e) {}
 }
 
 // ==============================================
-// FUNCIONES AUXILIARES
+// UTILIDADES
 // ==============================================
 function switchTab(tab, event) {
     document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
     document.getElementById('tab-' + tab).classList.remove('hidden');
-    
-    document.querySelectorAll('[onclick^="switchTab"]').forEach(b => {
-        b.classList.remove('tab-active');
-        b.classList.add('text-gray-400');
-    });
-    if (event && event.target) {
-        event.target.classList.add('tab-active');
-        event.target.classList.remove('text-gray-400');
-    }
-    
+    document.querySelectorAll('[onclick^="switchTab"]').forEach(b => { b.classList.remove('tab-active'); b.classList.add('text-gray-500'); });
+    if (event && event.target) { event.target.classList.add('tab-active'); event.target.classList.remove('text-gray-500'); }
     if (tab === 'ranking') cargarRanking();
-    if (tab === 'predict' && usuarioActual) {
-        cargarMisPredicciones();
-        buscarPrediccionActiva();
-    }
-    if (tab === 'global') {
-        if (!unsubscribeGlobal && usuarioActual) iniciarEscuchaGlobal();
-        renderizarGlobal();
-    }
-    if (tab === 'mercado') {
-        inicializarCharts();
-        setTimeout(actualizarChart, 500);
-        cargarDatosMercado();
-        cargarTopCryptos();
-    }
+    if (tab === 'predict' && usuarioActual) { cargarMisPredicciones(); buscarPrediccionActiva(); }
+    if (tab === 'global') { if (!unsubscribeGlobal && usuarioActual) iniciarEscuchaGlobal(); renderizarGlobal(); }
+    if (tab === 'mercado') { initCandlestickChart(); cargarDatosMercado(); cargarTopCryptos(); }
     if (tab === 'analisis') cargarAnalisis();
 }
 
@@ -1786,27 +1583,17 @@ function cerrarModal() {
 function mostrarToast(mensaje, tipo) {
     const toast = document.getElementById('toast');
     document.getElementById('toast-text').textContent = mensaje;
-    const bgClass = tipo === 'success' ? 'bg-green-600' : tipo === 'error' ? 'bg-red-600' : 'bg-amber-600';
-    toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 ' + bgClass + ' text-white px-6 py-3 rounded-xl shadow-2xl transition-all duration-300 z-40 max-w-sm text-center';
-    toast.style.transform = 'translate(-50%, 0)';
-    toast.style.opacity = '1';
-    setTimeout(() => {
-        toast.style.transform = 'translate(-50%, 80px)';
-        toast.style.opacity = '0';
-    }, 4000);
+    const bg = tipo === 'success' ? 'border-green-500/30 text-green-400' : tipo === 'error' ? 'border-red-500/30 text-red-400' : 'border-amber-500/30 text-amber-400';
+    toast.className = 'toast glass px-6 py-3 rounded-xl text-sm font-medium border ' + bg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
 }
 
-document.getElementById('modal-auth').addEventListener('click', e => {
-    if (e.target === document.getElementById('modal-auth')) cerrarModal();
-});
-
-// Cerrar notificaciones al hacer click fuera
+document.getElementById('modal-auth').addEventListener('click', e => { if (e.target === document.getElementById('modal-auth')) cerrarModal(); });
 document.addEventListener('click', (e) => {
-    const notifPanel = document.getElementById('notif-panel');
-    const notifBtn = e.target.closest('button[onclick="toggleNotificaciones()"]');
-    if (notifPanel && !notifPanel.classList.contains('hidden') && !notifPanel.contains(e.target) && !notifBtn) {
-        notifPanel.classList.add('hidden');
-    }
+    const panel = document.getElementById('notif-panel');
+    const btn = e.target.closest('button[onclick="toggleNotif()"]');
+    if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn) panel.classList.add('hidden');
 });
 </script>
 </body>
