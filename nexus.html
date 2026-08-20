@@ -6,7 +6,6 @@
     <title>Bitcoin Predict 🚀</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -131,7 +130,6 @@
         <p class="text-gray-400 mb-4" id="instruccion">Selecciona un periodo arriba</p>
         <p id="periodo-activo" class="text-lg font-semibold text-amber-400 hidden"></p>
         
-        <!-- Info de la predicción activa -->
         <div id="prediccion-activa" class="hidden mb-4 p-4 rounded-xl bg-slate-800/50">
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <div>
@@ -160,7 +158,6 @@
         <p id="mensaje" class="mt-4 text-gray-300"></p>
     </div>
 
-    <!-- Mis predicciones -->
     <div class="mt-10">
         <h3 class="text-xl font-bold mb-4">📋 Mis Predicciones</h3>
         <div id="mis-predicciones" class="space-y-3 scroll-predicciones">
@@ -192,7 +189,6 @@
 <section id="tab-global" class="max-w-4xl mx-auto px-4 py-8 hidden">
     <h2 class="text-2xl font-bold mb-6 text-center">🌍 Todas las predicciones en vivo</h2>
     
-    <!-- Estadísticas del usuario -->
     <div id="user-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div class="stats-card">
             <div class="text-xs text-gray-400">Puntos</div>
@@ -212,7 +208,6 @@
         </div>
     </div>
     
-    <!-- Filtros -->
     <div class="flex gap-2 mb-4 flex-wrap">
         <button class="px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400" onclick="filtrarGlobal('todos')" id="filtro-todos">📊 Todos</button>
         <button class="px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400" onclick="filtrarGlobal('activos')" id="filtro-activos">⏳ Activos</button>
@@ -224,7 +219,7 @@
     </div>
 </section>
 
-<!-- MODAL LOGIN/REGISTRO -->
+<!-- MODAL -->
 <div id="modal-auth" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
     <div class="card-glass rounded-2xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-6">
@@ -266,6 +261,7 @@ let prediccionActivaId = null;
 let unsubscribeGlobal = null;
 let filtroGlobal = 'todos';
 let todasPrediccionesGlobal = [];
+let intervalosGlobales = [];
 
 const DURACIONES = {
     '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
@@ -314,13 +310,15 @@ async function cargarPrecioBTC() {
 }
 
 // ==============================================
-// AUTENTICACIÓN FIREBASE
+// AUTENTICACIÓN
 // ==============================================
 function verificarSesion() {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             await cargarUsuario(user);
             iniciarEscuchaGlobal();
+            // Verificar predicciones pendientes cada 30 segundos
+            setInterval(() => verificarResultadosPendientes(), 30000);
         } else { 
             usuarioActual = null; 
             actualizarUI(); 
@@ -358,7 +356,6 @@ async function cargarUsuario(user) {
         buscarPrediccionActiva();
         actualizarStatsUsuario();
         
-        // Escuchar cambios en el usuario
         db.collection('usuarios').doc(user.uid).onSnapshot((doc) => {
             if (doc.exists) {
                 usuarioActual = { uid: user.uid, ...doc.data() };
@@ -410,6 +407,8 @@ async function logout() {
         unsubscribeGlobal();
         unsubscribeGlobal = null;
     }
+    intervalosGlobales.forEach(id => clearInterval(id));
+    intervalosGlobales = [];
     await auth.signOut();
     usuarioActual = null;
     actualizarUI();
@@ -460,7 +459,7 @@ function actualizarStatsUsuario() {
 }
 
 // ==============================================
-// PREDICCIÓN ACTIVA (TIEMPO REAL)
+// PREDICCIÓN ACTIVA
 // ==============================================
 async function buscarPrediccionActiva() {
     if (!usuarioActual) return;
@@ -519,7 +518,8 @@ function actualizarTiempoRestante(cierre) {
     if (ahora >= cierreDate) {
         clearInterval(intervaloTiempo);
         intervaloTiempo = null;
-        verificarResultado();
+        // Forzar verificación inmediata
+        verificarResultadosPendientes();
     }
 }
 
@@ -566,7 +566,7 @@ function selectPeriodo(periodo, btn) {
 }
 
 async function votar(direccion) {
-    console.log('Votando:', direccion, 'Periodo:', periodoSeleccionado, 'Usuario:', usuarioActual);
+    console.log('Votando:', direccion, 'Periodo:', periodoSeleccionado);
     
     if (!usuarioActual) {
         openModal('login');
@@ -586,11 +586,10 @@ async function votar(direccion) {
             .get();
         
         if (!snap.empty) {
-            console.log('Voto duplicado detectado');
             return mostrarToast('⚠️ Ya votaste en este periodo', 'error');
         }
         
-        const docRef = await db.collection('predicciones').add({
+        await db.collection('predicciones').add({
             usuarioId: usuarioActual.uid,
             periodo: periodoSeleccionado,
             voto: direccion,
@@ -600,29 +599,11 @@ async function votar(direccion) {
             creado: new Date()
         });
         
-        prediccionActivaId = docRef.id;
-        console.log('Voto registrado con éxito, ID:', prediccionActivaId);
         mostrarToast(`✅ Voto registrado: ${direccion.toUpperCase()}`);
         document.getElementById('mensaje').textContent = `✅ Voto registrado: ${direccion.toUpperCase()}`;
-        
         document.getElementById('botones-voto').classList.add('hidden');
         
-        const pred = {
-            voto: direccion,
-            cierre: cierre
-        };
-        mostrarPrediccionActiva(pred);
-        
-        if (intervaloTiempo) clearInterval(intervaloTiempo);
-        intervaloTiempo = setInterval(() => {
-            actualizarTiempoRestante(cierre);
-        }, 1000);
-        
-        const tiempoEspera = DURACIONES[periodoSeleccionado] + 5000;
-        setTimeout(() => {
-            verificarResultado();
-        }, tiempoEspera);
-        
+        buscarPrediccionActiva();
         cargarMisPredicciones();
         
     } catch (e) {
@@ -631,8 +612,12 @@ async function votar(direccion) {
     }
 }
 
-async function verificarResultado() {
-    console.log('Verificando resultados...');
+// ==============================================
+// VERIFICACIÓN DE RESULTADOS - CORREGIDA
+// ==============================================
+async function verificarResultadosPendientes() {
+    console.log('🔍 Verificando predicciones pendientes...', new Date().toLocaleTimeString());
+    
     try {
         const snap = await db.collection('predicciones')
             .where('estado', '==', 'activo')
@@ -644,17 +629,19 @@ async function verificarResultado() {
         }
         
         let algunaCerrada = false;
+        const ahora = new Date();
         
         for (const doc of snap.docs) {
             const pred = doc.data();
-            const ahora = new Date();
             const cierre = new Date(pred.cierre);
             
+            // Solo procesar si ya pasó el tiempo
             if (cierre > ahora) continue;
             
             algunaCerrada = true;
-            console.log('Verificando predicción:', doc.id, pred);
+            console.log('⏰ Cerrando predicción:', doc.id, 'Periodo:', pred.periodo);
             
+            // Obtener precio actual
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
             const data = await res.json();
             const precioFinal = data.bitcoin.usd;
@@ -662,14 +649,16 @@ async function verificarResultado() {
             const subio = precioFinal > pred.precioInicial;
             const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
             
+            // Actualizar predicción
             await db.collection('predicciones').doc(doc.id).update({
-                precioFinal,
+                precioFinal: precioFinal,
                 estado: 'cerrado',
                 resultado: acierto ? 'acierto' : 'fallo'
             });
             
-            console.log('Predicción cerrada:', doc.id, 'Acierto:', acierto);
+            console.log('📊 Resultado:', acierto ? 'ACERTÓ ✅' : 'FALLÓ ❌', 'Precio final:', precioFinal);
             
+            // Si es la predicción activa del usuario
             if (prediccionActivaId === doc.id) {
                 prediccionActivaId = null;
                 document.getElementById('prediccion-activa').classList.add('hidden');
@@ -680,6 +669,7 @@ async function verificarResultado() {
                 }
             }
             
+            // Actualizar puntos del usuario
             const userRef = db.collection('usuarios').doc(pred.usuarioId);
             if (acierto) {
                 await userRef.update({
@@ -784,7 +774,7 @@ async function cargarMisPredicciones() {
 }
 
 // ==============================================
-// GLOBAL EN VIVO - TODAS LAS PREDICCIONES
+// GLOBAL EN VIVO
 // ==============================================
 function iniciarEscuchaGlobal() {
     if (unsubscribeGlobal) {
@@ -792,7 +782,10 @@ function iniciarEscuchaGlobal() {
         unsubscribeGlobal = null;
     }
     
-    // Escuchar TODAS las predicciones de TODOS los usuarios
+    // Limpiar intervalos anteriores
+    intervalosGlobales.forEach(id => clearInterval(id));
+    intervalosGlobales = [];
+    
     unsubscribeGlobal = db.collection('predicciones')
         .orderBy('creado', 'desc')
         .limit(100)
@@ -806,21 +799,47 @@ function iniciarEscuchaGlobal() {
                 });
             });
             renderizarGlobal();
+            
+            // Iniciar contadores para predicciones activas
+            intervalosGlobales.forEach(id => clearInterval(id));
+            intervalosGlobales = [];
+            const intervalo = setInterval(() => {
+                actualizarContadoresGlobales();
+            }, 1000);
+            intervalosGlobales.push(intervalo);
+            
         }, (error) => {
             console.error('Error en escucha global:', error);
-            document.getElementById('global-predicciones').innerHTML = `
-                <div class="text-center py-4 text-red-400">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                    Error: ${error.message}
-                </div>
-            `;
         });
+}
+
+function actualizarContadoresGlobales() {
+    // Actualizar todos los contadores de tiempo en la vista global
+    document.querySelectorAll('.countdown-tiempo').forEach(el => {
+        const cierreStr = el.getAttribute('data-cierre');
+        if (cierreStr) {
+            const cierre = new Date(cierreStr);
+            const tiempoRestante = calcularTiempoRestante(cierre);
+            el.textContent = `⏱ ${tiempoRestante}`;
+            
+            // Si se acabó el tiempo, cambiar estado visual
+            if (tiempoRestante === '⏰ Finalizado') {
+                const parent = el.closest('.pred-item');
+                if (parent) {
+                    const badge = parent.querySelector('.badge-pendiente');
+                    if (badge) {
+                        badge.textContent = '⏳ Finalizando...';
+                        badge.className = 'px-2 py-0.5 rounded-full text-xs font-bold badge-cerrado';
+                    }
+                }
+            }
+        }
+    });
 }
 
 function filtrarGlobal(filtro) {
     filtroGlobal = filtro;
     
-    // Actualizar botones
     document.querySelectorAll('[id^="filtro-"]').forEach(b => {
         b.className = 'px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400';
     });
@@ -844,11 +863,8 @@ function renderizarGlobal() {
         return;
     }
     
-    // Obtener nombres de usuarios para mostrar
-    let html = '';
     let usuariosCache = {};
     
-    // Procesar en orden
     const promesas = filtradas.map(async (p) => {
         let username = 'Anónimo';
         if (p.usuarioId) {
@@ -887,18 +903,23 @@ function renderizarGlobal() {
         
         let tiempoInfo = '';
         if (esActivo && p.cierre) {
-            const tiempoRestante = calcularTiempoRestante(p.cierre);
-            tiempoInfo = `<span class="text-xs text-amber-400">⏱ ${tiempoRestante}</span>`;
+            const cierreDate = new Date(p.cierre);
+            const tiempoRestante = calcularTiempoRestante(cierreDate);
+            tiempoInfo = `<span class="text-xs text-amber-400 countdown-tiempo" data-cierre="${cierreDate.toISOString()}">⏱ ${tiempoRestante}</span>`;
         }
         
         let resultadoInfo = '';
         if (!esActivo && p.precioFinal) {
             const subio = p.precioFinal > p.precioInicial;
-            resultadoInfo = `<span class="text-xs text-gray-400">→ $${Math.round(p.precioFinal)} ${subio ? '📈' : '📉'}</span>`;
+            const cambio = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2);
+            resultadoInfo = `<span class="text-xs ${subio ? 'text-green-400' : 'text-red-400'}">→ $${Math.round(p.precioFinal)} (${subio ? '📈' : '📉'} ${cambio}%)</span>`;
         }
         
         const fecha = p.creado?.toDate ? p.creado.toDate() : new Date(p.creado);
         const fechaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        
+        // Precio inicial
+        const precioInicio = p.precioInicial ? `$${Math.round(p.precioInicial)}` : '--';
         
         return `
             <div class="card-glass rounded-xl p-4 pred-item ${esMiPrediccion ? 'border border-amber-500/30' : ''}">
@@ -917,7 +938,7 @@ function renderizarGlobal() {
                     </div>
                 </div>
                 <div class="text-xs text-gray-500 mt-1">
-                    Inicio: $${Math.round(p.precioInicial || 0)}
+                    Inicio: ${precioInicio}
                 </div>
             </div>
         `;
