@@ -858,7 +858,7 @@ async function cargarPrecioBTC() {
             const esPos = cambio >= 0;
             const txt = (esPos ? '+' : '') + cambio.toFixed(2) + '%';
             const cls = esPos ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400';
-            const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0}).format(precioBTC);
+            const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(precioBTC);
             
             document.getElementById('price-value').textContent = fmt;
             document.getElementById('price-value-movil').textContent = fmt;
