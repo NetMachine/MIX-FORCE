@@ -43,6 +43,12 @@
         .badge-pendiente { background: #f59e0b; color: #000; }
         .badge-activo { background: #10b981; color: #000; }
         .badge-cerrado { background: #6b7280; color: #fff; }
+        .scroll-predicciones { max-height: 400px; overflow-y: auto; }
+        .scroll-predicciones::-webkit-scrollbar { width: 4px; }
+        .scroll-predicciones::-webkit-scrollbar-thumb { background: #f7931a; border-radius: 10px; }
+        .pred-item { transition: all 0.2s; }
+        .pred-item:hover { background: rgba(251, 146, 60, 0.05); }
+        .stats-card { background: rgba(30,41,59,0.5); border-radius: 12px; padding: 12px; text-align: center; }
     </style>
 </head>
 <body class="gradient-bg min-h-screen text-gray-100">
@@ -84,9 +90,10 @@
 
 <!-- TABS -->
 <div class="max-w-7xl mx-auto px-4 mt-6">
-    <div class="flex border-b border-gray-700 gap-6 text-sm font-medium">
+    <div class="flex border-b border-gray-700 gap-6 text-sm font-medium overflow-x-auto">
         <button class="py-3 px-1 tab-active" onclick="switchTab('predict', event)">🎯 Predecir</button>
         <button class="py-3 px-1 text-gray-400" onclick="switchTab('ranking', event)">🏆 Ranking</button>
+        <button class="py-3 px-1 text-gray-400" onclick="switchTab('global', event)">🌍 En Vivo</button>
     </div>
 </div>
 
@@ -126,7 +133,7 @@
         
         <!-- Info de la predicción activa -->
         <div id="prediccion-activa" class="hidden mb-4 p-4 rounded-xl bg-slate-800/50">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center flex-wrap gap-2">
                 <div>
                     <span class="text-sm text-gray-400">Tu voto:</span>
                     <span id="mi-voto" class="font-bold"></span>
@@ -156,7 +163,7 @@
     <!-- Mis predicciones -->
     <div class="mt-10">
         <h3 class="text-xl font-bold mb-4">📋 Mis Predicciones</h3>
-        <div id="mis-predicciones" class="space-y-3">
+        <div id="mis-predicciones" class="space-y-3 scroll-predicciones">
             <p class="text-gray-500 text-center py-4">No tienes predicciones</p>
         </div>
     </div>
@@ -178,6 +185,42 @@
             </thead>
             <tbody id="ranking-body"></tbody>
         </table>
+    </div>
+</section>
+
+<!-- GLOBAL EN VIVO -->
+<section id="tab-global" class="max-w-4xl mx-auto px-4 py-8 hidden">
+    <h2 class="text-2xl font-bold mb-6 text-center">🌍 Todas las predicciones en vivo</h2>
+    
+    <!-- Estadísticas del usuario -->
+    <div id="user-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="stats-card">
+            <div class="text-xs text-gray-400">Puntos</div>
+            <div class="text-2xl font-bold text-amber-400" id="stats-puntos">0</div>
+        </div>
+        <div class="stats-card">
+            <div class="text-xs text-gray-400">Aciertos</div>
+            <div class="text-2xl font-bold text-green-400" id="stats-aciertos">0</div>
+        </div>
+        <div class="stats-card">
+            <div class="text-xs text-gray-400">Fallos</div>
+            <div class="text-2xl font-bold text-red-400" id="stats-fallos">0</div>
+        </div>
+        <div class="stats-card">
+            <div class="text-xs text-gray-400">Winrate</div>
+            <div class="text-2xl font-bold text-blue-400" id="stats-winrate">0%</div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="flex gap-2 mb-4 flex-wrap">
+        <button class="px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400" onclick="filtrarGlobal('todos')" id="filtro-todos">📊 Todos</button>
+        <button class="px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400" onclick="filtrarGlobal('activos')" id="filtro-activos">⏳ Activos</button>
+        <button class="px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400" onclick="filtrarGlobal('cerrados')" id="filtro-cerrados">✅ Cerrados</button>
+    </div>
+    
+    <div id="global-predicciones" class="space-y-3 scroll-predicciones">
+        <p class="text-gray-500 text-center py-4">Cargando predicciones...</p>
     </div>
 </section>
 
@@ -220,6 +263,9 @@ let periodoSeleccionado = null;
 let precioBTC = 0;
 let intervaloTiempo = null;
 let prediccionActivaId = null;
+let unsubscribeGlobal = null;
+let filtroGlobal = 'todos';
+let todasPrediccionesGlobal = [];
 
 const DURACIONES = {
     '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
@@ -272,12 +318,19 @@ async function cargarPrecioBTC() {
 // ==============================================
 function verificarSesion() {
     auth.onAuthStateChanged(async (user) => {
-        if (user) await cargarUsuario(user);
-        else { 
+        if (user) {
+            await cargarUsuario(user);
+            iniciarEscuchaGlobal();
+        } else { 
             usuarioActual = null; 
             actualizarUI(); 
             document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
             document.getElementById('prediccion-activa').classList.add('hidden');
+            if (unsubscribeGlobal) {
+                unsubscribeGlobal();
+                unsubscribeGlobal = null;
+            }
+            actualizarStatsUsuario();
         }
     });
 }
@@ -303,6 +356,16 @@ async function cargarUsuario(user) {
         cargarMisPredicciones();
         cargarRanking();
         buscarPrediccionActiva();
+        actualizarStatsUsuario();
+        
+        // Escuchar cambios en el usuario
+        db.collection('usuarios').doc(user.uid).onSnapshot((doc) => {
+            if (doc.exists) {
+                usuarioActual = { uid: user.uid, ...doc.data() };
+                actualizarUI();
+                actualizarStatsUsuario();
+            }
+        });
     } catch (e) {
         console.log('Error cargando usuario:', e);
         mostrarToast('Error al cargar usuario', 'error');
@@ -343,12 +406,17 @@ async function login() {
 }
 
 async function logout() {
+    if (unsubscribeGlobal) {
+        unsubscribeGlobal();
+        unsubscribeGlobal = null;
+    }
     await auth.signOut();
     usuarioActual = null;
     actualizarUI();
     document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
     document.getElementById('prediccion-activa').classList.add('hidden');
     if (intervaloTiempo) clearInterval(intervaloTiempo);
+    actualizarStatsUsuario();
     mostrarToast('Sesión cerrada');
 }
 
@@ -368,6 +436,27 @@ function actualizarUI() {
         userMenu.classList.add('hidden');
         userMenu.classList.remove('flex');
     }
+}
+
+function actualizarStatsUsuario() {
+    if (!usuarioActual) {
+        document.getElementById('stats-puntos').textContent = '0';
+        document.getElementById('stats-aciertos').textContent = '0';
+        document.getElementById('stats-fallos').textContent = '0';
+        document.getElementById('stats-winrate').textContent = '0%';
+        return;
+    }
+    
+    const puntos = usuarioActual.puntos || 0;
+    const aciertos = usuarioActual.aciertos || 0;
+    const total = usuarioActual.total_votos || 0;
+    const fallos = total - aciertos;
+    const winrate = total > 0 ? ((aciertos / total) * 100).toFixed(1) : 0;
+    
+    document.getElementById('stats-puntos').textContent = puntos;
+    document.getElementById('stats-aciertos').textContent = aciertos;
+    document.getElementById('stats-fallos').textContent = fallos;
+    document.getElementById('stats-winrate').textContent = winrate + '%';
 }
 
 // ==============================================
@@ -390,13 +479,13 @@ async function buscarPrediccionActiva() {
             prediccionActivaId = doc.id;
             mostrarPrediccionActiva(pred);
             
-            // Iniciar contador
             if (intervaloTiempo) clearInterval(intervaloTiempo);
             intervaloTiempo = setInterval(() => {
                 actualizarTiempoRestante(pred.cierre);
             }, 1000);
         } else {
             document.getElementById('prediccion-activa').classList.add('hidden');
+            document.getElementById('botones-voto').classList.remove('hidden');
             if (intervaloTiempo) {
                 clearInterval(intervaloTiempo);
                 intervaloTiempo = null;
@@ -425,7 +514,6 @@ function actualizarTiempoRestante(cierre) {
     const tiempoStr = calcularTiempoRestante(cierre);
     document.getElementById('tiempo-restante').textContent = tiempoStr;
     
-    // Si el tiempo se acabó, verificar resultado
     const ahora = new Date();
     const cierreDate = new Date(cierre);
     if (ahora >= cierreDate) {
@@ -461,7 +549,6 @@ function calcularTiempoRestante(cierre) {
 // VOTACIÓN
 // ==============================================
 function selectPeriodo(periodo, btn) {
-    // Si ya hay una predicción activa, no permitir votar
     if (prediccionActivaId) {
         mostrarToast('⚠️ Ya tienes una predicción activa', 'error');
         return;
@@ -492,7 +579,6 @@ async function votar(direccion) {
     const cierre = new Date(ahora.getTime() + DURACIONES[periodoSeleccionado]);
     
     try {
-        // Verificar voto duplicado
         const snap = await db.collection('predicciones')
             .where('usuarioId', '==', usuarioActual.uid)
             .where('periodo', '==', periodoSeleccionado)
@@ -504,7 +590,6 @@ async function votar(direccion) {
             return mostrarToast('⚠️ Ya votaste en este periodo', 'error');
         }
         
-        // Guardar predicción
         const docRef = await db.collection('predicciones').add({
             usuarioId: usuarioActual.uid,
             periodo: periodoSeleccionado,
@@ -520,23 +605,19 @@ async function votar(direccion) {
         mostrarToast(`✅ Voto registrado: ${direccion.toUpperCase()}`);
         document.getElementById('mensaje').textContent = `✅ Voto registrado: ${direccion.toUpperCase()}`;
         
-        // Ocultar botones de voto
         document.getElementById('botones-voto').classList.add('hidden');
         
-        // Mostrar predicción activa
         const pred = {
             voto: direccion,
             cierre: cierre
         };
         mostrarPrediccionActiva(pred);
         
-        // Iniciar contador
         if (intervaloTiempo) clearInterval(intervaloTiempo);
         intervaloTiempo = setInterval(() => {
             actualizarTiempoRestante(cierre);
         }, 1000);
         
-        // Programar verificación automática
         const tiempoEspera = DURACIONES[periodoSeleccionado] + 5000;
         setTimeout(() => {
             verificarResultado();
@@ -562,6 +643,8 @@ async function verificarResultado() {
             return;
         }
         
+        let algunaCerrada = false;
+        
         for (const doc of snap.docs) {
             const pred = doc.data();
             const ahora = new Date();
@@ -569,9 +652,9 @@ async function verificarResultado() {
             
             if (cierre > ahora) continue;
             
+            algunaCerrada = true;
             console.log('Verificando predicción:', doc.id, pred);
             
-            // Obtener precio final
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
             const data = await res.json();
             const precioFinal = data.bitcoin.usd;
@@ -579,7 +662,6 @@ async function verificarResultado() {
             const subio = precioFinal > pred.precioInicial;
             const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
             
-            // Actualizar predicción
             await db.collection('predicciones').doc(doc.id).update({
                 precioFinal,
                 estado: 'cerrado',
@@ -588,19 +670,16 @@ async function verificarResultado() {
             
             console.log('Predicción cerrada:', doc.id, 'Acierto:', acierto);
             
-            // Si es la predicción activa del usuario actual, limpiar estado
             if (prediccionActivaId === doc.id) {
                 prediccionActivaId = null;
                 document.getElementById('prediccion-activa').classList.add('hidden');
+                document.getElementById('botones-voto').classList.remove('hidden');
                 if (intervaloTiempo) {
                     clearInterval(intervaloTiempo);
                     intervaloTiempo = null;
                 }
-                // Mostrar botones de voto nuevamente
-                document.getElementById('botones-voto').classList.remove('hidden');
             }
             
-            // Actualizar usuario
             const userRef = db.collection('usuarios').doc(pred.usuarioId);
             if (acierto) {
                 await userRef.update({
@@ -613,6 +692,7 @@ async function verificarResultado() {
                     usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
                     actualizarUI();
+                    actualizarStatsUsuario();
                     mostrarToast(`🎉 ¡Acertaste! +1 punto`, 'success');
                 }
             } else {
@@ -621,14 +701,17 @@ async function verificarResultado() {
                 });
                 if (usuarioActual?.uid === pred.usuarioId) {
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+                    actualizarStatsUsuario();
                     mostrarToast(`😞 Fallaste. El BTC ${subio ? 'subió' : 'bajó'}`, 'error');
                 }
             }
         }
-        cargarMisPredicciones();
-        cargarRanking();
-        // Buscar si hay nueva predicción activa
-        buscarPrediccionActiva();
+        
+        if (algunaCerrada) {
+            cargarMisPredicciones();
+            cargarRanking();
+            buscarPrediccionActiva();
+        }
     } catch (e) {
         console.error('Error verificando resultados:', e);
     }
@@ -647,7 +730,7 @@ async function cargarMisPredicciones() {
         const snap = await db.collection('predicciones')
             .where('usuarioId', '==', usuarioActual.uid)
             .orderBy('creado', 'desc')
-            .limit(10)
+            .limit(20)
             .get();
         
         const contenedor = document.getElementById('mis-predicciones');
@@ -675,7 +758,6 @@ async function cargarMisPredicciones() {
             const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
             const direccionIcon = p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
             
-            // Mostrar tiempo restante si está activo
             let tiempoInfo = '';
             if (esActivo && p.cierre) {
                 const tiempoRestante = calcularTiempoRestante(p.cierre);
@@ -699,6 +781,151 @@ async function cargarMisPredicciones() {
     } catch (e) {
         console.error('Error cargando predicciones:', e);
     }
+}
+
+// ==============================================
+// GLOBAL EN VIVO - TODAS LAS PREDICCIONES
+// ==============================================
+function iniciarEscuchaGlobal() {
+    if (unsubscribeGlobal) {
+        unsubscribeGlobal();
+        unsubscribeGlobal = null;
+    }
+    
+    // Escuchar TODAS las predicciones de TODOS los usuarios
+    unsubscribeGlobal = db.collection('predicciones')
+        .orderBy('creado', 'desc')
+        .limit(100)
+        .onSnapshot((snapshot) => {
+            todasPrediccionesGlobal = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                todasPrediccionesGlobal.push({
+                    id: doc.id,
+                    ...data
+                });
+            });
+            renderizarGlobal();
+        }, (error) => {
+            console.error('Error en escucha global:', error);
+            document.getElementById('global-predicciones').innerHTML = `
+                <div class="text-center py-4 text-red-400">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Error: ${error.message}
+                </div>
+            `;
+        });
+}
+
+function filtrarGlobal(filtro) {
+    filtroGlobal = filtro;
+    
+    // Actualizar botones
+    document.querySelectorAll('[id^="filtro-"]').forEach(b => {
+        b.className = 'px-3 py-1 rounded-full text-xs bg-slate-700/50 text-gray-400';
+    });
+    document.getElementById('filtro-' + filtro).className = 'px-3 py-1 rounded-full text-xs bg-amber-500/20 text-amber-400';
+    
+    renderizarGlobal();
+}
+
+function renderizarGlobal() {
+    const contenedor = document.getElementById('global-predicciones');
+    
+    let filtradas = todasPrediccionesGlobal;
+    if (filtroGlobal === 'activos') {
+        filtradas = filtradas.filter(p => p.estado === 'activo');
+    } else if (filtroGlobal === 'cerrados') {
+        filtradas = filtradas.filter(p => p.estado === 'cerrado');
+    }
+    
+    if (filtradas.length === 0) {
+        contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No hay predicciones que mostrar</p>';
+        return;
+    }
+    
+    // Obtener nombres de usuarios para mostrar
+    let html = '';
+    let usuariosCache = {};
+    
+    // Procesar en orden
+    const promesas = filtradas.map(async (p) => {
+        let username = 'Anónimo';
+        if (p.usuarioId) {
+            if (!usuariosCache[p.usuarioId]) {
+                try {
+                    const doc = await db.collection('usuarios').doc(p.usuarioId).get();
+                    if (doc.exists) {
+                        usuariosCache[p.usuarioId] = doc.data().username || 'Anónimo';
+                    } else {
+                        usuariosCache[p.usuarioId] = 'Anónimo';
+                    }
+                } catch (e) {
+                    usuariosCache[p.usuarioId] = 'Anónimo';
+                }
+            }
+            username = usuariosCache[p.usuarioId];
+        }
+        
+        const esActivo = p.estado === 'activo';
+        const esMiPrediccion = usuarioActual && p.usuarioId === usuarioActual.uid;
+        
+        let estadoClase, estadoTxt;
+        if (esActivo) {
+            estadoClase = 'badge-pendiente';
+            estadoTxt = '⏳ Pendiente';
+        } else if (p.resultado === 'acierto') {
+            estadoClase = 'badge-activo';
+            estadoTxt = '✅ Acertado';
+        } else {
+            estadoClase = 'badge-cerrado';
+            estadoTxt = '❌ Fallado';
+        }
+        
+        const direccionClase = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+        const direccionIcon = p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
+        
+        let tiempoInfo = '';
+        if (esActivo && p.cierre) {
+            const tiempoRestante = calcularTiempoRestante(p.cierre);
+            tiempoInfo = `<span class="text-xs text-amber-400">⏱ ${tiempoRestante}</span>`;
+        }
+        
+        let resultadoInfo = '';
+        if (!esActivo && p.precioFinal) {
+            const subio = p.precioFinal > p.precioInicial;
+            resultadoInfo = `<span class="text-xs text-gray-400">→ $${Math.round(p.precioFinal)} ${subio ? '📈' : '📉'}</span>`;
+        }
+        
+        const fecha = p.creado?.toDate ? p.creado.toDate() : new Date(p.creado);
+        const fechaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+            <div class="card-glass rounded-xl p-4 pred-item ${esMiPrediccion ? 'border border-amber-500/30' : ''}">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-bold text-sm">${username}</span>
+                        ${esMiPrediccion ? '<span class="text-xs text-amber-400">(Tú)</span>' : ''}
+                        <span class="text-xs text-gray-500">${p.periodo}</span>
+                        <span class="${direccionClase} text-sm font-semibold">${direccionIcon}</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold ${estadoClase}">${estadoTxt}</span>
+                        ${tiempoInfo}
+                        ${resultadoInfo}
+                        <span class="text-xs text-gray-500">${fechaStr}</span>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                    Inicio: $${Math.round(p.precioInicial || 0)}
+                </div>
+            </div>
+        `;
+    });
+    
+    Promise.all(promesas).then(resultados => {
+        contenedor.innerHTML = resultados.join('');
+    });
 }
 
 // ==============================================
@@ -768,6 +995,12 @@ function switchTab(tab, event) {
     if (tab === 'predict' && usuarioActual) {
         cargarMisPredicciones();
         buscarPrediccionActiva();
+    }
+    if (tab === 'global') {
+        if (!unsubscribeGlobal && usuarioActual) {
+            iniciarEscuchaGlobal();
+        }
+        renderizarGlobal();
     }
 }
 
