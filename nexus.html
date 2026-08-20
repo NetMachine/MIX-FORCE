@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Predictor 🚀 | Adivina Sube o Baja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SUPABASE GRATIS - CREA TU CUENTA EN supabase.com Y REEMPLAZA ESTOS VALORES -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script>
+        // 👇 PEGA AQUÍ TUS CREDENCIALES DE SUPABASE
+        const SUPABASE_URL = "TU_SUPABASE_URL_AQUÍ";
+        const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY_AQUÍ";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); }
+        .glow-green { box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); }
+        .glow-red { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+        .card-glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(148, 163, 184, 0.2); }
+        .bronze { background: linear-gradient(135deg, #cd7f32, #b8860b); }
+        .silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
+        .gold { background: linear-gradient(135deg, #ffd700, #ffb300); }
+        .platinum { background: linear-gradient(135deg, #e5e4e2, #b9f2ff); color: #000; }
+        .master { background: linear-gradient(135deg, #9945ff, #ff0080, #ffd600); }
+        .tab-active { border-bottom: 3px solid #f7931a; color: #f7931a; }
+        .pulse-btc { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-gray-100">
+
+<!-- 🔝 NAVBAR -->
+<nav class="card-glass sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">₿</span>
+            <h1 class="text-xl font-bold text-amber-400">BitcoinPredict</h1>
+        </div>
+        <div id="btc-price" class="hidden md:flex items-center gap-2 text-lg font-semibold">
+            <span class="text-amber-400">$</span>
+            <span id="price-value" class="pulse-btc">--</span>
+            <span id="price-change" class="text-sm px-2 py-0.5 rounded-full"></span>
+        </div>
+        <div id="auth-buttons" class="flex gap-3">
+            <button onclick="openModal('login')" class="px-4 py-2 rounded-lg border border-amber-400 text-amber-400 hover:bg-amber-400/10 transition">Iniciar</button>
+            <button onclick="openModal('register')" class="px-4 py-2 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition hidden md:inline">Registrarse</button>
+        </div>
+        <div id="user-menu" class="hidden items-center gap-3">
+            <div class="text-right hidden sm:block">
+                <div id="user-name" class="font-semibold text-sm"></div>
+                <div id="user-tier" class="text-xs text-gray-400"></div>
+            </div>
+            <button onclick="logout()" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition text-sm">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- 💰 PRECIO BTC MÓVIL -->
+<div class="md:hidden card-glass mx-4 mt-3 p-3 rounded-xl flex justify-center items-center gap-3">
+    <span class="text-amber-400 font-bold">₿ Bitcoin:</span>
+    <span id="price-value-movil" class="text-xl font-bold">--</span>
+    <span id="price-change-movil" class="text-sm px-2 py-0.5 rounded-full"></span>
+</div>
+
+<!-- 📱 TABS -->
+<div class="max-w-7xl mx-auto px-4 mt-6">
+    <div class="flex overflow-x-auto border-b border-gray-700 gap-6 text-sm font-medium">
+        <button class="py-3 px-1 tab-active" onclick="switchTab('predict')">🎯 Predecir</button>
+        <button class="py-3 px-1 text-gray-400 hover:text-white" onclick="switchTab('ranking')">🏆 Ranking</button>
+        <button class="py-3 px-1 text-gray-400 hover:text-white" onclick="switchTab('premium')">👑 Premium</button>
+    </div>
+</div>
+
+<!-- 🎯 SECCIÓN PREDECIR -->
+<section id="tab-predict" class="max-w-4xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold mb-6 text-center">Elige el periodo y vota 👇</h2>
+    
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="5m" onclick="selectPeriodo('5m')">
+            <div class="text-xl font-bold">5 min</div>
+            <div class="text-xs text-gray-400">Corta</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="15m" onclick="selectPeriodo('15m')">
+            <div class="text-xl font-bold">15 min</div>
+            <div class="text-xs text-gray-400">Corta</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="30m" onclick="selectPeriodo('30m')">
+            <div class="text-xl font-bold">30 min</div>
+            <div class="text-xs text-gray-400">Media</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="1h" onclick="selectPeriodo('1h')">
+            <div class="text-xl font-bold">1 hora</div>
+            <div class="text-xs text-gray-400">Media</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="4h" onclick="selectPeriodo('4h')">
+            <div class="text-xl font-bold">4 horas</div>
+            <div class="text-xs text-gray-400">Larga</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="12h" onclick="selectPeriodo('12h')">
+            <div class="text-xl font-bold">12 horas</div>
+            <div class="text-xs text-gray-400">Larga</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="24h" onclick="selectPeriodo('24h')">
+            <div class="text-xl font-bold">24 horas</div>
+            <div class="text-xs text-gray-400">Diaria</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="1sem" onclick="selectPeriodo('1sem')">
+            <div class="text-xl font-bold">1 Semana</div>
+            <div class="text-xs text-gray-400">Semanal</div>
+        </button>
+        <button class="periodo-btn card-glass p-4 rounded-xl text-center hover:border-amber-400 transition" data-periodo="1mes" onclick="selectPeriodo('1mes')">
+            <div class="text-xl font-bold">1 Mes</div>
+            <div class="text-xs text-gray-400">Mensual</div>
+        </button>
+    </div>
+
+    <div id="votacion-card" class="card-glass rounded-2xl p-6 text-center">
+        <p class="text-gray-400 mb-4">Selecciona un periodo arriba para votar</p>
+        <div class="grid grid-cols-2 gap-6 mt-6 hidden" id="botones-voto">
+            <button onclick="votar('sube')" class="bg-green-500/20 hover:bg-green-500/30 text-green-400 py-6 rounded-xl text-2xl font-bold transition glow-green">
+                <i class="fas fa-arrow-up mr-2"></i> SUBE
+            </button>
+            <button onclick="votar('baja')" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 py-6 rounded-xl text-2xl font-bold transition glow-red">
+                <i class="fas fa-arrow-down mr-2"></i> BAJA
+            </button>
+        </div>
+        <p id="selected-periodo" class="text-lg font-semibold text-amber-400 mt-4 hidden"></p>
+        <p id="voto-message" class="mt-4 text-gray-300"></p>
+    </div>
+
+    <!-- Mis Predicciones Activas -->
+    <div class="mt-10">
+        <h3 class="text-xl font-bold mb-4">📋 Mis Predicciones Activas</h3>
+        <div id="mis-predicciones" class="space-y-3">
+            <p class="text-gray-500 text-center py-4">No tienes predicciones activas</p>
+        </div>
+    </div>
+</section>
+
+<!-- 🏆 SECCIÓN RANKING -->
+<section id="tab-ranking" class="max-w-4xl mx-auto px-4 py-8 hidden">
+    <h2 class="text-2xl font-bold mb-6 text-center">🏆 Ranking Global</h2>
+    
+    <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="card-glass rounded-xl p-4 text-center order-2 sm:order-1">
+            <div class="text-3xl mb-1">🥈</div>
+            <div id="pos2-name" class="font-semibold">--</div>
+            <div class="text-amber-400 font-bold">-- pts</div>
+            <div class="text-xs text-gray-400">Winrate: --%</div>
+        </div>
+        <div class="card-glass rounded-xl p-4 text-center order-1 sm:order-2 transform scale-105 border-2 border-amber-400">
+            <div class="text-4xl mb-1">👑</div>
+            <div id="pos1-name" class="font-bold text-lg">--</div>
+            <div class="text-amber-400 font-bold text-xl">-- pts</div>
+            <div class="text-xs text-gray-400">Winrate: --%</div>
+        </div>
+        <div class="card-glass rounded-xl p-4 text-center order-3">
+            <div class="text-3xl mb-1">🥉</div>
+            <div id="pos3-name" class="font-semibold">--</div>
+            <div class="text-amber-400 font-bold">-- pts</div>
+            <div class="text-xs text-gray-400">Winrate: --%</div>
+        </div>
+    </div>
+
+    <div class="card-glass rounded-xl overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-800/50">
+                <tr>
+                    <th class="py-3 px-4 text-left">#</th>
+                    <th class="py-3 px-4 text-left">Usuario</th>
+                    <th class="py-3 px-4 text-center">Tier</th>
+                    <th class="py-3 px-4 text-center">Puntos</th>
+                    <th class="py-3 px-4 text-center">Winrate</th>
+                </tr>
+            </thead>
+            <tbody id="ranking-body">
+                <!-- Cargado por JS -->
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- 👑 SECCIÓN PREMIUM -->
+<section id="tab-premium" class="max-w-2xl mx-auto px-4 py-8 hidden">
+    <div class="card-glass rounded-2xl p-8 text-center">
+        <div class="text-5xl mb-4">👑</div>
+        <h2 class="text-3xl font-bold mb-4 text-amber-400">Acceso Premium</h2>
+        <p class="text-gray-300 mb-8">Obtén predicciones en tiempo real de los mejores usuarios del ranking</p>
+        
+        <ul class="text-left space-y-3 mb-8 max-w-sm mx-auto">
+            <li class="flex items-center gap-3"><i class="fas fa-check text-green-400"></i> Ver predicciones en vivo del Top 100</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-green-400"></i> Historial completo de cada usuario</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-green-400"></i> Estadísticas avanzadas</li>
+            <li class="flex items-center gap-3"><i class="fas fa-check text-green-400"></i> Sin anuncios</li>
+        </ul>
+
+        <div class="text-3xl font-bold mb-6">$9.99 <span class="text-lg text-gray-400 font-normal">/mes</span></div>
+        <button onclick="alert('Integrar Stripe o PayPal aquí')" class="w-full py-4 rounded-xl bg-amber-500 text-black font-bold text-lg hover:bg-amber-400 transition">
+            🔓 Desbloquear Premium
+        </button>
+        <p class="text-xs text-gray-500 mt-4">Puedes cancelar cuando quieras</p>
+    </div>
+</section>
+
+<!-- 📝 MODAL LOGIN / REGISTRO -->
+<div id="modal-auth" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="card-glass rounded-2xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="modal-title" class="text-2xl font-bold">Iniciar Sesión</h2>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+        
+        <div id="login-form">
+            <div class="space-y-4">
+                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none">
+                <input type="password" id="login-pass" placeholder="Contraseña" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none">
+                <button onclick="login()" class="w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition">Entrar</button>
+            </div>
+            <p class="text-center mt-4 text-gray-400">¿No tienes cuenta? <a href="#" onclick="openModal('register')" class="text-amber-400">Registrarse</a></p>
+        </div>
+
+        <div id="register-form" class="hidden space-y-4">
+            <input type="text" id="reg-username" placeholder="Nombre de usuario" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none">
+            <input type="email" id="reg-email" placeholder="Correo electrónico" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none">
+            <input type="password" id="reg-pass" placeholder="Contraseña" class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-600 focus:border-amber-400 outline-none">
+            <button onclick="register()" class="w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition">Crear Cuenta</button>
+            <p class="text-center mt-4 text-gray-400">¿Ya tienes cuenta? <a href="#" onclick="openModal('login')" class="text-amber-400">Iniciar sesión</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- ⚠️ MODAL AVISO LEGAL -->
+<div id="modal-aviso" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="card-glass rounded-2xl p-6 max-w-md text-center">
+        <h3 class="text-xl font-bold mb-4">⚠️ Aviso Importante</h3>
+        <p class="text-gray-300 mb-4">Esta plataforma es <strong>solo para entretenimiento</strong>. No constituye asesoramiento financiero ni garantía de resultados. Las predicciones son opiniones de los usuarios, no recomendaciones de inversión.</p>
+        <p class="text-gray-400 text-sm mb-6">El trading de criptomonedas conlleva riesgos. Nunca inviertas dinero que no puedes permitirte perder.</p>
+        <button onclick="cerrarAviso()" class="w-full py-3 rounded-lg bg-amber-500 text-black font-semibold hover:bg-amber-400 transition">Entendido, continuar</button>
+    </div>
+</div>
+
+<!-- ✅ TOAST NOTIFICACIÓN -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-40">
+    <span id="toast-text"></span>
+</div>
+
+<footer class="text-center py-8 text-gray-500 text-sm mt-12 border-t border-slate-800">
+    <p>BitcoinPredict © 2026 -- Solo entretenimiento. No es asesoramiento financiero.</p>
+</footer>
+
+<script>
+// ==============================================
+// ⚙️ CONFIGURACIÓN Y VARIABLES
+// ==============================================
+let usuarioActual = null;
+let periodoSeleccionado = null;
+let precioBTC = 0;
+
+const TIERS = [
+    { nombre: 'Bronce', min: 0, clase: 'bronze' },
+    { nombre: 'Plata', min: 50, clase: 'silver' },
+    { nombre: 'Oro', min: 200, clase: 'gold' },
+    { nombre: 'Platino', min: 500, clase: 'platinum' },
+    { nombre: 'Maestro', min: 1000, clase: 'master' }
+];
+
+const PERIODOS = {
+    '5m': ms => ms < 3600000 ? '5 min' : ms < 86400000 ? '15 min' : ms < 604800000 ? '1 sem' : '1 mes',
+    duracion: {
+        '5m': 5 * 60 * 1000,
+        '15m': 15 * 60 * 1000,
+        '30m': 30 * 60 * 1000,
+        '1h': 60 * 60 * 1000,
+        '4h': 4 * 60 * 60 * 1000,
+        '12h': 12 * 60 * 60 * 1000,
+        '24h': 24 * 60 * 60 * 1000,
+        '1sem': 7 * 24 * 60 * 60 * 1000,
+        '1mes': 30 * 24 * 60 * 60 * 1000
+    }
+};
+
+// ==============================================
+// 🚀 INICIO
+// ==============================================
+document.addEventListener('DOMContentLoaded', () => {
+    cargarPrecioBTC();
+    setInterval(cargarPrecioBTC, 30000);
+    verificarSesion();
+    cargarRanking();
+});
+
+function cerrarAviso() {
+    document.getElementById('modal-aviso').classList.add('hidden');
+}
+
+// ==============================================
+// 💰 PRECIO DE BITCOIN (CoinGecko API - GRATIS)
+// ==============================================
+async function cargarPrecioBTC() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const data = await res.json();
+        precioBTC = data.bitcoin.usd;
+        const cambio = data.bitcoin.usd_24h_change.toFixed(2);
+        
+        document.getElementById('price-value').textContent = formatoPrecio(precioBTC);
+        document.getElementById('price-value-movil').textContent = formatoPrecio(precioBTC);
+        
+        const esPositivo = cambio >= 0;
+        const cambioTxt = `${esPositivo ? '+' : ''}${cambio}%`;
+        document.getElementById('price-change').textContent = cambioTxt;
+        document.getElementById('price-change-movil').textContent = cambioTxt;
+        
+        const clase = esPositivo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
+        document.getElementById('price-change').className = `text-sm px-2 py-0.5 rounded-full ${clase}`;
+        document.getElementById('price-change-movil').className = `text-sm px-2 py-0.5 rounded-full ${clase}`;
+    } catch (e) {
+        console.log('Error cargando precio');
+    }
+}
+
+function formatoPrecio(precio) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(precio);
+}
+
+// ==============================================
+// 🔐 AUTENTICACIÓN
+// ==============================================
+async function verificarSesion() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        await cargarUsuario(session.user);
+    }
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session) await cargarUsuario(session.user);
+        else usuarioActual = null;
+        actualizarUI();
+    });
+}
+
+async function cargarUsuario(user) {
+    // Buscar o crear perfil del usuario
+    const { data: perfil, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (error || !perfil) {
+        // Crear perfil nuevo
+        const username = user.email?.split('@')[0] || `Usuario${Math.random().toString(36).slice(2, 8)}`;
+        const nuevoPerfil = {
+            id: user.id,
+            email: user.email,
+            username: username,
+            puntos: 0,
+            aciertos: 0,
+            total_votos: 0,
+            created_at: new Date().toISOString()
+        };
+        await supabase.from('usuarios').insert([nuevoPerfil]);
+        usuarioActual = nuevoPerfil;
+    } else {
+        usuarioActual = perfil;
+    }
+    actualizarUI();
+    cargarMisPredicciones();
+}
+
+async function register() {
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-pass').value;
+    const username = document.getElementById('reg-username').value.trim();
+    
+    if (!email || !password || !username) return mostrarToast('Completa todos los campos', 'error');
+    
+    const { error } = await supabase.auth.signUp({
+        email, password,
+        options: { data: { username } }
+    });
+    
+    if (error) return mostrarToast(error.message, 'error');
+    mostrarToast('✅ Cuenta creada! Revisa tu correo');
+    closeModal();
+}
+
+async function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-pass').value;
+    
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return mostrarToast(error.message, 'error');
+    mostrarToast('¡Bienvenido de nuevo! 🎉');
+    closeModal();
+}
+
+async function logout() {
+    await supabase.auth.signOut();
+    usuarioActual = null;
+    actualizarUI();
+    mostrarToast('Sesión cerrada');
+}
+
+function actualizarUI() {
+    const authBtns = document.getElementById('auth-buttons');
+    const userMenu = document.getElementById('user-menu');
+    
+    if (usuarioActual) {
+        authBtns.classList.add('hidden');
+        userMenu.classList.remove('hidden');
+        userMenu.classList.add('flex');
+        document.getElementById('user-name').textContent = usuarioActual.username;
+        document.getElementById('user-tier').textContent = getTier(usuarioActual.puntos).nombre;
+    } else {
+        authBtns.classList.remove('hidden');
+        userMenu.classList.add('hidden');
+        userMenu.classList.remove('flex');
+    }
+    cargarRanking();
+}
+
+// ==============================================
+// 🎯 SISTEMA DE VOTOS
+// ==============================================
+function selectPeriodo(periodo) {
+    periodoSeleccionado = periodo;
+    document.querySelectorAll('.periodo-btn').forEach(b => b.classList.remove('border-amber-400', 'bg-amber-500/10'));
+    event.target.closest('.periodo-btn').classList.add('border-amber-400', 'bg-amber-500/10');
+    
+    document.getElementById('botones-voto').classList.remove('hidden');
+    document.getElementById('selected-periodo').classList.remove('hidden');
+    document.getElementById('selected-periodo').textContent = `Periodo seleccionado: ${periodo}`;
+    document.getElementById('voto-message').textContent = '';
+}
+
+async function votar(direccion) {
+    if (!usuarioActual) {
+        openModal('login');
+        return mostrarToast('Inicia sesión para votar', 'error');
+    }
+    if (!periodoSeleccionado) return mostrarToast('Selecciona un periodo primero', 'error');
+    
+    // Verificar si ya votó en este periodo activo
+    const ahora = new Date();
+    const cierre = new Date(ahora.getTime() + PERIODOS.duracion[periodoSeleccionado]);
+    
+    const { data: existente } = await supabase
+        .from('predicciones')
+        .select('*')
+        .eq('usuario_id', usuarioActual.id)
+        .eq('periodo', periodoSeleccionado)
+        .eq('estado', 'activo')
+        .gte('cierre', ahora.toISOString())
+        .maybeSingle();
+    
+    if (existente) return mostrarToast('⚠️ Ya votaste en este periodo', 'error');
+    
+    // Guardar predicción
+    const prediccion = {
+        usuario_id: usuarioActual.id,
+        periodo: periodoSeleccionado,
+        voto: direccion,
+        precio_inicial: precioBTC,
+        precio_final: null,
+        cierre: cierre.toISOString(),
+        estado: 'activo',
+        resultado: null
+    };
+    
+    const { error } = await supabase.from('predicciones').insert([prediccion]);
+    if (error) return mostrarToast('Error al guardar voto', 'error');
+    
+    mostrarToast(`✅ Voto registrado: ${direccion.toUpperCase()} en ${periodoSeleccionado}`);
+    document.getElementById('voto-message').textContent = `✅ Voto registrado: ${direccion.toUpperCase()}`;
+    
+    // Programar verificación de resultado
+    setTimeout(() => verificarResultado(prediccion), PERIODOS.duracion[periodoSeleccionado]);
+    
+    cargarMisPredicciones();
+}
+
+async function verificarResultado(prediccion) {
+    // Obtener precio final
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const data = await res.json();
+        const precioFinal = data.bitcoin.usd;
+        
+        const subio = precioFinal > prediccion.precio_inicial;
+        const acierto = (prediccion.voto === 'sube' && subio) || (prediccion.voto === 'baja' && !subio);
+        
+        // Actualizar predicción
+        await supabase.from('predicciones')
+            .update({
+                precio_final: precioFinal,
+                estado: 'cerrado',
+                resultado: acierto ? 'acierto' : 'fallo'
+            })
+            .eq('id', prediccion.id);
+        
+        // Actualizar usuario si acertó
+        if (acierto) {
+            await supabase.rpc('sumar_punto', { user_id: prediccion.usuario_id });
+            if (usuarioActual?.id === prediccion.usuario_id) {
+                usuarioActual.puntos++;
+                usuarioActual.aciertos++;
+                usuarioActual.total_votos++;
+                actualizarUI();
+            }
+        } else {
+            await supabase.rpc('sumar_voto_total', { user_id: prediccion.usuario_id });
+        }
+        
+        mostrarToast(acierto ? '🎉 ¡Acertaste! +1 punto' : '😔 Fallaste, intenta de nuevo');
+        cargarMisPredicciones();
+        cargarRanking();
+        
+    } catch (e) {
+        console.log('Error verificando resultado:', e);
+    }
+}
+
+async function cargarMisPredicciones() {
+    if (!usuarioActual) return;
+    
+    const { data } = await supabase
+        .from('predicciones')
+        .select('*')
+        .eq('usuario_id', usuarioActual.id)
+        .order('cierre', { ascending: true })
+        .limit(10);
+    
+    const contenedor = document.getElementById('mis-predicciones');
+    if (!data || data.length === 0) {
+        contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No tienes predicciones activas</p>';
+        return;
+    }
+    
+    contenedor.innerHTML = data.map(p => {
+        const esActivo = p.estado === 'activo';
+        const estadoClase = esActivo ? 'text-amber-400' : (p.resultado === 'acierto' ? 'text-green-400' : 'text-red-400');
+        const estadoTxt = esActivo ? '⏳ Pendiente' : (p.resultado === 'acierto' ? '✅ Acertado' : '❌ Fallado');
+        const tiempoRestante = esActivo ? getTiempoRestante(new Date(p.cierre)) : 'Cerrado';
+        
+        return `
+            <div class="card-glass rounded-xl p-4 flex justify-between items-center">
+                <div>
+                    <span class="font-bold">${p.periodo}</span>
+                    <span class="ml-2 ${p.voto === 'sube' ? 'text-green-400' : 'text-red-400'}">
+                        ${p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA'}
+                    </span>
+                </div>
+                <div class="text-right">
+                    <div class="${estadoClase} text-sm font-semibold">${estadoTxt}</div>
+                    <div class="text-xs text-gray-400">${tiempoRestante}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ==============================================
+// 🏆 RANKING Y TIERS
+// ==============================================
+function getTier(puntos) {
+    return TIERS.reduce((acc, t) => puntos >= t.min ? t : acc, TIERS[0]);
+}
+
+async function cargarRanking() {
+    const { data } = await supabase
+        .from('usuarios')
+        .select('*')
+        .order('puntos', { ascending: false })
+        .limit(50);
+    
+    if (!data || data.length === 0) return;
+    
+    // Podio
+    if (data[0]) {
+        document.getElementById('pos1-name').textContent = data[0].username;
+        document.getElementById('pos1-name').classList.add(getTier(data[0].puntos).clase);
+        document.getElementById('pos1-name').style.padding = '4px 8px';
+        document.getElementById('pos1-name').style.borderRadius = '6px';
+        document.getElementById('pos1-name').style.display = 'inline-block';
+        document.getElementById('pos1-name').style.color = '#000';
+        document.getElementById('pos1-name').style.fontWeight = 'bold';
+        document.getElementById('pos1-name').style.marginBottom = '8px';
+        document.getElementById('pos1-name').style.marginTop = '4px';
+        document.querySelector('#pos1-name + div').textContent = `${data[0].puntos} pts`;
+        document.querySelector('#pos1-name + div + div').textContent = `Winrate: ${data[0].total_votos ? ((data[0].aciertos / data[0].total_votos) * 100).toFixed(1) : 0}%`;
+    }
+    if (data[1]) {
+        document.getElementById('pos2-name').textContent = data[1].username;
+        document.getElementById('pos2-name').classList.add(getTier(data[1].puntos).clase);
+        document.getElementById('pos2-name').style.padding = '4px 8px';
+        document.getElementById('pos2-name').style.borderRadius = '6px';
+        document.getElementById('pos2-name').style.display = 'inline-block';
+        document.getElementById('pos2-name').style.color = '#000';
+        document.getElementById('pos2-name').style.fontWeight = 'bold';
+        document.getElementById('pos2-name').style.marginBottom = '8px';
+        document.getElementById('pos2-name').style.marginTop = '4px';
+        document.querySelector('#pos2-name + div').textContent = `${data[1].puntos} pts`;
+        document.querySelector('#pos2-name + div + div').textContent = `Winrate: ${data[1].total_votos ? ((data[1].aciertos / data[1].total_votos) * 100).toFixed(1) : 0}%`;
+    }
+    if (data[2]) {
+        document.getElementById('pos3-name').textContent = data[2].username;
+        document.getElementById('pos3-name').classList.add(getTier(data[2].puntos).clase);
+        document.getElementById('pos3-name').style.padding = '4px 8px';
+        document.getElementById('pos3-name').style.borderRadius = '6px';
+        document.getElementById('pos3-name').style.display = 'inline-block';
+        document.getElementById('pos3-name').style.color = '#000';
+        document.getElementById('pos3-name').style.fontWeight = 'bold';
+        document.getElementById('pos3-name').style.marginBottom = '8px';
+        document.getElementById('pos3-name').style.marginTop = '4px';
+        document.querySelector('#pos3-name + div').textContent = `${data[2].puntos} pts`;
+        document.querySelector('#pos3-name + div + div').textContent = `Winrate: ${data[2].total_votos ? ((data[2].aciertos / data[2].total_votos) * 100).toFixed(1) : 0}%`;
+    }
+    
+    // Tabla completa
+    const tbody = document.getElementById('ranking-body');
+    tbody.innerHTML = data.map((u, i) => {
+        const tier = getTier(u.puntos);
+        const winrate = u.total_votos ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : 0;
+        const esYo = usuarioActual && u.id === usuarioActual.id;
+        return `
+            <tr class="${esYo ? 'bg-amber-500/10' : ''} border-t border-slate-700/50 hover:bg-slate-700/30">
+                <td class="py-3 px-4 font-bold">${i + 1}</td>
+                <td class="py-3 px-4">
+                    <span class="font-semibold">${u.username}</span>
+                    ${esYo ? '<span class="ml-2 text-xs text-amber-400">(Tú)</span>' : ''}
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <span class="px-2 py-1 rounded-full text-xs font-bold ${tier.clase}" style="color: black;">${tier.nombre}</span>
+                </td>
+                <td class="py-3 px-4 text-center font-bold text-amber-400">${u.puntos}</td>
+                <td class="py-3 px-4 text-center">${winrate}%</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ==============================================
+// 🛠️ FUNCIONES AUXILIARES
+// ==============================================
+function switchTab(tab) {
+    document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
+    
+    document.querySelectorAll('[onclick^="switchTab"]').forEach(btn => {
+        btn.classList.remove('tab-active');
+        btn.classList.add('text-gray-400');
+    });
+    event.target.classList.add('tab-active');
+    event.target.classList.remove('text-gray-400');
+    
+    if (tab === 'ranking') cargarRanking();
+    if (tab === 'predict' && usuarioActual) cargarMisPredicciones();
+}
+
+function openModal(tipo) {
+    document.getElementById('modal-auth').classList.remove('hidden');
+    document.getElementById('modal-auth').classList.add('flex');
+    
+    if (tipo === 'login') {
+        document.getElementById('login-form').classList.remove('hidden');
+        document.getElementById('register-form').classList.add('hidden');
+        document.getElementById('modal-title').textContent = 'Iniciar Sesión';
+    } else {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('register-form').classList.remove('hidden');
+        document.getElementById('modal-title').textContent = 'Crear Cuenta';
+    }
+}
+
+function closeModal() {
+    document.getElementById('modal-auth').classList.add('hidden');
+    document.getElementById('modal-auth').classList.remove('flex');
+}
+
+function mostrarToast(mensaje, tipo = 'success') {
+    const toast = document.getElementById('toast');
+    const texto = document.getElementById('toast-text');
+    texto.textContent = mensaje;
+    toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 ${tipo === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-3 rounded-xl shadow-2xl transition-all duration-300 z-40`;
+    toast.style.transform = 'translate(-50%, 0)';
+    toast.style.opacity = '1';
+    
+    setTimeout(() => {
+        toast.style.transform = 'translate(-50%, 80px)';
+        toast.style.opacity = '0';
+    }, 4000);
+}
+
+function getTiempoRestante(cierre) {
+    const ahora = new Date();
+    const ms = cierre - ahora;
+    if (ms <= 0) return 'Cerrando...';
+    const d = Math.floor(ms / 86400000);
+    const h = Math.floor((ms % 86400000) / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+}
+
+// Cerrar modal al hacer clic fuera
+document.getElementById('modal-auth').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('modal-auth')) closeModal();
+});
+
+</script>
+</body>
+</html>
