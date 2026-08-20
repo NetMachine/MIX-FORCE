@@ -199,7 +199,7 @@
             </div>
         </div>
         <div id="mis-predicciones" class="space-y-3 scroll-predicciones">
-            <p class="text-gray-500 text-center py-4">⏳ Cargando predicciones...</p>
+            <p class="text-gray-500 text-center py-4">Cargando predicciones...</p>
         </div>
     </div>
 </section>
@@ -265,7 +265,6 @@ let prediccionActivaId = null;
 let precioAnterior = 0;
 let unsubscribePredicciones = null;
 let todasLasPredicciones = [];
-let authInicializado = false;
 
 const DURACIONES = {
     '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
@@ -337,45 +336,25 @@ async function cargarPrecioBTC() {
 }
 
 // ==============================================
-// AUTENTICACIÓN FIREBASE - CORREGIDA
+// AUTENTICACIÓN FIREBASE
 // ==============================================
 function verificarSesion() {
-    // Mostrar estado de carga
-    document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">⏳ Verificando sesión...</p>';
-    
     auth.onAuthStateChanged(async (user) => {
-        authInicializado = true;
-        
         if (user) {
-            console.log('Usuario autenticado:', user.email);
             await cargarUsuario(user);
             iniciarEscuchaPredicciones();
-        } else {
-            console.log('No hay usuario autenticado');
-            usuarioActual = null;
-            actualizarUI();
-            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">🔒 Inicia sesión para ver tus predicciones</p>';
-            document.getElementById('total-predicciones').textContent = '';
+        } else { 
+            usuarioActual = null; 
+            actualizarUI(); 
+            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
             document.getElementById('prediccion-activa').classList.add('hidden');
+            document.getElementById('total-predicciones').textContent = '';
             if (unsubscribePredicciones) {
                 unsubscribePredicciones();
                 unsubscribePredicciones = null;
             }
         }
     });
-}
-
-// Forzar verificación manual de sesión
-function forzarVerificacionSesion() {
-    const user = auth.currentUser;
-    if (user) {
-        console.log('Forzando verificación, usuario:', user.email);
-        cargarUsuario(user);
-        iniciarEscuchaPredicciones();
-    } else {
-        console.log('Forzando verificación, no hay usuario');
-        document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">🔒 Inicia sesión para ver tus predicciones</p>';
-    }
 }
 
 async function cargarUsuario(user) {
@@ -395,7 +374,6 @@ async function cargarUsuario(user) {
         } else {
             usuarioActual = { uid: user.uid, ...doc.data() };
         }
-        console.log('Usuario cargado:', usuarioActual.username);
         actualizarUI();
         cargarRanking();
         await buscarPrediccionActiva();
@@ -418,8 +396,6 @@ async function register() {
         await user.updateProfile({ displayName: username });
         mostrarToast('✅ Cuenta creada con éxito!');
         cerrarModal();
-        // Forzar actualización
-        setTimeout(() => forzarVerificacionSesion(), 1000);
     } catch (e) {
         mostrarToast('❌ ' + e.message, 'error');
     }
@@ -435,8 +411,6 @@ async function login() {
         await auth.signInWithEmailAndPassword(email, pass);
         mostrarToast('¡Bienvenido! 🎉');
         cerrarModal();
-        // Forzar actualización
-        setTimeout(() => forzarVerificacionSesion(), 1000);
     } catch (e) {
         mostrarToast('❌ ' + e.message, 'error');
     }
@@ -450,9 +424,9 @@ async function logout() {
     await auth.signOut();
     usuarioActual = null;
     actualizarUI();
-    document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">🔒 Inicia sesión para ver tus predicciones</p>';
-    document.getElementById('total-predicciones').textContent = '';
+    document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Inicia sesión para ver tus predicciones</p>';
     document.getElementById('prediccion-activa').classList.add('hidden');
+    document.getElementById('total-predicciones').textContent = '';
     if (intervaloTiempo) clearInterval(intervaloTiempo);
     mostrarToast('Sesión cerrada');
 }
@@ -479,18 +453,14 @@ function actualizarUI() {
 // ESCUCHA EN TIEMPO REAL DE PREDICCIONES
 // ==============================================
 function iniciarEscuchaPredicciones() {
-    if (!usuarioActual) {
-        console.log('No hay usuario, no se inicia escucha');
-        return;
-    }
+    if (!usuarioActual) return;
     
     if (unsubscribePredicciones) {
         unsubscribePredicciones();
         unsubscribePredicciones = null;
     }
     
-    console.log('Iniciando escucha de predicciones para:', usuarioActual.uid);
-    
+    // Escucha en tiempo real con límite de 50 predicciones
     unsubscribePredicciones = db.collection('predicciones')
         .where('usuarioId', '==', usuarioActual.uid)
         .orderBy('creado', 'desc')
@@ -498,20 +468,11 @@ function iniciarEscuchaPredicciones() {
         .onSnapshot((snapshot) => {
             todasLasPredicciones = [];
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                // Asegurar que los timestamps sean objetos Date
-                if (data.cierre && data.cierre.toDate) {
-                    data.cierre = data.cierre.toDate();
-                }
-                if (data.creado && data.creado.toDate) {
-                    data.creado = data.creado.toDate();
-                }
                 todasLasPredicciones.push({
                     id: doc.id,
-                    ...data
+                    ...doc.data()
                 });
             });
-            console.log('Predicciones cargadas:', todasLasPredicciones.length);
             renderizarPredicciones();
             actualizarPrediccionActivaDesdeLista();
         }, (error) => {
@@ -529,7 +490,7 @@ function renderizarPredicciones() {
     const contenedor = document.getElementById('mis-predicciones');
     
     if (todasLasPredicciones.length === 0) {
-        contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">📭 No tienes predicciones aún. ¡Crea tu primera predicción!</p>';
+        contenedor.innerHTML = '<p class="text-gray-500 text-center py-4">No tienes predicciones aún. ¡Crea tu primera predicción!</p>';
         document.getElementById('total-predicciones').textContent = '0 predicciones';
         return;
     }
@@ -554,13 +515,14 @@ function renderizarPredicciones() {
         const direccionIcon = p.voto === 'sube' ? '🔼 SUBE' : '🔽 BAJA';
         const direccionEmoji = p.voto === 'sube' ? '📈' : '📉';
         
+        // Tiempo restante si está activo
         let tiempoInfo = '';
         if (esActivo && p.cierre) {
-            const cierreDate = p.cierre instanceof Date ? p.cierre : new Date(p.cierre);
-            const tiempoRestante = calcularTiempoRestante(cierreDate);
-            tiempoInfo = `<div class="text-xs text-amber-400 countdown" data-cierre="${cierreDate.toISOString()}">⏱ ${tiempoRestante}</div>`;
+            const tiempoRestante = calcularTiempoRestante(p.cierre);
+            tiempoInfo = `<div class="text-xs text-amber-400 countdown" data-cierre="${p.cierre.toDate ? p.cierre.toDate().toISOString() : p.cierre}">⏱ ${tiempoRestante}</div>`;
         }
         
+        // Resultado si está cerrado
         let resultadoInfo = '';
         if (!esActivo && p.precioFinal) {
             const subio = p.precioFinal > p.precioInicial;
@@ -573,7 +535,8 @@ function renderizarPredicciones() {
             `;
         }
         
-        const fecha = p.creado instanceof Date ? p.creado : new Date(p.creado);
+        // Fecha de creación
+        const fecha = p.creado?.toDate ? p.creado.toDate() : new Date(p.creado);
         const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
         
         html += `
@@ -601,6 +564,7 @@ function renderizarPredicciones() {
     contenedor.innerHTML = html;
     document.getElementById('total-predicciones').textContent = `${todasLasPredicciones.length} predicciones`;
     
+    // Iniciar contadores de tiempo para predicciones activas
     if (document.querySelector('.badge-pendiente')) {
         if (intervaloTiempo) clearInterval(intervaloTiempo);
         intervaloTiempo = setInterval(() => {
@@ -617,10 +581,9 @@ function actualizarContadoresTiempo() {
             const tiempoRestante = calcularTiempoRestante(cierre);
             el.textContent = `⏱ ${tiempoRestante}`;
             
+            // Si se acabó el tiempo, actualizar estado
             if (tiempoRestante === '⏰ Finalizado') {
-                el.closest('.prediccion-item')?.querySelector('.badge-pendiente')?.textContent = '⏳ Finalizando...';
-                // Verificar resultado si se acabó el tiempo
-                verificarResultado();
+                el.closest('.prediccion-item').querySelector('.badge-pendiente')?.textContent = '⏳ Finalizando...';
             }
         }
     });
@@ -635,6 +598,10 @@ function actualizarPrediccionActivaDesdeLista() {
         prediccionActivaId = null;
         document.getElementById('prediccion-activa').classList.add('hidden');
         document.getElementById('botones-voto').classList.remove('hidden');
+        if (intervaloTiempo) {
+            clearInterval(intervaloTiempo);
+            intervaloTiempo = null;
+        }
     }
 }
 
@@ -670,16 +637,14 @@ async function buscarPrediccionActiva() {
         if (!snap.empty) {
             const doc = snap.docs[0];
             const pred = { id: doc.id, ...doc.data() };
-            if (pred.cierre && pred.cierre.toDate) {
-                pred.cierre = pred.cierre.toDate();
-            }
-            if (pred.creado && pred.creado.toDate) {
-                pred.creado = pred.creado.toDate();
-            }
             prediccionActivaId = doc.id;
             mostrarPrediccionActiva(pred);
         } else {
             document.getElementById('prediccion-activa').classList.add('hidden');
+            if (intervaloTiempo) {
+                clearInterval(intervaloTiempo);
+                intervaloTiempo = null;
+            }
         }
     } catch (e) {
         console.log('Error buscando predicción activa:', e);
@@ -785,11 +750,9 @@ async function verificarResultado() {
         for (const doc of snap.docs) {
             const pred = doc.data();
             const ahora = new Date();
-            const cierre = pred.cierre instanceof Date ? pred.cierre : new Date(pred.cierre);
+            const cierre = new Date(pred.cierre);
             
             if (cierre > ahora) continue;
-            
-            console.log('Verificando predicción:', doc.id);
             
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
             const data = await res.json();
@@ -850,14 +813,6 @@ function recargarPredicciones() {
         unsubscribePredicciones();
         iniciarEscuchaPredicciones();
         mostrarToast('🔄 Predicciones actualizadas');
-    } else {
-        // Si no hay escucha activa, intentar reiniciar
-        if (usuarioActual) {
-            iniciarEscuchaPredicciones();
-            mostrarToast('🔄 Reconectando...');
-        } else {
-            mostrarToast('🔒 Inicia sesión primero', 'error');
-        }
     }
 }
 
@@ -926,8 +881,8 @@ function switchTab(tab, event) {
     
     if (tab === 'ranking') cargarRanking();
     if (tab === 'predict' && usuarioActual) {
-        if (todasLasPredicciones.length === 0 && !unsubscribePredicciones) {
-            iniciarEscuchaPredicciones();
+        if (todasLasPredicciones.length === 0) {
+            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-500 text-center py-4">Cargando predicciones...</p>';
         }
     }
 }
@@ -966,16 +921,6 @@ function mostrarToast(mensaje, tipo = 'success') {
 document.getElementById('modal-auth').addEventListener('click', e => {
     if (e.target === document.getElementById('modal-auth')) cerrarModal();
 });
-
-// ==============================================
-// FORZAR VERIFICACIÓN DESPUÉS DE 3 SEGUNDOS
-// ==============================================
-setTimeout(() => {
-    if (!authInicializado) {
-        console.log('Timeout: forzando verificación de sesión');
-        forzarVerificacionSesion();
-    }
-}, 3000);
 </script>
 </body>
 </html>
