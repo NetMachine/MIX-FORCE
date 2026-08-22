@@ -3339,60 +3339,30 @@ document.addEventListener('keydown', function(e) {
 
 
 
+
 // ==============================================
-// BCPREDICT BOT CLIENT v6 - FIREBASE + SUPABASE
-// Doble persistencia: Firebase + Supabase
-// Si uno falla, el otro responde
+// BCPREDICT BOT CLIENT v7 - FIREBASE ONLY
+// Optimizado para no agotar el plan Spark (50K reads/día)
 // ==============================================
 
-// ⚠️ REEMPLAZA con tu URL de Apps Script
 const BOT_API_URL = 'https://script.google.com/macros/s/AKfycbzP31ZjxkFIslwdmezSGPZkIDkCzPcLUYJWMK0IBDgxEbAl1K4k3kxhEudwrYW63nzU2g/exec';
 
-// Estado
 let botManagerState = {
     bots: [],
-    isRunning: false,
-    apiConnected: false,
-    lastError: null
+    lastFetch: 0,
+    cacheMs: 30000, // 30 segundos de caché
+    isLoading: false
 };
 
 let botLogEntries = [];
-let botUnsubscribeFirebase = null;
-let botUnsubscribeSupabase = null;
 
 // ==============================================
-// DETECTAR QUÉ SERVIDOR ESTÁ DISPONIBLE
+// CREAR BOT - DIRECTO EN FIREBASE (persistente)
 // ==============================================
 
-async function checkFirebaseAvailable() {
-    try {
-        // Intenta una lectura simple
-        await db.collection('bots').limit(1).get();
-        return true;
-    } catch (e) {
-        console.warn('[Health Check] Firebase no disponible:', e.message);
-        return false;
-    }
-}
-
-async function checkSupabaseAvailable() {
-    try {
-        const { data, error } = await supabase.from('bots').select('uid').limit(1);
-        if (error) throw error;
-        return true;
-    } catch (e) {
-        console.warn('[Health Check] Supabase no disponible:', e.message);
-        return false;
-    }
-}
-
-// ==============================================
-// CREAR BOT - DOBLE ESCRITURA (Firebase + Supabase)
-// ==============================================
-
-async function createBotDual(config) {
+async function createBotFirebase(config) {
     if (!usuarioActual) {
-        throw new Error('Debes iniciar sesión para crear bots');
+        throw new Error('Inicia sesión primero');
     }
 
     const personality = config.personality || selectRandomPersonality();
@@ -3403,7 +3373,7 @@ async function createBotDual(config) {
     const uid = 'bot_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const username = config.username || generateBotName(botManagerState.bots.length, personality);
     const email = 'bot_' + uid.substr(0, 8) + '@bcpredict.bot';
-    const now = new Date();
+    const now = firebase.firestore.Timestamp.now();
 
     const botData = {
         uid: uid,
@@ -3422,321 +3392,84 @@ async function createBotDual(config) {
         logros: [],
         creado: now,
         lastActive: now,
-        botConfig: {
-            personality: personality,
-            skill: skill,
-            createdAt: now
-        }
+        createdBy: usuarioActual.uid,
+        createdByName: usuarioActual.username
     };
 
-    const results = { firebase: false, supabase: false };
+    // Guardar en Firestore - SOLO en usuarios (no duplicar en bots)
+    await db.collection('usuarios').doc(uid).set(botData);
 
-    // 1. Intentar Firebase primero
-    try {
-        await db.collection('usuarios').doc(uid).set(botData);
-        await db.collection('bots').doc(uid).set({
-            ...botData,
-            createdBy: usuarioActual.uid,
-            createdByName: usuarioActual.username
-        });
-        results.firebase = true;
-        console.log('[Dual Write] Firebase OK');
-    } catch (e) {
-        console.warn('[Dual Write] Firebase falló:', e.message);
-    }
+    // También guardar referencia ligera en colección bots (para queries)
+    await db.collection('bots').doc(uid).set({
+        uid: uid,
+        username: username,
+        personality: personality,
+        isActive: true,
+        puntos: 0,
+        creado: now,
+        createdBy: usuarioActual.uid
+    });
 
-    // 2. Intentar Supabase (si Firebase falló, esto es el backup)
-    try {
-        const { error } = await supabase.from('bots').insert([{
-            uid: botData.uid,
-            username: botData.username,
-            email: botData.email,
-            personality: botData.personality,
-            skill: botData.skill,
-            activity_level: botData.activityLevel,
-            is_active: botData.isActive,
-            es_bot: botData.esBot,
-            puntos: botData.puntos,
-            aciertos: botData.aciertos,
-            total_votos: botData.total_votos,
-            racha: botData.racha,
-            mejor_racha: botData.mejor_racha,
-            logros: botData.logros,
-            created_by: usuarioActual.uid,
-            created_at: now.toISOString(),
-            last_active: now.toISOString()
-        }]);
-        
-        if (error) throw error;
-        results.supabase = true;
-        console.log('[Dual Write] Supabase OK');
-    } catch (e) {
-        console.warn('[Dual Write] Supabase falló:', e.message);
-    }
-
-    // 3. Si ambos fallaron, error
-    if (!results.firebase && !results.supabase) {
-        throw new Error('Ambos servidores están offline. No se pudo crear el bot.');
-    }
-
-    // 4. Sincronizar con Apps Script (motor)
-    try {
-        const url = new URL(BOT_API_URL);
-        url.searchParams.append('action', 'createBot');
-        url.searchParams.append('uid', uid);
-        url.searchParams.append('username', username);
-        url.searchParams.append('email', email);
-        url.searchParams.append('personality', personality);
-        url.searchParams.append('skill', skill.toString());
-        
-        await fetch(url.toString(), { 
-            method: 'GET',
-            // mode: 'no-cors' // Descomenta si hay problemas de CORS
-        });
-    } catch (e) {
-        console.warn('[Apps Script] No se pudo sincronizar:', e.message);
-    }
-
-    return { 
-        success: true, 
-        bot: botData,
-        persistedIn: results.firebase && results.supabase ? 'both' : 
-                     results.firebase ? 'firebase' : 'supabase'
-    };
+    return { success: true, bot: botData };
 }
 
 // ==============================================
-// OBTENER BOTS - LECTURA DUAL CON FALLBACK
+// OBTENER BOTS - CON CACHÉ (ahorra lecturas)
 // ==============================================
 
-async function getBotsDual() {
-    // Intentar Firebase primero
-    try {
-        const fbAvailable = await checkFirebaseAvailable();
-        if (fbAvailable) {
-            const snap = await db.collection('bots').orderBy('creado', 'desc').get();
-            const bots = [];
-            snap.forEach(doc => bots.push({ id: doc.id, ...doc.data() }));
-            if (bots.length > 0) {
-                console.log('[Dual Read] Usando Firebase');
-                return { source: 'firebase', bots };
-            }
-        }
-    } catch (e) {
-        console.warn('[Dual Read] Firebase falló:', e.message);
+async function getBotsCached(forceRefresh = false) {
+    const now = Date.now();
+    
+    // Si tenemos caché reciente, usarla
+    if (!forceRefresh && botManagerState.bots.length > 0 && (now - botManagerState.lastFetch) < botManagerState.cacheMs) {
+        return botManagerState.bots;
     }
 
-    // Fallback a Supabase
+    if (botManagerState.isLoading) return botManagerState.bots;
+    botManagerState.isLoading = true;
+
     try {
-        const sbAvailable = await checkSupabaseAvailable();
-        if (sbAvailable) {
-            const { data, error } = await supabase
-                .from('bots')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (error) throw error;
-            
-            // Mapear formato Supabase → formato Firebase
-            const bots = (data || []).map(b => ({
-                uid: b.uid,
-                username: b.username,
-                email: b.email,
-                personality: b.personality,
-                skill: b.skill,
-                activityLevel: b.activity_level,
-                isActive: b.is_active,
-                esBot: b.es_bot,
-                puntos: b.puntos,
-                aciertos: b.aciertos,
-                total_votos: b.total_votos,
-                racha: b.racha,
-                mejor_racha: b.mejor_racha,
-                logros: b.logros || [],
-                creado: new Date(b.created_at),
-                lastActive: new Date(b.last_active),
-                createdBy: b.created_by
-            }));
-            
-            console.log('[Dual Read] Usando Supabase');
-            return { source: 'supabase', bots };
-        }
-    } catch (e) {
-        console.warn('[Dual Read] Supabase falló:', e.message);
-    }
-
-    return { source: 'none', bots: [] };
-}
-
-// ==============================================
-// SUSCRIPCIÓN EN TIEMPO REAL - DUAL
-// ==============================================
-
-function subscribeToBotsDual() {
-    let active = false;
-
-    // Intentar Firebase primero
-    try {
-        botUnsubscribeFirebase = db.collection('bots')
+        // UNA sola lectura con límite (no tiempo real)
+        const snap = await db.collection('bots')
             .orderBy('creado', 'desc')
-            .onSnapshot((snapshot) => {
-                if (active) return; // Evitar conflictos
-                active = true;
-                
-                const bots = [];
-                snapshot.forEach(doc => bots.push({ id: doc.id, ...doc.data() }));
-                botManagerState.bots = bots;
-                renderizarBotList(bots);
-                updateBotStats(bots);
-                
-                setTimeout(() => active = false, 1000);
-            }, (error) => {
-                console.warn('[Firebase Subscription] Error:', error.message);
-                // Fallback automático a Supabase
-                subscribeToSupabaseOnly();
+            .limit(50)
+            .get();
+
+        const bots = [];
+        snap.forEach(doc => {
+            const data = doc.data();
+            bots.push({
+                uid: data.uid,
+                username: data.username,
+                personality: data.personality,
+                isActive: data.isActive,
+                puntos: data.puntos || 0,
+                aciertos: data.aciertos || 0,
+                total_votos: data.total_votos || 0,
+                racha: data.racha || 0,
+                mejor_racha: data.mejor_racha || 0,
+                skill: data.skill || 0.5,
+                activityLevel: data.activityLevel || 0.7,
+                logros: data.logros || [],
+                creado: data.creado ? data.creado.toDate() : new Date(),
+                lastActive: data.lastActive ? data.lastActive.toDate() : new Date()
             });
-        
-        console.log('[Dual Subscribe] Firebase activo');
-        return () => {
-            if (botUnsubscribeFirebase) botUnsubscribeFirebase();
-            if (botUnsubscribeSupabase) botUnsubscribeSupabase();
-        };
-    } catch (e) {
-        console.warn('[Dual Subscribe] Firebase no disponible, usando Supabase');
-        return subscribeToSupabaseOnly();
-    }
-}
+        });
 
-function subscribeToSupabaseOnly() {
-    // Supabase Realtime
-    const channel = supabase
-        .channel('bots_changes')
-        .on('postgres_changes', 
-            { event: '*', schema: 'public', table: 'bots' },
-            (payload) => {
-                console.log('[Supabase Realtime] Cambio detectado:', payload.eventType);
-                refreshBotListFromSupabase();
-            }
-        )
-        .subscribe();
-
-    // Carga inicial
-    refreshBotListFromSupabase();
-
-    botUnsubscribeSupabase = () => {
-        supabase.removeChannel(channel);
-    };
-
-    return botUnsubscribeSupabase;
-}
-
-async function refreshBotListFromSupabase() {
-    try {
-        const { data, error } = await supabase
-            .from('bots')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        const bots = (data || []).map(b => ({
-            uid: b.uid,
-            username: b.username,
-            email: b.email,
-            personality: b.personality,
-            skill: b.skill,
-            activityLevel: b.activity_level,
-            isActive: b.is_active,
-            esBot: b.es_bot,
-            puntos: b.puntos,
-            aciertos: b.aciertos,
-            total_votos: b.total_votos,
-            racha: b.racha,
-            mejor_racha: b.mejor_racha,
-            logros: b.logros || [],
-            creado: new Date(b.created_at),
-            lastActive: new Date(b.last_active)
-        }));
-        
         botManagerState.bots = bots;
-        renderizarBotList(bots);
-        updateBotStats(bots);
+        botManagerState.lastFetch = now;
+        return bots;
+
     } catch (e) {
-        logBot('Error cargando desde Supabase: ' + e.message, 'error');
+        console.error('Error cargando bots:', e);
+        return botManagerState.bots;
+    } finally {
+        botManagerState.isLoading = false;
     }
 }
 
 // ==============================================
-// TOGGLE BOT - DUAL
-// ==============================================
-
-async function toggleBotDual(uid) {
-    const bot = botManagerState.bots.find(b => b.uid === uid);
-    if (!bot) return;
-
-    const newState = !bot.isActive;
-    const now = new Date();
-
-    // Firebase
-    try {
-        await db.collection('usuarios').doc(uid).update({
-            isActive: newState,
-            lastActive: now
-        });
-        await db.collection('bots').doc(uid).update({
-            isActive: newState,
-            lastActive: now
-        });
-    } catch (e) {
-        console.warn('[Toggle] Firebase falló:', e.message);
-    }
-
-    // Supabase
-    try {
-        await supabase.from('bots').update({
-            is_active: newState,
-            last_active: now.toISOString()
-        }).eq('uid', uid);
-    } catch (e) {
-        console.warn('[Toggle] Supabase falló:', e.message);
-    }
-
-    // UI
-    logBot('Bot ' + bot.username + ' ' + (newState ? 'activado' : 'pausado'), 'success');
-}
-
-// ==============================================
-// ELIMINAR BOT - DUAL
-// ==============================================
-
-async function deleteBotDual(uid) {
-    // Firebase
-    try {
-        await db.collection('usuarios').doc(uid).delete();
-        await db.collection('bots').doc(uid).delete();
-    } catch (e) {
-        console.warn('[Delete] Firebase falló:', e.message);
-    }
-
-    // Supabase
-    try {
-        await supabase.from('bots').delete().eq('uid', uid);
-        await supabase.from('bot_predictions').delete().eq('bot_uid', uid);
-    } catch (e) {
-        console.warn('[Delete] Supabase falló:', e.message);
-    }
-
-    // Apps Script
-    try {
-        const url = new URL(BOT_API_URL);
-        url.searchParams.append('action', 'deleteBot');
-        url.searchParams.append('uid', uid);
-        await fetch(url.toString(), { method: 'GET' });
-    } catch (e) {}
-}
-
-// ==============================================
-// FUNCIONES DE UI (igual que antes)
+// FUNCIONES UI
 // ==============================================
 
 async function createBots() {
@@ -3750,15 +3483,14 @@ async function createBots() {
     const personality = document.getElementById('bot-personality')?.value || 'random';
     const skill = parseFloat(document.getElementById('bot-skill')?.value) || 0.5;
 
-    if (count > 20) {
-        mostrarToast('Máximo 20 bots por lote', 'error');
+    if (count > 10) {
+        mostrarToast('Máximo 10 bots por lote (ahorro de cuota)', 'warn');
         return;
     }
 
-    logBot('Creando ' + count + ' bots (modo dual)...', 'info');
+    logBot('Creando ' + count + ' bots...', 'info');
 
     let created = 0;
-    let failed = 0;
 
     for (let i = 0; i < count; i++) {
         try {
@@ -3767,62 +3499,161 @@ async function createBots() {
                 skill: personality === 'random' ? undefined : skill
             };
 
-            const result = await createBotDual(config);
+            const result = await createBotFirebase(config);
             
             if (result.success) {
                 created++;
-                logBot('✓ ' + result.bot.username + ' (' + result.persistedIn + ')', 'success');
+                logBot('✓ ' + result.bot.username, 'success');
             }
         } catch (e) {
-            failed++;
-            logBot('✗ Error: ' + e.message, 'error');
+            logBot('✗ ' + e.message, 'error');
         }
 
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 200));
     }
 
+    // Refrescar lista
+    await refreshBotList(true);
+    
     if (created > 0) {
         mostrarToast(created + ' bots creados', 'success');
     }
-    
-    logBot('Resultado: ' + created + '/' + count, created > 0 ? 'success' : 'error');
+}
+
+async function refreshBotList(force = false) {
+    const tbody = document.getElementById('bot-list-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">Cargando...</td></tr>';
+
+    const bots = await getBotsCached(force);
+    renderizarBotList(bots);
+    updateBotStats(bots);
 }
 
 async function startAllBots() {
     const bots = botManagerState.bots.filter(b => !b.isActive);
-    for (const bot of bots) {
-        await toggleBotDual(bot.uid);
+    if (bots.length === 0) {
+        mostrarToast('Todos los bots ya están activos', 'info');
+        return;
     }
+
+    logBot('Activando ' + bots.length + ' bots...', 'info');
+
+    const batch = db.batch();
+    const now = firebase.firestore.Timestamp.now();
+
+    bots.forEach(bot => {
+        batch.update(db.collection('usuarios').doc(bot.uid), {
+            isActive: true,
+            lastActive: now
+        });
+        batch.update(db.collection('bots').doc(bot.uid), {
+            isActive: true,
+            lastActive: now
+        });
+    });
+
+    await batch.commit();
+    
+    // Actualizar caché local
+    bots.forEach(b => b.isActive = true);
+    renderizarBotList(botManagerState.bots);
+    
     mostrarToast(bots.length + ' bots activados', 'success');
+    logBot(bots.length + ' bots activados', 'success');
+
+    // Notificar Apps Script
+    try {
+        const url = new URL(BOT_API_URL);
+        url.searchParams.append('action', 'startAll');
+        await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
+    } catch (e) {}
 }
 
 async function stopAllBots() {
     const bots = botManagerState.bots.filter(b => b.isActive);
-    for (const bot of bots) {
-        await toggleBotDual(bot.uid);
+    if (bots.length === 0) {
+        mostrarToast('Todos los bots ya están inactivos', 'info');
+        return;
     }
+
+    const batch = db.batch();
+    const now = firebase.firestore.Timestamp.now();
+
+    bots.forEach(bot => {
+        batch.update(db.collection('usuarios').doc(bot.uid), {
+            isActive: false,
+            lastActive: now
+        });
+        batch.update(db.collection('bots').doc(bot.uid), {
+            isActive: false,
+            lastActive: now
+        });
+    });
+
+    await batch.commit();
+    
+    bots.forEach(b => b.isActive = false);
+    renderizarBotList(botManagerState.bots);
+    
     mostrarToast(bots.length + ' bots detenidos', 'warn');
+    logBot(bots.length + ' bots detenidos', 'warn');
+
+    try {
+        const url = new URL(BOT_API_URL);
+        url.searchParams.append('action', 'stopAll');
+        await fetch(url.toString(), { method: 'GET', mode: 'no-cors' });
+    } catch (e) {}
 }
 
 async function clearAllBots() {
-    if (!confirm('¿Eliminar TODOS los bots?')) return;
+    if (!confirm('¿Eliminar TODOS los bots permanentemente?')) return;
+
+    logBot('Eliminando bots...', 'error');
+
+    const batch = db.batch();
     
-    logBot('Eliminando todos los bots...', 'error');
+    botManagerState.bots.forEach(bot => {
+        batch.delete(db.collection('usuarios').doc(bot.uid));
+        batch.delete(db.collection('bots').doc(bot.uid));
+    });
+
+    await batch.commit();
     
-    for (const bot of botManagerState.bots) {
-        await deleteBotDual(bot.uid);
-    }
-    
+    botManagerState.bots = [];
+    renderizarBotList([]);
+    updateBotStats([]);
+
     mostrarToast('Bots eliminados', 'success');
     logBot('Todos los bots eliminados', 'info');
 }
 
 async function toggleBot(uid) {
-    await toggleBotDual(uid);
+    const bot = botManagerState.bots.find(b => b.uid === uid);
+    if (!bot) return;
+
+    const newState = !bot.isActive;
+    const now = firebase.firestore.Timestamp.now();
+
+    await db.collection('usuarios').doc(uid).update({
+        isActive: newState,
+        lastActive: now
+    });
+    
+    await db.collection('bots').doc(uid).update({
+        isActive: newState,
+        lastActive: now
+    });
+
+    bot.isActive = newState;
+    renderizarBotList(botManagerState.bots);
+    
+    logBot(bot.username + ' ' + (newState ? 'activado' : 'pausado'), 'success');
 }
 
 // ==============================================
-// RENDERIZADO (igual que antes)
+// RENDERIZADO
 // ==============================================
 
 function renderizarBotList(bots) {
@@ -3830,7 +3661,7 @@ function renderizarBotList(bots) {
     if (!tbody) return;
 
     if (bots.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-gray-600">No hay bots registrados.<br><span class="text-xs text-gray-500">Usa "Crear Bots" para comenzar.</span></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-gray-600">No hay bots.<br><span class="text-xs text-gray-500">Crea bots arriba.</span></td></tr>';
         return;
     }
 
@@ -3844,16 +3675,16 @@ function renderizarBotList(bots) {
         const rachaIcon = racha >= 5 ? '🔥' : racha >= 3 ? '⚡' : '';
 
         return '<tr class="border-t border-white/5 hover:bg-white/[0.02] transition">' +
-            '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><span class="text-xs text-gray-600">#' + (index + 1) + '</span><span class="font-semibold text-sm text-gray-200">' + (bot.username || 'Bot') + '</span><span class="px-1.5 py-0.5 rounded text-[9px] font-bold ' + tier.clase + '">' + tier.nombre + '</span></div></td>' +
+            '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><span class="text-xs text-gray-600">#' + (index + 1) + '</span><span class="font-semibold text-sm text-gray-200">' + bot.username + '</span><span class="px-1.5 py-0.5 rounded text-[9px] font-bold ' + tier.clase + '">' + tier.nombre + '</span></div></td>' +
             '<td class="py-2.5 px-3 text-xs text-gray-400 capitalize">' + (bot.personality || 'balanced') + '</td>' +
-            '<td class="py-2.5 px-3 text-center"><div class="w-full bg-gray-800 rounded-full h-1.5"><div class="bg-amber-400 rounded-full h-1.5" style="width: ' + skillBar + '%"></div></div><span class="text-[10px] text-gray-500">' + skillBar + '%</span></td>' +
+            '<td class="py-2.5 px-3 text-center"><div class="w-full bg-gray-800 rounded-full h-1.5"><div class="bg-amber-400 rounded-full h-1.5" style="width:' + skillBar + '%"></div></div><span class="text-[10px] text-gray-500">' + skillBar + '%</span></td>' +
             '<td class="py-2.5 px-3 text-center"><span class="text-xs font-bold ' + statusColor + '">' + statusText + '</span></td>' +
             '<td class="py-2.5 px-3 text-center font-mono text-amber-400 text-sm">' + (bot.puntos || 0) + '</td>' +
             '<td class="py-2.5 px-3 text-center font-mono text-green-400 text-sm">' + (bot.aciertos || 0) + '</td>' +
             '<td class="py-2.5 px-3 text-center font-mono text-gray-400 text-sm">' + (bot.total_votos || 0) + '</td>' +
             '<td class="py-2.5 px-3 text-center font-mono text-sm ' + (winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + winrate + '%</td>' +
             '<td class="py-2.5 px-3 text-center text-xs text-gray-500">' + (racha > 0 ? rachaIcon + ' ' + racha : '-') + '</td>' +
-            '<td class="py-2.5 px-3 text-center"><button onclick="toggleBot(\\'' + bot.uid + '\\')" class="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition text-gray-400">' + (bot.isActive ? 'Pausar' : 'Reanudar') + '</button></td>' +
+            '<td class="py-2.5 px-3 text-center"><button onclick="toggleBot(\'' + bot.uid + '\')" class="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition text-gray-400">' + (bot.isActive ? 'Pausar' : 'Reanudar') + '</button></td>' +
         '</tr>';
     }).join('');
 }
@@ -3881,7 +3712,7 @@ function logBot(message, type) {
     if (!message) return;
     const timestamp = new Date().toLocaleTimeString('es-ES');
     botLogEntries.unshift({ message, type, timestamp });
-    if (botLogEntries.length > 100) botLogEntries.pop();
+    if (botLogEntries.length > 50) botLogEntries.pop();
 
     const logContainer = document.getElementById('bot-log');
     if (!logContainer) return;
@@ -3905,27 +3736,27 @@ function clearBotLog() {
 }
 
 // ==============================================
-// AUTO-REFRESH
+// AUTO-REFRESH MANUAL (sin onSnapshot)
 // ==============================================
 
+let botRefreshTimer = null;
+
 function startBotAutoRefresh() {
-    if (botUnsubscribeFirebase || botUnsubscribeSupabase) return;
+    // Carga inicial
+    refreshBotList(true);
     
-    const unsubscribe = subscribeToBotsDual();
-    
-    // Guardar función de limpieza
-    window._botCleanup = unsubscribe;
-    
-    logBot('Panel de bots activado (modo dual)', 'info');
+    // Refrescar cada 15 segundos (no tiempo real)
+    if (botRefreshTimer) clearInterval(botRefreshTimer);
+    botRefreshTimer = setInterval(() => {
+        refreshBotList(false);
+    }, 15000);
 }
 
 function stopBotAutoRefresh() {
-    if (window._botCleanup) {
-        window._botCleanup();
-        window._botCleanup = null;
+    if (botRefreshTimer) {
+        clearInterval(botRefreshTimer);
+        botRefreshTimer = null;
     }
-    botUnsubscribeFirebase = null;
-    botUnsubscribeSupabase = null;
 }
 
 // ==============================================
@@ -3943,32 +3774,27 @@ function selectRandomPersonality() {
     };
     const total = Object.values(weights).reduce((a, b) => a + b, 0);
     let random = Math.random() * total;
-
-    for (const [personality, weight] of Object.entries(weights)) {
-        random -= weight;
-        if (random <= 0) return personality;
+    for (const [p, w] of Object.entries(weights)) {
+        random -= w;
+        if (random <= 0) return p;
     }
     return 'balanced';
 }
 
 function generateBotName(index, personality) {
     const prefixes = {
-        aggressive: ['Alpha', 'Turbo', 'Flash', 'Rocket', 'Blitz', 'Fury', 'Storm'],
-        balanced: ['Pro', 'Smart', 'Trade', 'Crypto', 'Wise', 'Edge', 'Nexus'],
-        conservative: ['Safe', 'Steady', 'Solid', 'Calm', 'Zen', 'Vault', 'Fortress'],
-        random: ['Chaos', 'Wild', 'Lucky', 'Dice', 'Random', 'Mystic', 'Joker'],
-        whale: ['Whale', 'Mega', 'Giant', 'Titan', 'King', 'Emperor', 'Legend'],
-        newbie: ['New', 'Rookie', 'Noob', 'Starter', 'Trainee', 'Learner', 'Padawan']
+        aggressive: ['Alpha','Turbo','Flash','Rocket','Blitz','Fury','Storm'],
+        balanced: ['Pro','Smart','Trade','Crypto','Wise','Edge','Nexus'],
+        conservative: ['Safe','Steady','Solid','Calm','Zen','Vault','Fortress'],
+        random: ['Chaos','Wild','Lucky','Dice','Random','Mystic','Joker'],
+        whale: ['Whale','Mega','Giant','Titan','King','Emperor','Legend'],
+        newbie: ['New','Rookie','Noob','Starter','Trainee','Learner','Padawan']
     };
-
-    const suffixes = ['Trader', 'Bot', 'AI', 'Predictor', 'Analyzer', 'Master', 'Hunter', 'Scout', 'Ninja', 'Wolf', 'Fox', 'Bear', 'Bull'];
-    const numbers = Math.floor(Math.random() * 999) + 1;
-
+    const suffixes = ['Trader','Bot','AI','Predictor','Analyzer','Master','Hunter','Scout','Ninja','Wolf','Fox','Bear','Bull'];
     const prefixList = prefixes[personality] || prefixes.balanced;
     const prefix = prefixList[Math.floor(Math.random() * prefixList.length)];
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-
-    return prefix + suffix + '_' + numbers;
+    return prefix + suffix + '_' + (Math.floor(Math.random() * 999) + 1);
 }
 
 // ==============================================
@@ -3988,7 +3814,6 @@ function addBotTab() {
 }
 
 // Sobrescribir switchTab
-const _originalSwitchTab = window.switchTab;
 window.switchTab = function(tab, event) {
     document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
     const tabEl = document.getElementById('tab-' + tab);
@@ -4024,7 +3849,7 @@ window.switchTab = function(tab, event) {
     if (tab === 'analisis') cargarAnalisis();
     if (tab === 'orderbook') { 
         renderizarOrderBook(); 
-        renderizarLiquidationHeatmap(); 
+        renderizarLiquidacionHeatmap(); 
     }
     if (tab === 'calculadora') { 
         if (precioBTC) actualizarConversions(precioBTC); 
@@ -4036,6 +3861,7 @@ window.switchTab = function(tab, event) {
 document.addEventListener('DOMContentLoaded', () => {
     addBotTab();
 });
+
 
 
 
