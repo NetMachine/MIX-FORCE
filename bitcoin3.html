@@ -3331,95 +3331,166 @@ document.addEventListener('keydown', function(e) {
 
 
 // ==============================================
-// BCPREDICT BOT CLIENT v3 - APPS SCRIPT
-// CORS-friendly: POST con text/plain, GET normal
+// BCPREDICT BOT CLIENT v4 - APPS SCRIPT
+// Múltiples fallbacks: CORS → no-cors → JSONP
 // ==============================================
 
 // ⚠️ REEMPLAZA ESTA URL con la de tu Apps Script desplegado
-const BOT_API_URL = 'https://script.google.com/macros/s/AKfycbzP31ZjxkFIslwdmezSGPZkIDkCzPcLUYJWMK0IBDgxEbAl1K4k3kxhEudwrYW63nzU2g/exec';
+const BOT_API_URL = ''https://script.google.com/macros/s/AKfycbzP31ZjxkFIslwdmezSGPZkIDkCzPcLUYJWMK0IBDgxEbAl1K4k3kxhEudwrYW63nzU2g/exec";
 
-// Estado local
+// Estado
 let botManagerState = {
   bots: [],
   isRunning: false,
   lastRefresh: null,
-  apiConnected: false
+  apiConnected: false,
+  pendingRequests: 0
 };
 
 // ==============================================
-// API CLIENT - COMUNICACIÓN CON APPS SCRIPT
+// API CLIENT - MÚLTIPLES MÉTODOS
 // ==============================================
 
 /**
- * POST a Apps Script usando text/plain (evita preflight CORS)
+ * Método 1: fetch normal con CORS (ideal)
  */
-async function botApiPost(action, data = {}) {
-  try {
-    // Método 1: Usar text/plain para evitar preflight
-    const bodyData = {
-      action: action,
-      ...data
-    };
-
-    const response = await fetch(BOT_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(bodyData)
-    });
-
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const result = await response.json();
-    return result;
-
-  } catch (err) {
-    console.error('[BOT API POST] Error:', err);
-
-    // Fallback: usar no-cors (no podemos leer respuesta)
-    try {
-      const formData = new FormData();
-      formData.append('action', action);
-      Object.keys(data).forEach(key => {
-        formData.append(key, typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key]);
-      });
-
-      await fetch(BOT_API_URL, {
-        method: 'POST',
-        body: formData,
-        mode: 'no-cors'
-      });
-
-      // Asumimos éxito y refrescamos
-      return { success: true, mode: 'no-cors' };
-
-    } catch (err2) {
-      return { success: false, error: err.message };
+async function fetchNormal(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'Accept': 'application/json'
     }
-  }
+  });
+  if (!response.ok) throw new Error('HTTP ' + response.status);
+  return await response.json();
 }
 
 /**
- * GET a Apps Script (lectura de datos)
+ * Método 2: no-cors (no lee respuesta, asume éxito)
  */
-async function botApiGet(action, params = {}) {
+async function fetchNoCors(url, options = {}) {
+  await fetch(url, {
+    ...options,
+    mode: 'no-cors'
+  });
+  return { success: true, mode: 'no-cors' };
+}
+
+/**
+ * Método 3: JSONP (funciona con cualquier Apps Script)
+ */
+function fetchJSONP(url, params = {}) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('JSONP timeout'));
+    }, 10000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      delete window[callbackName];
+    }
+
+    window[callbackName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+
+    const fullUrl = new URL(url);
+    fullUrl.searchParams.append('callback', callbackName);
+    Object.keys(params).forEach(key => fullUrl.searchParams.append(key, params[key]));
+
+    script.src = fullUrl.toString();
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('JSONP script error'));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * POST a Apps Script - intenta múltiples métodos
+ */
+async function botApiPost(action, data = {}) {
+  const body = JSON.stringify({ action, ...data });
+
+  // Método 1: fetch normal
+  try {
+    const result = await fetchNormal(BOT_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    });
+    botManagerState.apiConnected = true;
+    return result;
+  } catch(err) {
+    console.log('[POST] CORS failed, trying no-cors...');
+  }
+
+  // Método 2: no-cors (no podemos leer respuesta)
+  try {
+    await fetchNoCors(BOT_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    });
+    // Asumimos éxito y refrescamos después
+    return { success: true, mode: 'no-cors' };
+  } catch(err) {
+    console.log('[POST] no-cors failed:', err);
+  }
+
+  // Método 3: GET con parámetros en URL (funciona siempre con Apps Script)
   try {
     const url = new URL(BOT_API_URL);
     url.searchParams.append('action', action);
-    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    Object.keys(data).forEach(key => {
+      url.searchParams.append(key, typeof data[key] === 'object' ? JSON.stringify(data[key]) : data[key]);
+    });
 
-    const response = await fetch(url.toString(), { method: 'GET' });
-
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const result = await response.json();
+    const result = await fetchNormal(url.toString(), { method: 'GET' });
     botManagerState.apiConnected = true;
     return result;
-
-  } catch (err) {
-    console.error('[BOT API GET] Error:', err);
-    botManagerState.apiConnected = false;
-    return { success: false, error: err.message };
+  } catch(err) {
+    console.log('[POST] GET fallback failed:', err);
   }
+
+  return { success: false, error: 'All POST methods failed' };
+}
+
+/**
+ * GET a Apps Script - intenta múltiples métodos
+ */
+async function botApiGet(action, params = {}) {
+  const url = new URL(BOT_API_URL);
+  url.searchParams.append('action', action);
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+  // Método 1: fetch normal
+  try {
+    const result = await fetchNormal(url.toString(), { method: 'GET' });
+    botManagerState.apiConnected = true;
+    return result;
+  } catch(err) {
+    console.log('[GET] CORS failed, trying JSONP...');
+  }
+
+  // Método 2: JSONP (funciona siempre)
+  try {
+    const result = await fetchJSONP(BOT_API_URL, { action, ...params });
+    botManagerState.apiConnected = true;
+    return result;
+  } catch(err) {
+    console.log('[GET] JSONP failed:', err);
+  }
+
+  return { success: false, error: 'All GET methods failed' };
 }
 
 // ==============================================
@@ -3427,15 +3498,11 @@ async function botApiGet(action, params = {}) {
 // ==============================================
 
 async function createBots() {
-  const countInput = document.getElementById('bot-create-count');
-  const personalityInput = document.getElementById('bot-personality');
-  const skillInput = document.getElementById('bot-skill');
+  const count = parseInt(document.getElementById('bot-create-count')?.value) || 5;
+  const personality = document.getElementById('bot-personality')?.value || 'random';
+  const skill = parseFloat(document.getElementById('bot-skill')?.value) || 0.5;
 
-  const count = parseInt(countInput?.value) || 5;
-  const personality = personalityInput?.value || 'random';
-  const skill = parseFloat(skillInput?.value) || 0.5;
-
-  logBot('Creando ' + count + ' bots (' + personality + ', skill: ' + skill + ')...', 'info');
+  logBot('Creando ' + count + ' bots...', 'info');
 
   let created = 0;
   for (let i = 0; i < count; i++) {
@@ -3447,15 +3514,15 @@ async function createBots() {
     const result = await botApiPost('createBot', config);
     if (result.success) {
       created++;
-      logBot('Bot #' + (i + 1) + ' creado: ' + (result.bot?.username || 'OK'), 'success');
+      logBot('Bot #' + (i + 1) + ' OK', 'success');
     } else {
-      logBot('Error bot #' + (i + 1) + ': ' + (result.error || 'unknown'), 'error');
+      logBot('Bot #' + (i + 1) + ' falló', 'error');
     }
 
     await new Promise(r => setTimeout(r, 500));
   }
 
-  logBot(created + '/' + count + ' bots creados', created > 0 ? 'success' : 'error');
+  logBot(created + '/' + count + ' creados', created > 0 ? 'success' : 'error');
 
   setTimeout(() => {
     refreshBotList();
@@ -3466,90 +3533,67 @@ async function createBots() {
 }
 
 async function startAllBots() {
-  logBot('Iniciando todos los bots...', 'info');
+  logBot('Iniciando bots...', 'info');
   const result = await botApiPost('startAll');
-
   if (result.success) {
     botManagerState.isRunning = true;
-    logBot('Bots activados (' + (result.count || '?') + ' bots)', 'success');
+    logBot('Bots activados', 'success');
   } else {
-    logBot('Error: ' + (result.error || 'unknown'), 'error');
+    logBot('Error al iniciar', 'error');
   }
-
-  setTimeout(() => {
-    refreshBotList();
-    updateBotStats();
-  }, 1500);
+  setTimeout(() => { refreshBotList(); updateBotStats(); }, 1500);
 }
 
 async function stopAllBots() {
-  logBot('Deteniendo todos los bots...', 'warn');
+  logBot('Deteniendo bots...', 'warn');
   const result = await botApiPost('stopAll');
-
   if (result.success) {
     botManagerState.isRunning = false;
-    logBot('Bots detenidos (' + (result.count || '?') + ' bots)', 'warn');
-  } else {
-    logBot('Error: ' + (result.error || 'unknown'), 'error');
+    logBot('Bots detenidos', 'warn');
   }
-
-  setTimeout(() => {
-    refreshBotList();
-    updateBotStats();
-  }, 1500);
+  setTimeout(() => { refreshBotList(); updateBotStats(); }, 1500);
 }
 
 async function clearAllBots() {
   if (!confirm('¿Eliminar TODOS los bots permanentemente?')) return;
-
-  logBot('Eliminando todos los bots...', 'error');
+  logBot('Eliminando bots...', 'error');
   const result = await botApiPost('deleteAllBots');
-
   if (result.success) {
     botManagerState.bots = [];
     botManagerState.isRunning = false;
-    logBot('Bots eliminados (' + (result.count || '?') + ')', 'error');
-  } else {
-    logBot('Error: ' + (result.error || 'unknown'), 'error');
+    logBot('Bots eliminados', 'error');
   }
-
-  setTimeout(() => {
-    refreshBotList();
-    updateBotStats();
-  }, 1500);
+  setTimeout(() => { refreshBotList(); updateBotStats(); }, 1500);
 }
 
 async function toggleBot(uid) {
   if (!uid) return;
-  logBot('Cambiando estado del bot...', 'info');
-  const result = await botApiPost('toggleBot', { uid: uid });
-
+  logBot('Cambiando estado...', 'info');
+  const result = await botApiPost('toggleBot', { uid });
   if (result.success) {
-    logBot('Bot ' + (result.isActive ? 'activado' : 'pausado'), 'success');
-  } else {
-    logBot('Error: ' + (result.error || 'unknown'), 'error');
+    logBot('Bot actualizado', 'success');
   }
-
   setTimeout(() => refreshBotList(), 1000);
 }
 
 // ==============================================
-// REFRESH DE LISTA Y STATS
+// REFRESH
 // ==============================================
 
 async function refreshBotList() {
   const tbody = document.getElementById('bot-list-body');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500"><div class="flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>Cargando bots...</div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500"><div class="flex items-center justify-center gap-2"><div class="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>Cargando...</div></td></tr>';
 
   const result = await botApiGet('listBots');
 
   if (!result.success) {
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-600">' +
-      '<div class="text-sm">❌ Error de conexión con Apps Script</div>' +
-      '<div class="text-xs text-gray-500 mt-1">Verifica que BOT_API_URL esté configurado</div>' +
-      '<div class="text-xs text-amber-400 mt-1">URL: ' + BOT_API_URL.substring(0, 40) + '...</div>' +
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">' +
+      '<div style="color:#f87171;font-size:20px;margin-bottom:8px;">❌</div>' +
+      '<div class="text-sm text-gray-400">Error de conexión con Apps Script</div>' +
+      '<div class="text-xs text-gray-600 mt-2">URL: ' + BOT_API_URL.substring(0,50) + '...</div>' +
+      '<div class="text-xs text-amber-400 mt-2">Verifica que la Web App esté desplegada como "Cualquiera"</div>' +
       '</td></tr>';
     return;
   }
@@ -3558,7 +3602,7 @@ async function refreshBotList() {
   botManagerState.bots = bots;
 
   if (bots.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-gray-600">No hay bots registrados.<br><span class="text-xs text-gray-500">Crea bots usando el panel superior.</span></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-gray-600">No hay bots.<br><span class="text-xs text-gray-500">Crea bots arriba.</span></td></tr>';
     return;
   }
 
@@ -3570,111 +3614,62 @@ async function refreshBotList() {
     const skillBar = Math.round((bot.skill || 0.5) * 100);
 
     return '<tr class="border-t border-white/5 hover:bg-white/[0.02] transition">' +
-      '<td class="py-2.5 px-3">' +
-        '<div class="flex items-center gap-2">' +
-          '<span class="text-xs text-gray-600">#' + (index + 1) + '</span>' +
-          '<span class="font-semibold text-sm text-gray-200">' + (bot.username || 'Bot') + '</span>' +
-          '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold ' + tier.clase + '">' + tier.nombre + '</span>' +
-        '</div>' +
-      '</td>' +
+      '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><span class="text-xs text-gray-600">#' + (index + 1) + '</span><span class="font-semibold text-sm text-gray-200">' + (bot.username || 'Bot') + '</span><span class="px-1.5 py-0.5 rounded text-[9px] font-bold ' + tier.clase + '">' + tier.nombre + '</span></div></td>' +
       '<td class="py-2.5 px-3 text-xs text-gray-400 capitalize">' + (bot.personality || 'balanced') + '</td>' +
-      '<td class="py-2.5 px-3 text-center">' +
-        '<div class="w-full bg-gray-800 rounded-full h-1.5">' +
-          '<div class="bg-amber-400 rounded-full h-1.5 transition-all" style="width: ' + skillBar + '%"></div>' +
-        '</div>' +
-        '<span class="text-[10px] text-gray-500">' + skillBar + '%</span>' +
-      '</td>' +
-      '<td class="py-2.5 px-3 text-center">' +
-        '<span class="text-xs font-bold ' + statusColor + '">' + statusText + '</span>' +
-      '</td>' +
+      '<td class="py-2.5 px-3 text-center"><div class="w-full bg-gray-800 rounded-full h-1.5"><div class="bg-amber-400 rounded-full h-1.5" style="width: ' + skillBar + '%"></div></div><span class="text-[10px] text-gray-500">' + skillBar + '%</span></td>' +
+      '<td class="py-2.5 px-3 text-center"><span class="text-xs font-bold ' + statusColor + '">' + statusText + '</span></td>' +
       '<td class="py-2.5 px-3 text-center font-mono text-amber-400 text-sm">' + (bot.puntos || 0) + '</td>' +
       '<td class="py-2.5 px-3 text-center font-mono text-green-400 text-sm">' + (bot.aciertos || 0) + '</td>' +
       '<td class="py-2.5 px-3 text-center font-mono text-gray-400 text-sm">' + (bot.total_votos || 0) + '</td>' +
       '<td class="py-2.5 px-3 text-center font-mono text-sm ' + (winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + winrate + '%</td>' +
       '<td class="py-2.5 px-3 text-center text-xs text-gray-500">' + (bot.racha > 0 ? '🔥 ' + bot.racha : '-') + '</td>' +
-      '<td class="py-2.5 px-3 text-center">' +
-        '<button onclick="toggleBot(\'' + bot.uid + '\')" class="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition text-gray-400">' +
-          (bot.isActive ? 'Pausar' : 'Reanudar') +
-        '</button>' +
-      '</td>' +
+      '<td class="py-2.5 px-3 text-center"><button onclick="toggleBot(\'' + bot.uid + '\')" class="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition text-gray-400">' + (bot.isActive ? 'Pausar' : 'Reanudar') + '</button></td>' +
     '</tr>';
   }).join('');
-
-  botManagerState.lastRefresh = new Date();
 }
 
 async function updateBotStats() {
   const result = await botApiGet('getBotStats');
-
   if (result.success && result.stats) {
-    const stats = result.stats;
-    const elActive = document.getElementById('bot-count-active');
-    const elTotal = document.getElementById('bot-count-total');
-    const elToday = document.getElementById('bot-preds-today');
-    const elWinrate = document.getElementById('bot-avg-winrate');
-
-    if (elActive) elActive.textContent = stats.active || 0;
-    if (elTotal) elTotal.textContent = stats.total || 0;
-    if (elToday) elToday.textContent = stats.todayPredictions || 0;
-    if (elWinrate) elWinrate.textContent = stats.avgWinrate || '0%';
+    const s = result.stats;
+    const el = (id) => document.getElementById(id);
+    if (el('bot-count-active')) el('bot-count-active').textContent = s.active || 0;
+    if (el('bot-count-total')) el('bot-count-total').textContent = s.total || 0;
+    if (el('bot-preds-today')) el('bot-preds-today').textContent = s.todayPredictions || 0;
+    if (el('bot-avg-winrate')) el('bot-avg-winrate').textContent = s.avgWinrate || '0%';
   }
 }
 
 // ==============================================
-// LOG DE ACTIVIDAD
+// LOG
 // ==============================================
 
 let botLogEntries = [];
 
 function logBot(message, type = 'info') {
   const timestamp = new Date().toLocaleTimeString('es-ES');
-
   botLogEntries.unshift({ message, type, timestamp });
   if (botLogEntries.length > 100) botLogEntries.pop();
 
-  renderBotLog();
-
-  try {
-    localStorage.setItem('bot_log', JSON.stringify(botLogEntries.slice(0, 50)));
-  } catch(e) {}
-}
-
-function renderBotLog() {
   const logContainer = document.getElementById('bot-log');
   if (!logContainer) return;
 
-  const colors = {
-    info: 'text-gray-400',
-    success: 'text-green-400',
-    error: 'text-red-400',
-    warn: 'text-amber-400',
-    predict: 'text-blue-400'
-  };
+  const colors = { info: 'text-gray-400', success: 'text-green-400', error: 'text-red-400', warn: 'text-amber-400' };
 
   if (botLogEntries.length === 0) {
     logContainer.innerHTML = '<span class="text-gray-600">Esperando actividad...</span>';
     return;
   }
 
-  logContainer.innerHTML = botLogEntries.map(entry => 
-    '<div class="' + (colors[entry.type] || 'text-gray-400') + '">[' + entry.timestamp + '] ' + entry.message + '</div>'
+  logContainer.innerHTML = botLogEntries.map(e => 
+    '<div class="' + (colors[e.type] || 'text-gray-400') + '">[' + e.timestamp + '] ' + e.message + '</div>'
   ).join('');
 }
 
 function clearBotLog() {
   botLogEntries = [];
-  renderBotLog();
-  try { localStorage.removeItem('bot_log'); } catch(e) {}
+  logBot('', 'info');
 }
-
-// Cargar log guardado
-try {
-  const savedLog = JSON.parse(localStorage.getItem('bot_log') || '[]');
-  if (savedLog.length > 0) {
-    botLogEntries = savedLog;
-    renderBotLog();
-  }
-} catch(e) {}
 
 // ==============================================
 // AUTO-REFRESH
@@ -3684,109 +3679,64 @@ let botRefreshInterval = null;
 
 function startBotAutoRefresh() {
   if (botRefreshInterval) clearInterval(botRefreshInterval);
-
   botRefreshInterval = setInterval(() => {
     const botTab = document.getElementById('tab-bots');
     if (botTab && !botTab.classList.contains('hidden')) {
       refreshBotList();
       updateBotStats();
     }
-  }, 10000);
-
+  }, 8000);
   refreshBotList();
   updateBotStats();
 }
 
 function stopBotAutoRefresh() {
-  if (botRefreshInterval) {
-    clearInterval(botRefreshInterval);
-    botRefreshInterval = null;
-  }
+  if (botRefreshInterval) { clearInterval(botRefreshInterval); botRefreshInterval = null; }
 }
 
 // ==============================================
-// INTEGRACIÓN CON EL SISTEMA EXISTENTE
+// INTEGRACIÓN
 // ==============================================
 
 function addBotTab() {
   const tabsContainer = document.querySelector('.flex.border-b.border-gray-800');
   if (!tabsContainer) return;
-
   if (document.querySelector('[onclick*="tab-bots"]')) return;
 
   const botTab = document.createElement('button');
   botTab.className = 'py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select';
   botTab.innerHTML = '<span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Bots</span>';
-  botTab.onclick = (e) => {
-    switchTab('bots', e);
-    startBotAutoRefresh();
-  };
+  botTab.onclick = (e) => { switchTab('bots', e); startBotAutoRefresh(); };
   tabsContainer.appendChild(botTab);
 }
 
 // Sobrescribir switchTab
 const _originalSwitchTab = window.switchTab;
-
 window.switchTab = function(tab, event) {
   document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
-
   const tabEl = document.getElementById('tab-' + tab);
   if (tabEl) tabEl.classList.remove('hidden');
+  document.querySelectorAll('[onclick^="switchTab"]').forEach(b => { b.classList.remove('tab-active'); b.classList.add('text-gray-500'); });
+  if (event && event.target) { event.target.classList.add('tab-active'); event.target.classList.remove('text-gray-500'); }
 
-  document.querySelectorAll('[onclick^="switchTab"]').forEach(b => { 
-    b.classList.remove('tab-active'); 
-    b.classList.add('text-gray-500'); 
-  });
-
-  if (event && event.target) { 
-    event.target.classList.add('tab-active'); 
-    event.target.classList.remove('text-gray-500'); 
-  }
-
-  if (tab === 'bots') {
-    startBotAutoRefresh();
-  } else {
-    stopBotAutoRefresh();
-  }
-
+  if (tab === 'bots') startBotAutoRefresh(); else stopBotAutoRefresh();
   if (tab === 'ranking') cargarRanking();
-  if (tab === 'predict' && usuarioActual) { 
-    cargarMisPredicciones(); 
-    buscarPrediccionActiva(); 
-  }
-  if (tab === 'global') { 
-    if (!unsubscribeGlobal && usuarioActual) iniciarEscuchaGlobal(); 
-    renderizarGlobal(); 
-  }
-  if (tab === 'mercado') { 
-    initCandlestickChart(); 
-    cargarDatosMercado(); 
-    cargarTopCryptos(); 
-  }
+  if (tab === 'predict' && usuarioActual) { cargarMisPredicciones(); buscarPrediccionActiva(); }
+  if (tab === 'global') { if (!unsubscribeGlobal && usuarioActual) iniciarEscuchaGlobal(); renderizarGlobal(); }
+  if (tab === 'mercado') { initCandlestickChart(); cargarDatosMercado(); cargarTopCryptos(); }
   if (tab === 'analisis') cargarAnalisis();
-  if (tab === 'orderbook') { 
-    renderizarOrderBook(); 
-    renderizarLiquidationHeatmap(); 
-  }
-  if (tab === 'calculadora') { 
-    if (precioBTC) actualizarConversions(precioBTC); 
-  }
-  if (tab === 'achievements') { 
-    renderizarAchievements(); 
-  }
+  if (tab === 'orderbook') { renderizarOrderBook(); renderizarLiquidationHeatmap(); }
+  if (tab === 'calculadora') { if (precioBTC) actualizarConversions(precioBTC); }
+  if (tab === 'achievements') renderizarAchievements();
 };
-
-// ==============================================
-// INICIALIZACIÓN
-// ==============================================
 
 document.addEventListener('DOMContentLoaded', () => {
   addBotTab();
-
-  if (BOT_API_URL.includes('TU_ID_DE_DEPLOYMENT')) {
-    console.warn('[BOTS] ⚠️ BOT_API_URL no configurado. Ve a Google Apps Script → Desplegar → Web App → copia la URL.');
+  if (BOT_API_URL.includes('TU_ID')) {
+    console.warn('[BOTS] ⚠️ BOT_API_URL no configurado');
   }
 });
+
 
 
 </script>
