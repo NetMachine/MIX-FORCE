@@ -3435,7 +3435,6 @@ async function createBotFirebase(config) {
 async function getBotsCached(forceRefresh = false) {
     const now = Date.now();
     
-    // Si tenemos caché reciente, usarla
     if (!forceRefresh && botManagerState.bots.length > 0 && (now - botManagerState.lastFetch) < botManagerState.cacheMs) {
         return botManagerState.bots;
     }
@@ -3444,8 +3443,8 @@ async function getBotsCached(forceRefresh = false) {
     botManagerState.isLoading = true;
 
     try {
-        // UNA sola lectura con límite (no tiempo real)
         const snap = await db.collection('bots')
+            .where('esBot', '==', true)  // ← SOLO BOTS
             .orderBy('creado', 'desc')
             .limit(50)
             .get();
@@ -3458,6 +3457,7 @@ async function getBotsCached(forceRefresh = false) {
                 username: data.username,
                 personality: data.personality,
                 isActive: data.isActive,
+                esBot: true,
                 puntos: data.puntos || 0,
                 aciertos: data.aciertos || 0,
                 total_votos: data.total_votos || 0,
@@ -3482,6 +3482,7 @@ async function getBotsCached(forceRefresh = false) {
         botManagerState.isLoading = false;
     }
 }
+
 
 // ==============================================
 // FUNCIONES UI
@@ -3631,7 +3632,7 @@ async function clearAllBots() {
     
     botManagerState.bots.forEach(bot => {
         batch.delete(db.collection('usuarios').doc(bot.uid));
-        batch.delete(db.collection('bots').doc(bot.uid));
+        batch.delete(db.collection('bots').doc(bot.uid));  // ← AGREGAR ESTA LÍNEA
     });
 
     await batch.commit();
@@ -3643,6 +3644,7 @@ async function clearAllBots() {
     mostrarToast('Bots eliminados', 'success');
     logBot('Todos los bots eliminados', 'info');
 }
+
 
 async function toggleBot(uid) {
     const bot = botManagerState.bots.find(b => b.uid === uid);
