@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - BCPredict</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0f;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: #00d4ff; margin-bottom: 8px; }
+    .subtitle { color: #666; margin-bottom: 30px; }
+    
+    .login-box, .admin-panel {
+      background: #151520;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 400px;
+      margin: 0 auto 20px;
+    }
+    
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #0a0a0f;
+      color: #fff;
+      font-size: 1rem;
+    }
+    button {
+      background: #00d4ff;
+      color: #000;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #33ddff; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-danger { background: #ff4444; color: #fff; }
+    .btn-danger:hover { background: #ff6666; }
+    .btn-warning { background: #ffaa00; color: #000; }
+    
+    .card {
+      background: #151520;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 { color: #fff; margin-bottom: 16px; font-size: 1.1rem; }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #222;
+    }
+    th { color: #888; font-weight: 500; }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-bot { background: #00d4ff22; color: #00d4ff; }
+    .badge-human { background: #4ade8022; color: #4ade80; }
+    .badge-off { background: #ff444422; color: #ff4444; }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      background: #0a0a0f;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #00d4ff;
+    }
+    .stat-label { color: #666; font-size: 0.8rem; margin-top: 4px; }
+    
+    .result {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .result.show { display: block; }
+    .result.success { background: #0a2a0a; border: 1px solid #2a5a2a; color: #4ade80; }
+    .result.error { background: #2a0a0a; border: 1px solid #5a2a2a; color: #f87171; }
+    .result.info { background: #0a1a2a; border: 1px solid #1a3a5a; color: #60a5fa; }
+    
+    .hidden { display: none !important; }
+    .loading { opacity: 0.6; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Panel de Admin</h1>
+    <p class="subtitle">BCPredict - Firebase Direct Admin</p>
+
+    <!-- LOGIN -->
+    <div id="loginSection" class="login-box">
+      <h2 style="margin-bottom: 20px;">Iniciar sesión</h2>
+      <input type="email" id="email" placeholder="Email" value="botmaster@bcpredict.app">
+      <input type="password" id="password" placeholder="Contraseña" value="">
+      <button onclick="login()">Entrar</button>
+      <div id="loginResult" class="result"></div>
+    </div>
+
+    <!-- ADMIN PANEL (oculto hasta login) -->
+    <div id="adminSection" class="hidden">
+      
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="totalBots">-</div>
+          <div class="stat-label">Bots totales</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="activeBots">-</div>
+          <div class="stat-label">Bots activos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="totalPreds">-</div>
+          <div class="stat-label">Predicciones</div>
+        </div>
+      </div>
+
+      <!-- Bots -->
+      <div class="card">
+        <h2>🤖 Gestión de Bots</h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+          <button class="btn-warning" onclick="loadBots()">🔄 Recargar</button>
+          <button class="btn-danger" onclick="disableAllOldBots()">🛑 Desactivar bots viejos</button>
+        </div>
+        <div id="botsTable"></div>
+        <div id="botsResult" class="result"></div>
+      </div>
+
+      <!-- Predicciones -->
+      <div class="card">
+        <h2>📈 Predicciones Activas</h2>
+        <button onclick="loadPredictions()" style="margin-bottom: 16px;">🔄 Recargar predicciones</button>
+        <div id="predsTable"></div>
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button class="btn-danger" onclick="closeOldPredictions()">❌ Cerrar predicciones viejas (+7 días)</button>
+          <button class="btn-danger" onclick="closeAllPredictions()">💥 Cerrar TODAS las activas</button>
+        </div>
+        <div id="predsResult" class="result"></div>
+      </div>
+
+      <!-- Limpieza total -->
+      <div class="card">
+        <h2>🧹 Limpieza Total</h2>
+        <p style="color: #888; margin-bottom: 16px;">
+          Desactiva bots antiguos, cierra predicciones viejas y limpia caché
+        </p>
+        <button class="btn-danger" onclick="fullCleanup()">⚠️ Ejecutar limpieza total</button>
+        <div id="cleanupResult" class="result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+  <script>
+    // ====== CONFIGURACIÓN FIREBASE ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyDm2idwM6HuDJlru_9kRMu5CetI8bgE3MU",
+      authDomain: "nexus-33500.firebaseapp.com",
+      projectId: "nexus-33500",
+      // storageBucket: "nexus-33500.appspot.com",
+      // messagingSenderId: "...",
+      // appId: "..."
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // ====== LOGIN ======
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const resultDiv = document.getElementById('loginResult');
+      
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        resultDiv.className = 'result success show';
+        resultDiv.textContent = '✅ Sesión iniciada';
+        
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        
+        loadStats();
+        loadBots();
+      } catch(e) {
+        resultDiv.className = 'result error show';
+        resultDiv.textContent = '❌ ' + e.message;
+      }
+    }
+
+    // ====== STATS ======
+    async function loadStats() {
+      const botsSnap = await db.collection('usuarios').where('esBot', '==', true).get();
+      const activeBots = botsSnap.docs.filter(d => !d.data().desactivado).length;
+      
+      const allPreds = await db.collection('predicciones').get();
+      const activePreds = await db.collection('predicciones').where('estado', '==', 'activo').get();
+      
+      document.getElementById('totalBots').textContent = botsSnap.size;
+      document.getElementById('activeBots').textContent = activeBots;
+      document.getElementById('totalPreds').textContent = allPreds.size + ' (' + activePreds.size + ' activas)';
+    }
+
+    // ====== BOTS ======
+    async function loadBots() {
+      const tableDiv = document.getElementById('botsTable');
+      tableDiv.innerHTML = '<p style="color:#666">Cargando...</p>';
+      
+      const snap = await db.collection('usuarios').where('esBot', '==', true).get();
+      
+      let html = '<table><tr><th>Bot</th><th>Tipo</th><th>Puntos</th><th>Aciertos</th><th>Estado</th><th>Acción</th></tr>';
+      
+      snap.forEach(doc => {
+        const b = doc.data();
+        const isActive = b.esBot && !b.desactivado;
+        const statusClass = isActive ? 'badge-bot' : 'badge-off';
+        const statusText = isActive ? 'ACTIVO' : 'OFF';
+        
+        html += `<tr>
+          <td>${b.username || 'Sin nombre'}</td>
+          <td>${b.botType || '-'}</td>
+          <td>${b.puntos || 0}</td>
+          <td>${b.aciertos || 0}/${b.total_votos || 0}</td>
+          <td><span class="badge ${statusClass}">${statusText}</span></td>
+          <td>
+            ${isActive 
+              ? `<button class="btn-danger" style="padding:6px 12px;font-size:0.8rem" onclick="disableBot('${doc.id}')">Desactivar</button>`
+              : `<button style="padding:6px 12px;font-size:0.8rem" onclick="enableBot('${doc.id}')">Activar</button>`
+            }
+          </td>
+        </tr>`;
+      });
+      
+      html += '</table>';
+      tableDiv.innerHTML = html;
+    }
+
+    async function disableBot(id) {
+      await db.collection('usuarios').doc(id).update({
+        esBot: false,
+        desactivado: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showResult('botsResult', 'success', 'Bot desactivado');
+      loadBots();
+      loadStats();
+    }
+
+    async function enableBot(id) {
+      await db.collection('usuarios').doc(id).update({
+        esBot: true,
+        desactivado: firebase.firestore.FieldValue.delete()
+      });
+      showResult('botsResult', 'success', 'Bot activado');
+      loadBots();
+      loadStats();
+    }
+
+    async function disableAllOldBots() {
+      if (!confirm('¿Desactivar todos los bots excepto los 5 principales?')) return;
+      
+      const snap = await db.collection('usuarios').where('esBot', '==', true).get();
+      const batch = db.batch();
+      let count = 0;
+      
+      // Mantener solo los 5 más recientes
+      const bots = [];
+      snap.forEach(doc => bots.push({ id: doc.id, data: doc.data(), ref: doc.ref }));
+      bots.sort((a, b) => (b.data.creado?.seconds || 0) - (a.data.creado?.seconds || 0));
+      
+      bots.slice(5).forEach(bot => {
+        batch.update(bot.ref, {
+          esBot: false,
+          desactivado: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        count++;
+      });
+      
+      await batch.commit();
+      showResult('botsResult', 'success', `${count} bots desactivados`);
+      loadBots();
+      loadStats();
+    }
+
+    // ====== PREDICCIONES ======
+    async function loadPredictions() {
+      const tableDiv = document.getElementById('predsTable');
+      tableDiv.innerHTML = '<p style="color:#666">Cargando...</p>';
+      
+      const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+      
+      let html = '<table><tr><th>ID</th><th>Bot</th><th>Periodo</th><th>Voto</th><th>Precio</th><th>Cierre</th><th>Acción</th></tr>';
+      
+      snap.forEach(doc => {
+        const p = doc.data();
+        const cierre = p.cierre?.toDate ? p.cierre.toDate().toLocaleString() : '-';
+        
+        html += `<tr>
+          <td>${doc.id.substr(0, 8)}...</td>
+          <td>${p.usuarioId?.substr(0, 8) || '?'}</td>
+          <td>${p.periodo}</td>
+          <td>${p.voto}</td>
+          <td>$${p.precioInicial}</td>
+          <td>${cierre}</td>
+          <td>
+            <button class="btn-danger" style="padding:6px 12px;font-size:0.8rem" onclick="closePrediction('${doc.id}')">Cerrar</button>
+          </td>
+        </tr>`;
+      });
+      
+      html += '</table>';
+      if (snap.empty) html = '<p style="color:#666">No hay predicciones activas</p>';
+      tableDiv.innerHTML = html;
+    }
+
+    async function closePrediction(id) {
+      const price = prompt('Precio actual de BTC para cerrar:');
+      if (!price) return;
+      
+      await db.collection('predicciones').doc(id).update({
+        estado: 'cerrado',
+        resultado: 'manual',
+        precioFinal: parseFloat(price),
+        cerrado: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      showResult('predsResult', 'success', 'Predicción cerrada manualmente');
+      loadPredictions();
+      loadStats();
+    }
+
+    async function closeOldPredictions() {
+      if (!confirm('¿Cerrar predicciones de más de 7 días?')) return;
+      
+      const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+      const now = Date.now();
+      const batch = db.batch();
+      let count = 0;
+      
+      snap.forEach(doc => {
+        const p = doc.data();
+        const creado = p.creado?.toDate ? p.creado.toDate().getTime() : 0;
+        const dias = (now - creado) / (1000 * 60 * 60 * 24);
+        
+        if (dias > 7) {
+          batch.update(doc.ref, {
+            estado: 'cerrado',
+            resultado: 'fallo',
+            puntosGanados: 0,
+            cerrado: firebase.firestore.FieldValue.serverTimestamp(),
+            motivoCierre: 'limpieza_web'
+          });
+          count++;
+        }
+      });
+      
+      await batch.commit();
+      showResult('predsResult', 'success', `${count} predicciones viejas cerradas`);
+      loadPredictions();
+      loadStats();
+    }
+
+    async function closeAllPredictions() {
+      if (!confirm('⚠️ ¿Cerrar TODAS las predicciones activas?')) return;
+      
+      const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+      const batch = db.batch();
+      
+      snap.forEach(doc => {
+        batch.update(doc.ref, {
+          estado: 'cerrado',
+          resultado: 'cancelado',
+          cerrado: firebase.firestore.FieldValue.serverTimestamp(),
+          motivoCierre: 'cancelado_admin'
+        });
+      });
+      
+      await batch.commit();
+      showResult('predsResult', 'success', `${snap.size} predicciones canceladas`);
+      loadPredictions();
+      loadStats();
+    }
+
+    // ====== LIMPIEZA TOTAL ======
+    async function fullCleanup() {
+      if (!confirm('⚠️ ¿Ejecutar limpieza total?')) return;
+      
+      const resultDiv = document.getElementById('cleanupResult');
+      resultDiv.className = 'result info show';
+      resultDiv.textContent = 'Ejecutando limpieza...';
+      
+      try {
+        // 1. Desactivar bots viejos
+        const botsSnap = await db.collection('usuarios').where('esBot', '==', true).get();
+        const batch1 = db.batch();
+        let botsDisabled = 0;
+        
+        const bots = [];
+        botsSnap.forEach(doc => bots.push({ id: doc.id, data: doc.data(), ref: doc.ref }));
+        bots.sort((a, b) => (b.data.creado?.seconds || 0) - (a.data.creado?.seconds || 0));
+        
+        bots.slice(5).forEach(bot => {
+          batch1.update(bot.ref, {
+            esBot: false,
+            desactivado: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          botsDisabled++;
+        });
+        await batch1.commit();
+        
+        // 2. Cerrar predicciones viejas
+        const predsSnap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+        const batch2 = db.batch();
+        let predsClosed = 0;
+        const now = Date.now();
+        
+        predsSnap.forEach(doc => {
+          const p = doc.data();
+          const creado = p.creado?.toDate ? p.creado.toDate().getTime() : 0;
+          const dias = (now - creado) / (1000 * 60 * 60 * 24);
+          
+          if (dias > 7) {
+            batch2.update(doc.ref, {
+              estado: 'cerrado',
+              resultado: 'fallo',
+              puntosGanados: 0,
+              cerrado: firebase.firestore.FieldValue.serverTimestamp(),
+              motivoCierre: 'limpieza_total'
+            });
+            predsClosed++;
+          }
+        });
+        await batch2.commit();
+        
+        showResult('cleanupResult', 'success', 
+          `✅ Limpieza completada\n• ${botsDisabled} bots desactivados\n• ${predsClosed} predicciones cerradas`);
+        
+        loadBots();
+        loadPredictions();
+        loadStats();
+        
+      } catch(e) {
+        showResult('cleanupResult', 'error', 'Error: ' + e.message);
+      }
+    }
+
+    // ====== UTILIDADES ======
+    function showResult(id, type, msg) {
+      const div = document.getElementById(id);
+      div.className = `result ${type} show`;
+      div.textContent = msg;
+      setTimeout(() => div.classList.remove('show'), 5000);
+    }
+
+    // Auto-login si ya hay sesión
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        loadStats();
+        loadBots();
+      }
+    });
+  </script>
+</body>
+</html>
