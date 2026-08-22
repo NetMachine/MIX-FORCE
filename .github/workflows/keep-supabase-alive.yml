@@ -2,7 +2,7 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Cada día a medianoche UTC
+    - cron: '0 0 * * *'  # Cada día a medianoche UTC .
 
 jobs:
   ping:
