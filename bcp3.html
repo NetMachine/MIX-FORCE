@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Database Sync - BCPredict</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0e17;
+            color: #f1f5f9;
+            font-family: 'Inter', system-ui, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(17,24,39,0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .status-online { color: #4ade80; }
+        .status-offline { color: #f87171; }
+        .status-syncing { color: #fbbf24; }
+        .badge { padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-firebase { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .badge-supabase { background: rgba(0,212,255,0.2); color: #00d4ff; }
+        .badge-synced { background: rgba(34,197,94,0.2); color: #4ade80; }
+        .badge-pending { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid rgba(148,163,184,0.05); }
+        .stat-value { font-size: 1.5rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+        .live-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+        .log-area { max-height: 300px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+        .log-area::-webkit-scrollbar { width: 4px; }
+        .log-area::-webkit-scrollbar-thumb { background: #f7931a; border-radius: 4px; }
+        .log-entry { padding: 4px 8px; border-bottom: 1px solid rgba(148,163,184,0.05); }
+        .log-entry.success { color: #4ade80; }
+        .log-entry.error { color: #f87171; }
+        .log-entry.info { color: #94a3b8; }
+        .log-entry.warning { color: #fbbf24; }
+        .log-entry.sync { color: #00d4ff; }
+        .btn-primary {
+            background: linear-gradient(135deg, #f7931a, #e8850f);
+            color: #000;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(247,147,26,0.4); }
+        .btn-glass {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="max-w-7xl mx-auto">
+    <div class="glass-card">
+        <div class="flex-between">
+            <div>
+                <h1 class="text-2xl font-bold text-amber-400">🔄 Dual Database Sync</h1>
+                <p class="text-sm text-gray-500">Sincronización bidireccional Firebase ↔ Supabase</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="manualSync()" class="btn-primary">🔄 Sincronizar Ahora</button>
+                <button onclick="toggleAutoSync()" class="btn-glass" id="autoSyncBtn">⏸ Pausar Auto-Sync</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Firebase</div>
+            <div class="stat-value text-yellow-400" id="firebaseStatus">🟢 Online</div>
+            <div class="text-xs text-gray-500" id="firebaseCount">0 docs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Supabase</div>
+            <div class="stat-value text-blue-400" id="supabaseStatus">🟢 Online</div>
+            <div class="text-xs text-gray-500" id="supabaseCount">0 docs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Estado Sincronización</div>
+            <div class="stat-value text-amber-400" id="syncStatus">✅ Sincronizado</div>
+            <div class="text-xs text-gray-500" id="lastSyncTime">Último sync: --</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Registros Pendientes</div>
+            <div class="stat-value text-orange-400" id="pendingCount">0</div>
+            <div class="text-xs text-gray-500">Por sincronizar</div>
+        </div>
+    </div>
+
+    <!-- Tabla de estado -->
+    <div class="glass-card">
+        <h3 class="font-bold text-gray-300 mb-3">📊 Resumen de Colecciones</h3>
+        <div class="table-container overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-gray-500 text-xs uppercase">
+                        <th class="py-2 text-left">Colección</th>
+                        <th class="py-2 text-center">Firebase</th>
+                        <th class="py-2 text-center">Supabase</th>
+                        <th class="py-2 text-center">Estado</th>
+                        <th class="py-2 text-center">Última Sincronización</th>
+                    </tr>
+                </thead>
+                <tbody id="collectionStatus">
+                    <tr>
+                        <td class="py-2">usuarios</td>
+                        <td class="text-center text-green-400" id="fbUsers">0</td>
+                        <td class="text-center text-blue-400" id="sbUsers">0</td>
+                        <td class="text-center"><span class="badge badge-synced">✅ Sincronizado</span></td>
+                        <td class="text-center text-gray-500 text-xs" id="syncUsers">--</td>
+                    </tr>
+                    <tr>
+                        <td class="py-2">predicciones</td>
+                        <td class="text-center text-green-400" id="fbPreds">0</td>
+                        <td class="text-center text-blue-400" id="sbPreds">0</td>
+                        <td class="text-center"><span class="badge badge-synced">✅ Sincronizado</span></td>
+                        <td class="text-center text-gray-500 text-xs" id="syncPreds">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Log de sincronización -->
+    <div class="glass-card">
+        <div class="flex-between mb-3">
+            <h3 class="font-bold text-gray-300">📋 Log de Sincronización</h3>
+            <button onclick="clearLogs()" class="btn-glass text-sm">Limpiar</button>
+        </div>
+        <div id="syncLog" class="log-area bg-black/30 rounded-lg p-3">
+            <div class="log-entry info">🔄 Sistema de sincronización dual iniciado...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN FIREBASE
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyDm2idwM6HuDJlru_9kRMu5CetI8bgE3MU",
+    authDomain: "nexus-33500.firebaseapp.com",
+    projectId: "nexus-33500",
+    storageBucket: "nexus-33500.firebasestorage.app",
+    messagingSenderId: "847469417688",
+    appId: "1:847469417688:web:4c5e3b9d41b16dbfed73ad"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const FieldValue = firebase.firestore.FieldValue;
+
+// ============================================================
+// CONFIGURACIÓN SUPABASE
+// ============================================================
+const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================================
+// SISTEMA DE SINCRONIZACIÓN DUAL
+// ============================================================
+class DualDatabaseSync {
+    constructor() {
+        this.firebase = db;
+        this.supabase = supabaseClient;
+        this.isRunning = false;
+        this.autoSync = true;
+        this.syncInterval = null;
+        this.pendingOperations = [];
+        this.collections = ['usuarios', 'predicciones'];
+        this.syncStatus = {};
+        this.logs = [];
+        this.isFirebaseDown = false;
+        this.isSupabaseDown = false;
+        this.lastSyncTime = null;
+        this.syncInProgress = false;
+        
+        // Iniciar monitoreo
+        this.startHealthCheck();
+        this.startAutoSync();
+    }
+
+    // ============================================================
+    // HEALTH CHECK - Monitoreo de servidores
+    // ============================================================
+    async healthCheck() {
+        try {
+            // Verificar Firebase
+            await this.firebase.collection('usuarios').limit(1).get();
+            this.isFirebaseDown = false;
+            document.getElementById('firebaseStatus').textContent = '🟢 Online';
+            document.getElementById('firebaseStatus').className = 'stat-value text-green-400';
+        } catch (error) {
+            this.isFirebaseDown = true;
+            document.getElementById('firebaseStatus').textContent = '🔴 Offline';
+            document.getElementById('firebaseStatus').className = 'stat-value text-red-400';
+            this.addLog('⚠️ Firebase está caído!', 'error');
+        }
+
+        try {
+            // Verificar Supabase
+            const { data, error } = await this.supabase.from('usuarios').select('count', { count: 'exact', head: true });
+            if (error) throw error;
+            this.isSupabaseDown = false;
+            document.getElementById('supabaseStatus').textContent = '🟢 Online';
+            document.getElementById('supabaseStatus').className = 'stat-value text-blue-400';
+        } catch (error) {
+            this.isSupabaseDown = true;
+            document.getElementById('supabaseStatus').textContent = '🔴 Offline';
+            document.getElementById('supabaseStatus').className = 'stat-value text-red-400';
+            this.addLog('⚠️ Supabase está caído!', 'error');
+        }
+
+        this.updateStatusUI();
+    }
+
+    // ============================================================
+    // GET DATABASE - Obtener la DB disponible
+    // ============================================================
+    getAvailableDB(prefer = 'firebase') {
+        if (prefer === 'firebase' && !this.isFirebaseDown) return 'firebase';
+        if (prefer === 'supabase' && !this.isSupabaseDown) return 'supabase';
+        if (!this.isFirebaseDown) return 'firebase';
+        if (!this.isSupabaseDown) return 'supabase';
+        return null;
+    }
+
+    // ============================================================
+    // LEER DATOS CON FALLBACK
+    // ============================================================
+    async readData(collection, filters = {}) {
+        // Intentar Firebase primero
+        if (!this.isFirebaseDown) {
+            try {
+                let query = this.firebase.collection(collection);
+                Object.entries(filters).forEach(([key, value]) => {
+                    query = query.where(key, '==', value);
+                });
+                const snap = await query.get();
+                const data = [];
+                snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+                return { source: 'firebase', data };
+            } catch (error) {
+                this.addLog(`⚠️ Firebase read falló para ${collection}: ${error.message}`, 'warning');
+                this.isFirebaseDown = true;
+            }
+        }
+
+        // Fallback a Supabase
+        if (!this.isSupabaseDown) {
+            try {
+                let query = this.supabase.from(collection).select('*');
+                Object.entries(filters).forEach(([key, value]) => {
+                    query = query.eq(key, value);
+                });
+                const { data, error } = await query;
+                if (error) throw error;
+                return { source: 'supabase', data: data || [] };
+            } catch (error) {
+                this.addLog(`⚠️ Supabase read falló para ${collection}: ${error.message}`, 'warning');
+                this.isSupabaseDown = true;
+            }
+        }
+
+        return { source: 'none', data: [] };
+    }
+
+    // ============================================================
+    // ESCRIBIR DATOS EN AMBAS DB (CON FALLBACK)
+    // ============================================================
+    async writeData(collection, data, id = null) {
+        const results = [];
+        const timestamp = new Date().toISOString();
+        const dataWithTimestamp = { ...data, _lastUpdated: timestamp };
+
+        // Intentar escribir en ambas
+        const operations = [];
+
+        // Firebase
+        if (!this.isFirebaseDown) {
+            operations.push({
+                db: 'firebase',
+                execute: async () => {
+                    if (id) {
+                        await this.firebase.collection(collection).doc(id).set(dataWithTimestamp, { merge: true });
+                    } else {
+                        const ref = await this.firebase.collection(collection).add(dataWithTimestamp);
+                        return ref.id;
+                    }
+                }
+            });
+        }
+
+        // Supabase
+        if (!this.isSupabaseDown) {
+            operations.push({
+                db: 'supabase',
+                execute: async () => {
+                    const { data: result, error } = await this.supabase
+                        .from(collection)
+                        .upsert(id ? { id, ...dataWithTimestamp } : dataWithTimestamp)
+                        .select();
+                    if (error) throw error;
+                    return result?.[0]?.id || id;
+                }
+            });
+        }
+
+        // Ejecutar todas las operaciones en paralelo
+        const results_ = await Promise.allSettled(
+            operations.map(op => op.execute())
+        );
+
+        let successCount = 0;
+        let newId = id;
+
+        results_.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                successCount++;
+                if (result.value) newId = result.value;
+                this.addLog(`✅ Escritura exitosa en ${operations[index].db} (${collection})`, 'success');
+            } else {
+                this.addLog(`❌ Falló escritura en ${operations[index].db}: ${result.reason?.message}`, 'error');
+                // Marcar como caído para futuros intentos
+                if (operations[index].db === 'firebase') this.isFirebaseDown = true;
+                if (operations[index].db === 'supabase') this.isSupabaseDown = true;
+            }
+        });
+
+        // Si alguna falló, guardar para sincronización posterior
+        if (successCount < operations.length) {
+            this.pendingOperations.push({
+                collection,
+                data: dataWithTimestamp,
+                id: newId,
+                timestamp: Date.now(),
+                attempts: 0
+            });
+            this.updatePendingCount();
+            this.addLog(`📝 Operación pendiente registrada (${collection})`, 'warning');
+        }
+
+        return { id: newId, success: successCount > 0, total: operations.length };
+    }
+
+    // ============================================================
+    // SINCORNIZAR DATOS PENDIENTES
+    // ============================================================
+    async syncPendingOperations() {
+        if (this.pendingOperations.length === 0) return;
+        if (this.syncInProgress) {
+            this.addLog('⏳ Sincronización ya en progreso...', 'info');
+            return;
+        }
+
+        this.syncInProgress = true;
+        this.addLog(`🔄 Iniciando sincronización de ${this.pendingOperations.length} operaciones pendientes...`, 'sync');
+
+        const toRemove = [];
+
+        for (let i = 0; i < this.pendingOperations.length; i++) {
+            const op = this.pendingOperations[i];
+            op.attempts++;
+
+            try {
+                // Verificar si el dato ya existe en la DB caída
+                const availableDB = this.getAvailableDB();
+                if (availableDB === 'firebase' && op.db === 'supabase') {
+                    // Sync de Supabase a Firebase
+                    await this.firebase.collection(op.collection).doc(op.id).set(op.data, { merge: true });
+                    this.addLog(`✅ Sync Firebase ← Supabase: ${op.collection}/${op.id}`, 'success');
+                    toRemove.push(i);
+                } else if (availableDB === 'supabase' && op.db === 'firebase') {
+                    // Sync de Firebase a Supabase
+                    const { error } = await this.supabase
+                        .from(op.collection)
+                        .upsert({ id: op.id, ...op.data });
+                    if (error) throw error;
+                    this.addLog(`✅ Sync Supabase ← Firebase: ${op.collection}/${op.id}`, 'success');
+                    toRemove.push(i);
+                } else {
+                    // Ambos están disponibles, intentar de nuevo
+                    if (op.attempts < 5) {
+                        this.addLog(`⏳ Reintentando ${op.collection}/${op.id} (intento ${op.attempts})`, 'warning');
+                    } else {
+                        this.addLog(`❌ Abandonando ${op.collection}/${op.id} después de ${op.attempts} intentos`, 'error');
+                        toRemove.push(i);
+                    }
+                }
+            } catch (error) {
+                this.addLog(`❌ Error sync ${op.collection}/${op.id}: ${error.message}`, 'error');
+                if (op.attempts >= 5) toRemove.push(i);
+            }
+
+            // Pequeña pausa para no saturar
+            await new Promise(r => setTimeout(r, 500));
+        }
+
+        // Remover operaciones completadas o abandonadas (orden inverso)
+        toRemove.sort((a, b) => b - a);
+        for (const idx of toRemove) {
+            this.pendingOperations.splice(idx, 1);
+        }
+
+        this.updatePendingCount();
+        this.syncInProgress = false;
+        this.lastSyncTime = new Date();
+        this.updateLastSyncTime();
+
+        this.addLog(`✅ Sincronización completada. ${toRemove.length} operaciones procesadas.`, 'success');
+        await this.updateStats();
+    }
+
+    // ============================================================
+    // SINCORNIZACIÓN COMPLETA DE COLECCIONES
+    // ============================================================
+    async fullSyncCollection(collection) {
+        this.addLog(`🔄 Sincronizando colección: ${collection}...`, 'sync');
+
+        try {
+            // Leer de Firebase
+            const fbData = await this.readData(collection);
+            // Leer de Supabase
+            const sbData = await this.readData(collection);
+
+            const fbIds = new Set(fbData.data.map(d => d.id));
+            const sbIds = new Set(sbData.data.map(d => d.id));
+
+            // Datos en Firebase pero no en Supabase
+            const toSupabase = fbData.data.filter(d => !sbIds.has(d.id));
+            // Datos en Supabase pero no en Firebase
+            const toFirebase = sbData.data.filter(d => !fbIds.has(d.id));
+
+            if (toSupabase.length > 0) {
+                this.addLog(`📤 Enviando ${toSupabase.length} registros a Supabase...`, 'sync');
+                for (const item of toSupabase) {
+                    const { id, ...data } = item;
+                    await this.supabase.from(collection).upsert({ id, ...data });
+                }
+            }
+
+            if (toFirebase.length > 0) {
+                this.addLog(`📥 Enviando ${toFirebase.length} registros a Firebase...`, 'sync');
+                for (const item of toFirebase) {
+                    const { id, ...data } = item;
+                    await this.firebase.collection(collection).doc(id).set(data, { merge: true });
+                }
+            }
+
+            if (toSupabase.length === 0 && toFirebase.length === 0) {
+                this.addLog(`✅ ${collection} ya está sincronizada`, 'success');
+            } else {
+                this.addLog(`✅ ${collection} sincronizada: +${toSupabase.length} → Supabase, +${toFirebase.length} → Firebase`, 'success');
+            }
+
+            return { toSupabase: toSupabase.length, toFirebase: toFirebase.length };
+
+        } catch (error) {
+            this.addLog(`❌ Error sincronizando ${collection}: ${error.message}`, 'error');
+            return { error: error.message };
+        }
+    }
+
+    // ============================================================
+    // SINCORNIZACIÓN COMPLETA
+    // ============================================================
+    async fullSync() {
+        if (this.syncInProgress) {
+            this.addLog('⏳ Sincronización ya en progreso...', 'info');
+            return;
+        }
+
+        this.addLog('🚀 Iniciando sincronización completa...', 'sync');
+        document.getElementById('syncStatus').textContent = '🔄 Sincronizando...';
+        document.getElementById('syncStatus').className = 'stat-value text-amber-400';
+
+        let totalToSupabase = 0;
+        let totalToFirebase = 0;
+
+        for (const collection of this.collections) {
+            const result = await this.fullSyncCollection(collection);
+            if (result.error) {
+                this.addLog(`❌ Error en ${collection}: ${result.error}`, 'error');
+            } else {
+                totalToSupabase += result.toSupabase || 0;
+                totalToFirebase += result.toFirebase || 0;
+            }
+            // Pausa entre colecciones
+            await new Promise(r => setTimeout(r, 1000));
+        }
+
+        // Procesar operaciones pendientes
+        await this.syncPendingOperations();
+
+        this.addLog(`✅ Sincronización completa: ${totalToSupabase} → Supabase, ${totalToFirebase} → Firebase`, 'success');
+        document.getElementById('syncStatus').textContent = '✅ Sincronizado';
+        document.getElementById('syncStatus').className = 'stat-value text-green-400';
+        this.lastSyncTime = new Date();
+        this.updateLastSyncTime();
+        await this.updateStats();
+    }
+
+    // ============================================================
+    // HEALTH CHECK AUTOMÁTICO
+    // ============================================================
+    startHealthCheck() {
+        this.healthCheck();
+        setInterval(() => {
+            this.healthCheck();
+        }, 30000); // Cada 30 segundos
+    }
+
+    // ============================================================
+    // AUTO-SYNC
+    // ============================================================
+    startAutoSync() {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+        }
+        
+        this.autoSync = true;
+        document.getElementById('autoSyncBtn').textContent = '⏸ Pausar Auto-Sync';
+        
+        this.syncInterval = setInterval(() => {
+            if (this.autoSync) {
+                this.fullSync();
+            }
+        }, 120000); // Cada 2 minutos
+
+        this.addLog('⏰ Auto-sync iniciado (cada 2 minutos)', 'info');
+    }
+
+    toggleAutoSync() {
+        this.autoSync = !this.autoSync;
+        document.getElementById('autoSyncBtn').textContent = this.autoSync ? '⏸ Pausar Auto-Sync' : '▶ Reanudar Auto-Sync';
+        this.addLog(this.autoSync ? '▶ Auto-sync reanudado' : '⏸ Auto-sync pausado', 'info');
+    }
+
+    // ============================================================
+    // UTILIDADES UI
+    // ============================================================
+    addLog(message, type = 'info') {
+        const logContainer = document.getElementById('syncLog');
+        const entry = document.createElement('div');
+        const timestamp = new Date().toLocaleTimeString();
+        entry.className = `log-entry ${type}`;
+        entry.textContent = `[${timestamp}] ${message}`;
+        logContainer.appendChild(entry);
+        logContainer.scrollTop = logContainer.scrollHeight;
+        
+        // Mantener solo los últimos 100 logs
+        while (logContainer.children.length > 100) {
+            logContainer.removeChild(logContainer.firstChild);
+        }
+    }
+
+    clearLogs() {
+        document.getElementById('syncLog').innerHTML = '';
+        this.addLog('📋 Logs limpiados', 'info');
+    }
+
+    updatePendingCount() {
+        document.getElementById('pendingCount').textContent = this.pendingOperations.length;
+    }
+
+    updateLastSyncTime() {
+        if (this.lastSyncTime) {
+            document.getElementById('lastSyncTime').textContent = `Último sync: ${this.lastSyncTime.toLocaleTimeString()}`;
+        }
+    }
+
+    updateStatusUI() {
+        // Actualizar estado general
+        const isSynced = !this.isFirebaseDown && !this.isSupabaseDown;
+        document.getElementById('syncStatus').textContent = isSynced ? '✅ Sincronizado' : '⚠️ Parcial';
+        document.getElementById('syncStatus').className = `stat-value ${isSynced ? 'text-green-400' : 'text-amber-400'}`;
+    }
+
+    // ============================================================
+    // ESTADÍSTICAS
+    // ============================================================
+    async updateStats() {
+        try {
+            // Firebase counts
+            const fbUsers = await this.firebase.collection('usuarios').get();
+            const fbPreds = await this.firebase.collection('predicciones').get();
+            document.getElementById('fbUsers').textContent = fbUsers.size;
+            document.getElementById('fbPreds').textContent = fbPreds.size;
+            document.getElementById('firebaseCount').textContent = `${fbUsers.size + fbPreds.size} docs`;
+        } catch (e) {
+            document.getElementById('fbUsers').textContent = '?';
+            document.getElementById('fbPreds').textContent = '?';
+        }
+
+        try {
+            // Supabase counts
+            const { count: sbUsers, error: e1 } = await this.supabase.from('usuarios').select('*', { count: 'exact', head: true });
+            const { count: sbPreds, error: e2 } = await this.supabase.from('predicciones').select('*', { count: 'exact', head: true });
+            document.getElementById('sbUsers').textContent = sbUsers || 0;
+            document.getElementById('sbPreds').textContent = sbPreds || 0;
+            document.getElementById('supabaseCount').textContent = `${(sbUsers || 0) + (sbPreds || 0)} docs`;
+        } catch (e) {
+            document.getElementById('sbUsers').textContent = '?';
+            document.getElementById('sbPreds').textContent = '?';
+        }
+    }
+}
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+const syncSystem = new DualDatabaseSync();
+
+// Exponer funciones globales
+window.manualSync = () => syncSystem.fullSync();
+window.toggleAutoSync = () => syncSystem.toggleAutoSync();
+window.clearLogs = () => syncSystem.clearLogs();
+
+// Iniciar
+document.addEventListener('DOMContentLoaded', async () => {
+    syncSystem.addLog('🚀 Sistema Dual Database inicializado', 'info');
+    syncSystem.addLog('📡 Monitoreando Firebase y Supabase...', 'info');
+    await syncSystem.updateStats();
+    syncSystem.addLog('✅ Listo para sincronización', 'success');
+});
+
+// ============================================================
+// INTERCEPTOR DE ESCRITURAS PARA SINCRONIZACIÓN AUTOMÁTICA
+// ============================================================
+const originalFirebaseAdd = db.collection('usuarios').add.bind(db.collection('usuarios'));
+const originalFirebaseSet = db.collection('usuarios').doc().set.bind(db.collection('usuarios'));
+
+// Extender para capturar escrituras y sincronizar
+db.collection('usuarios').add = async function(data) {
+    const result = await originalFirebaseAdd(data);
+    const doc = await result.get();
+    const docData = doc.data();
+    syncSystem.writeData('usuarios', docData, result.id);
+    return result;
+};
+
+// ============================================================
+// BACKUP AUTOMÁTICO - Guardar en ambas DB
+// ============================================================
+async function backupToBoth(collection, data, id) {
+    const results = [];
+    
+    // Firebase
+    try {
+        if (id) {
+            await db.collection(collection).doc(id).set(data, { merge: true });
+        } else {
+            await db.collection(collection).add(data);
+        }
+        results.push({ db: 'firebase', success: true });
+    } catch (e) {
+        results.push({ db: 'firebase', success: false, error: e.message });
+    }
+    
+    // Supabase
+    try {
+        const { error } = await supabaseClient
+            .from(collection)
+            .upsert(id ? { id, ...data } : data);
+        if (error) throw error;
+        results.push({ db: 'supabase', success: true });
+    } catch (e) {
+        results.push({ db: 'supabase', success: false, error: e.message });
+    }
+    
+    return results;
+}
+
+// Exportar para uso global
+window.backupToBoth = backupToBoth;
+window.syncSystem = syncSystem;
+
+console.log('🔥 Dual Database Sync System initialized!');
+console.log('📡 Use backupToBoth(collection, data, id) para respaldar en ambas DB');
+</script>
+</body>
+</html>
