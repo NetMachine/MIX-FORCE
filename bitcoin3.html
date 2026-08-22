@@ -3338,6 +3338,15 @@ document.addEventListener('keydown', function(e) {
 
 
 
+// NUEVO: Definición de PERSONALITIES (antes faltaba)
+const PERSONALITIES = {
+  aggressive: { periodWeights: { '5m': 0.4, '15m': 0.3, '30m': 0.2, '1h': 0.1 }, activityLevel: 0.9, skillRange: [0.45, 0.55] },
+  balanced: { periodWeights: { '5m': 0.15, '15m': 0.25, '30m': 0.25, '1h': 0.2, '4h': 0.1, '24h': 0.05 }, activityLevel: 0.7, skillRange: [0.48, 0.58] },
+  conservative: { periodWeights: { '1h': 0.3, '4h': 0.3, '24h': 0.2, '1sem': 0.15, '1mes': 0.05 }, activityLevel: 0.4, skillRange: [0.52, 0.65] },
+  random: { periodWeights: null, activityLevel: 0.6, skillRange: [0.3, 0.7] },
+  whale: { periodWeights: { '15m': 0.2, '30m': 0.3, '1h': 0.3, '4h': 0.2 }, activityLevel: 0.8, skillRange: [0.6, 0.75] },
+  newbie: { periodWeights: { '5m': 0.5, '15m': 0.3, '30m': 0.2 }, activityLevel: 0.5, skillRange: [0.35, 0.48] }
+};
 
 
 // ==============================================
