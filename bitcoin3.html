@@ -3128,7 +3128,7 @@ function renderizarGlobal() {
         return '<div class="prediction-row glass-card rounded-lg p-3.5 ' + (esMio ? 'border-l-2 border-amber-500/50' : '') + '">' +
             '<div class="flex justify-between items-center flex-wrap gap-2">' +
             '<div class="flex items-center gap-2 flex-wrap">' +
-            '<span class="font-bold text-sm text-gray-200">' + username + '</span>' + (esMio ? '<span class="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded">TU</span>' : '') +
+            '<span class="font-bold text-sm text-gray-200">' + username + '</span>' + (p.esBot ? '<span class="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded">BOT</span>' : '') + (esMio ? '<span class="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded">TU</span>' : '') +
             '<span class="text-[10px] text-gray-600 font-medium">' + p.periodo + '</span>' +
             '<span class="' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span>' +
             '</div>' +
@@ -3163,7 +3163,7 @@ async function cargarRanking() {
             else rank = (i + 1).toString();
             return '<tr class="rank-glow ' + (esYo ? 'bg-amber-500/5' : '') + ' border-t border-white/5 transition">' +
                 '<td class="py-3 px-4 font-bold text-xs ' + (i < 3 ? 'text-amber-400' : 'text-gray-500') + '">' + rank + '</td>' +
-                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
+                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + (u.esBot ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') +(esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
                 '<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ' + tier.clase + '">' + tier.nombre.toUpperCase() + '</span></td>' +
                 '<td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">' + (u.puntos || 0) + '</td>' +
                 '<td class="py-3 px-4 text-center text-green-400 font-mono text-sm">' + (u.aciertos || 0) + '</td>' +
