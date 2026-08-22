@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - BCPredict</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0e17;
+            color: #f1f5f9;
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .glass-card {
+            background: rgba(17,24,39,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .glass-card:hover { border-color: rgba(247,147,26,0.2); }
+        .btn-primary {
+            background: linear-gradient(135deg, #f7931a, #e8850f);
+            color: #000;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(247,147,26,0.4); }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(239,68,68,0.4); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(247,147,26,0.4);
+            color: #f7931a;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-outline:hover { background: rgba(247,147,26,0.1); }
+        .btn-glass {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
+        input, select {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #f1f5f9;
+            padding: 12px 16px;
+            border-radius: 10px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus { border-color: #f7931a; outline: none; box-shadow: 0 0 0 3px rgba(247,147,26,0.1); }
+        .badge-bot { background: rgba(0,212,255,0.2); color: #00d4ff; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-human { background: rgba(74,222,128,0.2); color: #4ade80; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-inactive { background: rgba(239,68,68,0.2); color: #f87171; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .badge-active { background: rgba(34,197,94,0.2); color: #4ade80; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: rgba(0,0,0,0.3); padding: 16px; border-radius: 12px; text-align: center; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: #f7931a; }
+        .stat-label { color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(148,163,184,0.12); margin-bottom: 24px; flex-wrap: wrap; }
+        .tab-btn { padding: 12px 20px; background: transparent; border: none; color: #64748b; cursor: pointer; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.3s; }
+        .tab-btn:hover { color: #f1f5f9; }
+        .tab-btn.active { color: #f7931a; border-bottom-color: #f7931a; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(148,163,184,0.08); }
+        th { color: #64748b; font-weight: 500; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); opacity: 0; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); z-index: 999; background: rgba(17,24,39,0.95); backdrop-filter: blur(20px); padding: 14px 28px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.12); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.success { border-color: rgba(34,197,94,0.3); color: #4ade80; }
+        .toast.error { border-color: rgba(239,68,68,0.3); color: #f87171; }
+        .toast.info { border-color: rgba(247,147,26,0.3); color: #fbbf24; }
+        .scroll-area { max-height: 500px; overflow-y: auto; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #f7931a; border-radius: 4px; }
+        .login-box { max-width: 400px; margin: 40px auto; }
+        .hidden { display: none !important; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .gap-2 { gap: 8px; }
+        .mt-2 { margin-top: 8px; }
+        .mb-2 { margin-bottom: 8px; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .capitalize { text-transform: capitalize; }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .tier-bronze { background: linear-gradient(135deg, #8B6914, #CD7F32); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
+        .tier-silver { background: linear-gradient(135deg, #8899a6, #c0c0c0); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
+        .tier-gold { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
+        .tier-platinum { background: linear-gradient(135deg, #E5E4E2, #B0C4DE); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
+        .tier-master { background: linear-gradient(135deg, #4B0082, #8A2BE2); color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
+        .tier-legend { background: linear-gradient(135deg, #FF4500, #FFD700); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-amber-400">🔧 Admin Panel</h1>
+            <p class="text-sm text-gray-500">BCPredict - Gestión completa</p>
+        </div>
+        <div id="auth-section" class="flex gap-2">
+            <button onclick="logout()" class="btn-danger hidden" id="logout-btn">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- Login -->
+    <div id="loginSection" class="login-box glass-card">
+        <h2 class="text-xl font-bold mb-4">Iniciar Sesión</h2>
+        <input type="email" id="email" placeholder="Email" value="botmaster@bcpredict.app" class="mb-3">
+        <input type="password" id="password" placeholder="Contraseña" class="mb-4">
+        <button onclick="login()" class="btn-primary w-full">Entrar</button>
+        <div id="loginResult" class="mt-3 text-sm"></div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminSection" class="hidden">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="totalUsers">-</div><div class="stat-label">Usuarios Total</div></div>
+            <div class="stat-card"><div class="stat-value" id="realUsers">-</div><div class="stat-label">Usuarios Reales</div></div>
+            <div class="stat-card"><div class="stat-value" id="botUsers">-</div><div class="stat-label">Bots</div></div>
+            <div class="stat-card"><div class="stat-value" id="activeBots">-</div><div class="stat-label">Bots Activos</div></div>
+            <div class="stat-card"><div class="stat-value" id="totalPreds">-</div><div class="stat-label">Predicciones</div></div>
+            <div class="stat-card"><div class="stat-value" id="activePreds">-</div><div class="stat-label">Activas</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="users" onclick="switchTab('users')">👥 Usuarios</button>
+            <button class="tab-btn" data-tab="bots" onclick="switchTab('bots')">🤖 Bots</button>
+            <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')">🏆 Ranking</button>
+            <button class="tab-btn" data-tab="predictions" onclick="switchTab('predictions')">📈 Predicciones</button>
+            <button class="tab-btn" data-tab="cleanup" onclick="switchTab('cleanup')">🧹 Limpieza</button>
+        </div>
+
+        <!-- TAB: USERS -->
+        <div id="tab-users" class="tab-content active">
+            <div class="glass-card">
+                <div class="flex-between mb-4">
+                    <h3 class="font-bold text-gray-300">Usuarios Registrados</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="userSearch" placeholder="Buscar..." class="w-48 text-sm" oninput="filterUsers()">
+                        <button onclick="refreshUsers()" class="btn-glass text-sm">🔄</button>
+                    </div>
+                </div>
+                <div class="table-container scroll-area">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Tipo</th>
+                                <th>Nivel</th>
+                                <th>Puntos</th>
+                                <th>Winrate</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: BOTS -->
+        <div id="tab-bots" class="tab-content">
+            <div class="glass-card">
+                <div class="flex-between mb-4">
+                    <h3 class="font-bold text-gray-300">Gestión de Bots</h3>
+                    <div class="flex gap-2">
+                        <button onclick="createBots()" class="btn-primary text-sm">+ Crear Bots</button>
+                        <button onclick="toggleAllBots(true)" class="btn-glass text-sm">▶ Iniciar Todos</button>
+                        <button onclick="toggleAllBots(false)" class="btn-glass text-sm">⏹ Detener Todos</button>
+                    </div>
+                </div>
+                <div class="flex gap-3 mb-4 flex-wrap">
+                    <div class="flex-1 min-w-32">
+                        <label class="text-xs text-gray-500">Cantidad</label>
+                        <input type="number" id="botCount" value="3" min="1" max="20" class="text-sm">
+                    </div>
+                    <div class="flex-1 min-w-32">
+                        <label class="text-xs text-gray-500">Personalidad</label>
+                        <select id="botPersonality" class="text-sm">
+                            <option value="random">Aleatoria</option>
+                            <option value="aggressive">Agresiva</option>
+                            <option value="balanced">Balanceada</option>
+                            <option value="conservative">Conservadora</option>
+                            <option value="whale">Whale</option>
+                            <option value="newbie">Novato</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-32">
+                        <label class="text-xs text-gray-500">Skill Base</label>
+                        <input type="range" id="botSkill" min="0.3" max="0.8" step="0.05" value="0.5" class="w-full" oninput="document.getElementById('skillDisplay').textContent=this.value">
+                        <div class="text-right text-xs text-amber-400" id="skillDisplay">0.5</div>
+                    </div>
+                </div>
+                <div class="table-container scroll-area">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bot</th>
+                                <th>Personalidad</th>
+                                <th>Skill</th>
+                                <th>Puntos</th>
+                                <th>Winrate</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="botsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: RANKING -->
+        <div id="tab-ranking" class="tab-content">
+            <div class="glass-card">
+                <div class="flex-between mb-4">
+                    <h3 class="font-bold text-gray-300">Tabla de Clasificación</h3>
+                    <button onclick="refreshRanking()" class="btn-glass text-sm">🔄 Actualizar</button>
+                </div>
+                <div class="table-container scroll-area">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Usuario</th>
+                                <th>Tipo</th>
+                                <th>Nivel</th>
+                                <th>Puntos</th>
+                                <th>Win</th>
+                                <th>Total</th>
+                                <th>Winrate</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankingTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: PREDICTIONS -->
+        <div id="tab-predictions" class="tab-content">
+            <div class="glass-card">
+                <div class="flex-between mb-4">
+                    <h3 class="font-bold text-gray-300">Predicciones Activas</h3>
+                    <div class="flex gap-2">
+                        <button onclick="closeOldPredictions()" class="btn-glass text-sm">Cerrar Viejas (+7d)</button>
+                        <button onclick="closeAllPredictions()" class="btn-danger text-sm">Cerrar Todas</button>
+                    </div>
+                </div>
+                <div class="table-container scroll-area">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Periodo</th>
+                                <th>Voto</th>
+                                <th>Precio Inicial</th>
+                                <th>Cierre</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="predsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CLEANUP -->
+        <div id="tab-cleanup" class="tab-content">
+            <div class="glass-card">
+                <h3 class="font-bold text-gray-300 mb-4">🧹 Limpieza y Mantenimiento</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-lg bg-black/20 border border-white/5">
+                        <h4 class="font-semibold text-amber-400 mb-2">Usuarios</h4>
+                        <button onclick="cleanupUsers()" class="btn-danger text-sm w-full mb-2">Eliminar Usuarios Inactivos (>30 días)</button>
+                        <button onclick="deleteAllBots()" class="btn-danger text-sm w-full">Eliminar TODOS los Bots</button>
+                    </div>
+                    <div class="p-4 rounded-lg bg-black/20 border border-white/5">
+                        <h4 class="font-semibold text-amber-400 mb-2">Predicciones</h4>
+                        <button onclick="closeOldPredictions()" class="btn-glass text-sm w-full mb-2">Cerrar Predicciones +7 días</button>
+                        <button onclick="closeAllPredictions()" class="btn-danger text-sm w-full">Cerrar TODAS las Activas</button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button onclick="fullCleanup()" class="btn-danger w-full text-lg py-3">⚠️ LIMPIEZA TOTAL</button>
+                </div>
+                <div id="cleanupResult" class="mt-3 text-sm"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"><span id="toastText"></span></div>
+
+<script>
+// ============================================================
+// CONFIGURACIÓN FIREBASE
+// ============================================================
+const firebaseConfig = {
+    apiKey: "AIzaSyDm2idwM6HuDJlru_9kRMu5CetI8bgE3MU",
+    authDomain: "nexus-33500.firebaseapp.com",
+    projectId: "nexus-33500",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const FieldValue = firebase.firestore.FieldValue;
+
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
+let allUsers = [];
+let allBots = [];
+let allRanking = [];
+let currentUser = null;
+
+// ============================================================
+// AUTENTICACIÓN
+// ============================================================
+async function login() {
+    const email = document.getElementById('email').value;
+    const pass = document.getElementById('password').value;
+    const resultDiv = document.getElementById('loginResult');
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        resultDiv.innerHTML = '<span class="text-green-400">✅ Sesión iniciada</span>';
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('logout-btn').classList.remove('hidden');
+        loadAllData();
+    } catch (e) {
+        resultDiv.innerHTML = '<span class="text-red-400">❌ ' + e.message + '</span>';
+    }
+}
+
+async function logout() {
+    await auth.signOut();
+    location.reload();
+}
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        currentUser = user;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('logout-btn').classList.remove('hidden');
+        loadAllData();
+    }
+});
+
+// ============================================================
+// CARGA DE DATOS
+// ============================================================
+async function loadAllData() {
+    await Promise.all([
+        loadUsers(),
+        loadBots(),
+        loadRanking(),
+        loadPredictions(),
+        updateStats()
+    ]);
+}
+
+async function loadUsers() {
+    const snap = await db.collection('usuarios').get();
+    allUsers = [];
+    snap.forEach(doc => {
+        const data = doc.data();
+        allUsers.push({ uid: doc.id, ...data });
+    });
+    renderUsers();
+}
+
+async function loadBots() {
+    const snap = await db.collection('usuarios').where('esBot', '==', true).get();
+    allBots = [];
+    snap.forEach(doc => {
+        const data = doc.data();
+        allBots.push({ uid: doc.id, ...data });
+    });
+    renderBots();
+}
+
+async function loadRanking() {
+    const snap = await db.collection('usuarios').orderBy('puntos', 'desc').limit(100).get();
+    allRanking = [];
+    snap.forEach(doc => {
+        const data = doc.data();
+        allRanking.push({ uid: doc.id, ...data });
+    });
+    renderRanking();
+}
+
+async function loadPredictions() {
+    const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+    const preds = [];
+    snap.forEach(doc => {
+        const data = doc.data();
+        preds.push({ id: doc.id, ...data });
+    });
+    renderPredictions(preds);
+}
+
+async function updateStats() {
+    const usersSnap = await db.collection('usuarios').get();
+    const botsSnap = await db.collection('usuarios').where('esBot', '==', true).get();
+    const realUsers = usersSnap.docs.filter(d => !d.data().esBot).length;
+    const activeBots = botsSnap.docs.filter(d => d.data().esBot && !d.data().desactivado).length;
+    const predsSnap = await db.collection('predicciones').get();
+    const activePreds = await db.collection('predicciones').where('estado', '==', 'activo').get();
+
+    document.getElementById('totalUsers').textContent = usersSnap.size;
+    document.getElementById('realUsers').textContent = realUsers;
+    document.getElementById('botUsers').textContent = botsSnap.size;
+    document.getElementById('activeBots').textContent = activeBots;
+    document.getElementById('totalPreds').textContent = predsSnap.size;
+    document.getElementById('activePreds').textContent = activePreds.size;
+}
+
+// ============================================================
+// RENDER: USUARIOS
+// ============================================================
+function renderUsers(filter = '') {
+    const tbody = document.getElementById('usersTableBody');
+    let users = allUsers;
+    if (filter) {
+        const f = filter.toLowerCase();
+        users = users.filter(u => 
+            (u.username || '').toLowerCase().includes(f) || 
+            (u.email || '').toLowerCase().includes(f)
+        );
+    }
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500 py-4">No hay usuarios</td></tr>';
+        return;
+    }
+    tbody.innerHTML = users.map(u => {
+        const isBot = u.esBot === true;
+        const tier = getTier(u.puntos || 0);
+        const winrate = u.total_votos > 0 ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : '0';
+        const status = u.desactivado ? 'Inactivo' : (isBot ? 'Bot' : 'Activo');
+        const statusBadge = u.desactivado ? 'badge-inactive' : (isBot ? 'badge-bot' : 'badge-active');
+        
+        return `<tr>
+            <td class="font-medium">${u.username || 'Anónimo'}</td>
+            <td class="text-sm text-gray-400">${u.email || '-'}</td>
+            <td><span class="${isBot ? 'badge-bot' : 'badge-human'}">${isBot ? '🤖 Bot' : '👤 Real'}</span></td>
+            <td><span class="${tier.clase}">${tier.nombre}</span></td>
+            <td class="font-mono text-amber-400">${u.puntos || 0}</td>
+            <td class="font-mono ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}">${winrate}%</td>
+            <td><span class="${statusBadge}">${status}</span></td>
+            <td>
+                <button onclick="deleteUser('${u.uid}')" class="btn-danger text-xs px-3 py-1 rounded">🗑</button>
+                ${isBot ? `<button onclick="toggleBot('${u.uid}')" class="btn-glass text-xs px-3 py-1 rounded">${u.desactivado ? '▶' : '⏹'}</button>` : ''}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filterUsers() {
+    const search = document.getElementById('userSearch').value;
+    renderUsers(search);
+}
+
+// ============================================================
+// RENDER: BOTS
+// ============================================================
+function renderBots() {
+    const tbody = document.getElementById('botsTableBody');
+    if (allBots.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay bots</td></tr>';
+        return;
+    }
+    tbody.innerHTML = allBots.map(b => {
+        const tier = getTier(b.puntos || 0);
+        const winrate = b.total_votos > 0 ? ((b.aciertos / b.total_votos) * 100).toFixed(1) : '0';
+        const active = !b.desactivado;
+        return `<tr>
+            <td class="font-medium">${b.username || 'Bot'}</td>
+            <td class="capitalize">${b.personality || 'balanced'}</td>
+            <td><div class="w-full bg-gray-800 rounded-full h-1.5"><div class="bg-amber-400 rounded-full h-1.5" style="width:${Math.round((b.skill || 0.5)*100)}%"></div></div></td>
+            <td class="font-mono text-amber-400">${b.puntos || 0}</td>
+            <td class="font-mono ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}">${winrate}%</td>
+            <td><span class="${active ? 'badge-active' : 'badge-inactive'}">${active ? 'ACTIVO' : 'INACTIVO'}</span></td>
+            <td>
+                <button onclick="toggleBot('${b.uid}')" class="btn-glass text-xs px-3 py-1 rounded">${active ? '⏹' : '▶'}</button>
+                <button onclick="deleteUser('${b.uid}')" class="btn-danger text-xs px-3 py-1 rounded">🗑</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ============================================================
+// RENDER: RANKING
+// ============================================================
+function renderRanking() {
+    const tbody = document.getElementById('rankingTableBody');
+    if (allRanking.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-4">No hay datos</td></tr>';
+        return;
+    }
+    tbody.innerHTML = allRanking.map((u, i) => {
+        const isBot = u.esBot === true;
+        const tier = getTier(u.puntos || 0);
+        const winrate = u.total_votos > 0 ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : '0';
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+        return `<tr class="${i < 3 ? 'bg-amber-500/5' : ''}">
+            <td class="font-bold ${i < 3 ? 'text-amber-400' : 'text-gray-400'}">${medal}</td>
+            <td class="font-medium">${u.username || 'Anónimo'}</td>
+            <td><span class="${isBot ? 'badge-bot' : 'badge-human'}">${isBot ? '🤖' : '👤'}</span></td>
+            <td><span class="${tier.clase}">${tier.nombre}</span></td>
+            <td class="font-mono text-amber-400">${u.puntos || 0}</td>
+            <td class="font-mono text-green-400">${u.aciertos || 0}</td>
+            <td class="font-mono text-gray-400">${u.total_votos || 0}</td>
+            <td class="font-mono ${winrate >= 50 ? 'text-green-400' : 'text-red-400'}">${winrate}%</td>
+            <td><button onclick="deleteUser('${u.uid}')" class="btn-danger text-xs px-3 py-1 rounded">🗑</button></td>
+        </tr>`;
+    }).join('');
+}
+
+// ============================================================
+// RENDER: PREDICCIONES
+// ============================================================
+function renderPredictions(preds) {
+    const tbody = document.getElementById('predsTableBody');
+    if (preds.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay predicciones activas</td></tr>';
+        return;
+    }
+    // Obtener nombres de usuarios
+    const userIds = [...new Set(preds.map(p => p.usuarioId))];
+    Promise.all(userIds.map(async uid => {
+        try {
+            const doc = await db.collection('usuarios').doc(uid).get();
+            return { uid, username: doc.exists ? doc.data().username : 'Anónimo' };
+        } catch { return { uid, username: 'Anónimo' }; }
+    })).then(users => {
+        const userMap = Object.fromEntries(users.map(u => [u.uid, u.username]));
+        tbody.innerHTML = preds.map(p => {
+            const cierre = p.cierre?.toDate ? p.cierre.toDate().toLocaleString() : '-';
+            return `<tr>
+                <td>${userMap[p.usuarioId] || 'Anónimo'}</td>
+                <td>${p.periodo || '-'}</td>
+                <td class="${p.voto === 'sube' ? 'text-green-400' : 'text-red-400'}">${p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA'}</td>
+                <td class="font-mono">$${Math.round(p.precioInicial || 0).toLocaleString()}</td>
+                <td class="font-mono text-sm">${cierre}</td>
+                <td><span class="badge-active">ACTIVA</span></td>
+                <td><button onclick="closePrediction('${p.id}')" class="btn-danger text-xs px-3 py-1 rounded">Cerrar</button></td>
+            </tr>`;
+        }).join('');
+    });
+}
+
+// ============================================================
+// ACCIONES: USUARIOS
+// ============================================================
+async function deleteUser(uid) {
+    if (!confirm('¿Eliminar este usuario permanentemente?')) return;
+    try {
+        await db.collection('usuarios').doc(uid).delete();
+        // También eliminar de bots si existe
+        await db.collection('bots').doc(uid).delete();
+        showToast('Usuario eliminado', 'success');
+        loadAllData();
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+async function toggleBot(uid) {
+    const bot = allBots.find(b => b.uid === uid);
+    if (!bot) return;
+    const newState = bot.desactivado ? false : true;
+    try {
+        await db.collection('usuarios').doc(uid).update({
+            desactivado: newState ? FieldValue.serverTimestamp() : FieldValue.delete(),
+            esBot: true
+        });
+        showToast(`Bot ${newState ? 'desactivado' : 'activado'}`, 'info');
+        loadAllData();
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+// ============================================================
+// ACCIONES: BOTS
+// ============================================================
+async function createBots() {
+    const count = parseInt(document.getElementById('botCount').value) || 1;
+    const personality = document.getElementById('botPersonality').value;
+    const skill = parseFloat(document.getElementById('botSkill').value) || 0.5;
+    
+    if (count > 20) { showToast('Máximo 20 bots por lote', 'error'); return; }
+    
+    for (let i = 0; i < count; i++) {
+        const uid = 'bot_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        const username = generateBotName(i, personality);
+        const botData = {
+            uid, username,
+            email: 'bot_' + uid.substr(0,8) + '@bcpredict.bot',
+            personality,
+            skill: Math.round(skill * 100) / 100,
+            esBot: true,
+            puntos: 0, aciertos: 0, total_votos: 0,
+            racha: 0, mejor_racha: 0,
+            creado: FieldValue.serverTimestamp(),
+            lastActive: FieldValue.serverTimestamp(),
+        };
+        await db.collection('usuarios').doc(uid).set(botData);
+        await db.collection('bots').doc(uid).set({
+            uid, username, personality, isActive: true, puntos: 0, creado: FieldValue.serverTimestamp()
+        });
+        await new Promise(r => setTimeout(r, 150));
+    }
+    showToast(`${count} bots creados`, 'success');
+    loadAllData();
+}
+
+async function toggleAllBots(activate) {
+    const bots = allBots.filter(b => b.desactivado === activate);
+    if (bots.length === 0) {
+        showToast(`No hay bots para ${activate ? 'activar' : 'desactivar'}`, 'info');
+        return;
+    }
+    const batch = db.batch();
+    bots.forEach(b => {
+        batch.update(db.collection('usuarios').doc(b.uid), {
+            desactivado: activate ? FieldValue.delete() : FieldValue.serverTimestamp(),
+            esBot: true
+        });
+    });
+    await batch.commit();
+    showToast(`${bots.length} bots ${activate ? 'activados' : 'desactivados'}`, 'success');
+    loadAllData();
+}
+
+async function deleteAllBots() {
+    if (!confirm('⚠️ ¿Eliminar TODOS los bots permanentemente?')) return;
+    const batch = db.batch();
+    allBots.forEach(b => {
+        batch.delete(db.collection('usuarios').doc(b.uid));
+        batch.delete(db.collection('bots').doc(b.uid));
+    });
+    await batch.commit();
+    showToast('Todos los bots eliminados', 'success');
+    loadAllData();
+}
+
+// ============================================================
+// ACCIONES: PREDICCIONES
+// ============================================================
+async function closePrediction(id) {
+    const price = prompt('Precio actual de BTC para cerrar:');
+    if (!price) return;
+    try {
+        await db.collection('predicciones').doc(id).update({
+            estado: 'cerrado',
+            resultado: 'manual',
+            precioFinal: parseFloat(price),
+            cerrado: FieldValue.serverTimestamp()
+        });
+        showToast('Predicción cerrada', 'success');
+        loadAllData();
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    }
+}
+
+async function closeOldPredictions() {
+    if (!confirm('¿Cerrar predicciones de más de 7 días?')) return;
+    const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+    const now = Date.now();
+    const batch = db.batch();
+    let count = 0;
+    snap.forEach(doc => {
+        const p = doc.data();
+        const creado = p.creado?.toDate ? p.creado.toDate().getTime() : 0;
+        if ((now - creado) > 7 * 24 * 60 * 60 * 1000) {
+            batch.update(doc.ref, { estado: 'cerrado', resultado: 'fallo', cerrado: FieldValue.serverTimestamp() });
+            count++;
+        }
+    });
+    await batch.commit();
+    showToast(`${count} predicciones viejas cerradas`, 'success');
+    loadAllData();
+}
+
+async function closeAllPredictions() {
+    if (!confirm('⚠️ ¿Cerrar TODAS las predicciones activas?')) return;
+    const snap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+    const batch = db.batch();
+    snap.forEach(doc => {
+        batch.update(doc.ref, { estado: 'cerrado', resultado: 'cancelado', cerrado: FieldValue.serverTimestamp() });
+    });
+    await batch.commit();
+    showToast(`${snap.size} predicciones cerradas`, 'success');
+    loadAllData();
+}
+
+// ============================================================
+// LIMPIEZA TOTAL
+// ============================================================
+async function cleanupUsers() {
+    if (!confirm('¿Eliminar usuarios inactivos (>30 días sin actividad)?')) return;
+    const snap = await db.collection('usuarios').get();
+    const now = Date.now();
+    const batch = db.batch();
+    let count = 0;
+    snap.forEach(doc => {
+        const data = doc.data();
+        if (data.esBot) return;
+        const lastActive = data.lastActive?.toDate ? data.lastActive.toDate().getTime() : 0;
+        if ((now - lastActive) > 30 * 24 * 60 * 60 * 1000 && lastActive > 0) {
+            batch.delete(doc.ref);
+            count++;
+        }
+    });
+    await batch.commit();
+    showToast(`${count} usuarios inactivos eliminados`, 'success');
+    loadAllData();
+}
+
+async function fullCleanup() {
+    if (!confirm('⚠️ ¿LIMPIEZA TOTAL? Se eliminarán bots inactivos y predicciones viejas.')) return;
+    const resultDiv = document.getElementById('cleanupResult');
+    resultDiv.innerHTML = 'Ejecutando limpieza...';
+    
+    try {
+        // 1. Desactivar bots inactivos
+        const botsSnap = await db.collection('usuarios').where('esBot', '==', true).get();
+        const batch1 = db.batch();
+        let botsDisabled = 0;
+        const bots = [];
+        botsSnap.forEach(doc => bots.push({ id: doc.id, data: doc.data(), ref: doc.ref }));
+        bots.sort((a, b) => (b.data.creado?.seconds || 0) - (a.data.creado?.seconds || 0));
+        bots.slice(5).forEach(bot => {
+            batch1.update(bot.ref, { esBot: false, desactivado: FieldValue.serverTimestamp() });
+            botsDisabled++;
+        });
+        await batch1.commit();
+        
+        // 2. Cerrar predicciones viejas
+        const predsSnap = await db.collection('predicciones').where('estado', '==', 'activo').get();
+        const batch2 = db.batch();
+        let predsClosed = 0;
+        const now = Date.now();
+        predsSnap.forEach(doc => {
+            const p = doc.data();
+            const creado = p.creado?.toDate ? p.creado.toDate().getTime() : 0;
+            if ((now - creado) > 7 * 24 * 60 * 60 * 1000) {
+                batch2.update(doc.ref, { estado: 'cerrado', resultado: 'fallo', cerrado: FieldValue.serverTimestamp() });
+                predsClosed++;
+            }
+        });
+        await batch2.commit();
+        
+        resultDiv.innerHTML = `<span class="text-green-400">✅ Limpieza completada: ${botsDisabled} bots desactivados, ${predsClosed} predicciones cerradas</span>`;
+        loadAllData();
+    } catch (e) {
+        resultDiv.innerHTML = `<span class="text-red-400">❌ Error: ${e.message}</span>`;
+    }
+}
+
+// ============================================================
+// UTILIDADES
+// ============================================================
+function getTier(puntos) {
+    const tiers = [
+        { nombre: 'Bronce', min: 0, clase: 'tier-bronze' },
+        { nombre: 'Plata', min: 50, clase: 'tier-silver' },
+        { nombre: 'Oro', min: 200, clase: 'tier-gold' },
+        { nombre: 'Platino', min: 500, clase: 'tier-platinum' },
+        { nombre: 'Maestro', min: 1000, clase: 'tier-master' },
+        { nombre: 'Leyenda', min: 5000, clase: 'tier-legend' }
+    ];
+    let t = tiers[0];
+    for (const x of tiers) if (puntos >= x.min) t = x;
+    return t;
+}
+
+function generateBotName(index, personality) {
+    const prefixes = {
+        aggressive: ['Alpha','Turbo','Flash','Rocket','Blitz','Fury','Storm'],
+        balanced: ['Pro','Smart','Trade','Crypto','Wise','Edge','Nexus'],
+        conservative: ['Safe','Steady','Solid','Calm','Zen','Vault','Fortress'],
+        random: ['Chaos','Wild','Lucky','Dice','Random','Mystic','Joker'],
+        whale: ['Whale','Mega','Giant','Titan','King','Emperor','Legend'],
+        newbie: ['New','Rookie','Noob','Starter','Trainee','Learner','Padawan']
+    };
+    const suffixes = ['Trader','Bot','AI','Predictor','Analyzer','Master','Hunter','Scout','Ninja','Wolf','Fox','Bear','Bull'];
+    const pList = prefixes[personality] || prefixes.balanced;
+    return pList[Math.floor(Math.random() * pList.length)] + suffixes[Math.floor(Math.random() * suffixes.length)] + '_' + (Math.floor(Math.random() * 999) + 1);
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    if (tab === 'ranking') refreshRanking();
+    if (tab === 'users') loadUsers();
+    if (tab === 'bots') loadBots();
+    if (tab === 'predictions') loadPredictions();
+}
+
+function refreshUsers() { loadUsers(); }
+function refreshBots() { loadBots(); }
+function refreshRanking() { loadRanking(); }
+function refreshPredictions() { loadPredictions(); }
+
+function showToast(msg, type = 'info') {
+    const toast = document.getElementById('toast');
+    const text = document.getElementById('toastText');
+    text.textContent = msg;
+    toast.className = `toast ${type} show`;
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+    // Auto-login check
+    if (auth.currentUser) {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('logout-btn').classList.remove('hidden');
+        loadAllData();
+    }
+});
+</script>
+</body>
+</html>
