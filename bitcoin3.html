@@ -3392,7 +3392,7 @@ async function createBotFirebase(config) {
         skill: Math.round(skill * 100) / 100,
         activityLevel: Math.round(personalityConfig.activityLevel * 100) / 100,
         isActive: true,
-        esBot: true,
+        esBot: true,  // ← CRÍTICO: marca como bot
         puntos: 0,
         aciertos: 0,
         total_votos: 0,
@@ -3405,22 +3405,28 @@ async function createBotFirebase(config) {
         createdByName: usuarioActual.username
     };
 
-    // Guardar en Firestore - SOLO en usuarios (no duplicar en bots)
+    // Guardar en AMBAS colecciones con esBot: true
     await db.collection('usuarios').doc(uid).set(botData);
-
-    // También guardar referencia ligera en colección bots (para queries)
     await db.collection('bots').doc(uid).set({
         uid: uid,
         username: username,
         personality: personality,
+        skill: botData.skill,
+        activityLevel: botData.activityLevel,
         isActive: true,
+        esBot: true,  // ← CRÍTICO
         puntos: 0,
+        aciertos: 0,
+        total_votos: 0,
+        racha: 0,
+        mejor_racha: 0,
         creado: now,
         createdBy: usuarioActual.uid
     });
 
     return { success: true, bot: botData };
 }
+
 
 // ==============================================
 // OBTENER BOTS - CON CACHÉ (ahorra lecturas)
