@@ -5,68 +5,244 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Bitcoin Predict Pro</title>
-
-    <!-- Librerías externas -->
+    <title>Bitcoin Predict Pro · Supabase</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Supabase JS (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Estilos locales -->
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; min-height: 100%; -webkit-text-size-adjust: 100%; }
+        body { background: #0a0e17; color: #f1f5f9; overflow-x: hidden; }
+
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(rgba(247,147,26,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(247,147,26,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-glow {
+            position: fixed;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(247,147,26,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGlow 20s ease-in-out infinite;
+        }
+        .bg-glow-1 { top: -200px; left: -200px; animation-delay: 0s; }
+        .bg-glow-2 { bottom: -200px; right: -200px; animation-delay: -10s; background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+
+        @keyframes floatGlow { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(50px,30px) scale(1.1); } 50% { transform: translate(-30px,50px) scale(0.9); } 75% { transform: translate(40px,-20px) scale(1.05); } }
+
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17,24,39,0.85);
+            --border: rgba(148,163,184,0.12);
+            --accent: #f7931a;
+            --accent-hover: #e8850f;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        .glass { background: rgba(17,24,39,0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid rgba(148,163,184,0.12); }
+        .glass:hover { border-color: rgba(247,147,26,0.2); }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(17,24,39,0.9) 0%, rgba(30,41,59,0.8) 100%);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148,163,184,0.08);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card::before { content: ''; position: absolute; top:0; left:0; right:0; height:1px; background: linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent); }
+
+        .tab-active { border-bottom: 2px solid #f7931a; color: #f7931a; }
+        .btn-primary {
+            background: linear-gradient(135deg, #f7931a, #e8850f);
+            color: #000;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(247,147,26,0.3);
+        }
+        .btn-primary:hover { background: linear-gradient(135deg, #e8850f, #d97706); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(247,147,26,0.4); }
+        .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(247,147,26,0.3); }
+        .btn-outline { border: 1px solid rgba(247,147,26,0.4); color: #f7931a; transition: all 0.3s; background: rgba(247,147,26,0.05); }
+        .btn-outline:hover { background: rgba(247,147,26,0.15); border-color: #f7931a; box-shadow: 0 0 20px rgba(247,147,26,0.1); }
+        .btn-glass { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; transition: all 0.3s; }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); border-color: rgba(247,147,26,0.3); color: #f1f5f9; }
+
+        .tier-bronze { background: linear-gradient(135deg, #8B6914, #CD7F32); color: #000; box-shadow: 0 0 15px rgba(205,127,50,0.3); }
+        .tier-silver { background: linear-gradient(135deg, #8899a6, #c0c0c0); color: #000; box-shadow: 0 0 15px rgba(192,192,192,0.3); }
+        .tier-gold { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .tier-platinum { background: linear-gradient(135deg, #E5E4E2, #B0C4DE); color: #000; box-shadow: 0 0 15px rgba(176,196,222,0.3); }
+        .tier-master { background: linear-gradient(135deg, #4B0082, #8A2BE2); color: #fff; box-shadow: 0 0 15px rgba(138,43,226,0.3); }
+        .tier-legend { background: linear-gradient(135deg, #FF4500, #FFD700); color: #000; box-shadow: 0 0 20px rgba(255,69,0,0.4); }
+
+        .period-btn { transition: all 0.3s; border: 1px solid rgba(148,163,184,0.12); cursor: pointer; position: relative; overflow: hidden; }
+        .period-btn::after { content: ''; position: absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(247,147,26,0.1), transparent); transition: left 0.5s; }
+        .period-btn:hover::after { left: 100%; }
+        .period-btn:hover { border-color: rgba(247,147,26,0.4); background: rgba(247,147,26,0.08); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(247,147,26,0.1); }
+        .period-btn.selected { border-color: #f7931a; background: linear-gradient(135deg, rgba(247,147,26,0.15), rgba(247,147,26,0.05)); box-shadow: 0 0 20px rgba(247,147,26,0.2); transform: translateY(-2px); }
+
+        .vote-up { background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05)); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; transition: all 0.3s; }
+        .vote-up:hover { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); border-color: #22c55e; box-shadow: 0 0 25px rgba(34,197,94,0.2); transform: translateY(-2px); }
+        .vote-down { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; transition: all 0.3s; }
+        .vote-down:hover { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1)); border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.2); transform: translateY(-2px); }
+
+        .badge-pending { background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1)); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+        .badge-win { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .badge-loss { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1)); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+        .scroll-area { max-height: 480px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #f7931a, #e8850f); border-radius: 4px; }
+
+        .live-dot { width: 8px; height: 8px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px rgba(34,197,94,0.5); }
+        @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); box-shadow:0 0 10px rgba(34,197,94,0.5); } 50% { opacity:0.4; transform:scale(0.8); box-shadow:0 0 20px rgba(34,197,94,0.2); } }
+
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(12px) scale(0.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes slideUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+
+        .price-flash-up { animation: flashUp 0.5s ease; }
+        .price-flash-down { animation: flashDown 0.5s ease; }
+        @keyframes flashUp { 0% { text-shadow: none; } 30% { text-shadow: 0 0 30px rgba(34,197,94,0.8); color: #4ade80; } 100% { text-shadow: none; } }
+        @keyframes flashDown { 0% { text-shadow: none; } 30% { text-shadow: 0 0 30px rgba(239,68,68,0.8); color: #f87171; } 100% { text-shadow: none; } }
+
+        .stat-card { background: linear-gradient(135deg, rgba(17,24,39,0.8), rgba(30,41,59,0.6)); border:1px solid rgba(148,163,184,0.08); border-radius:12px; padding:16px; transition:all 0.3s; position:relative; overflow:hidden; }
+        .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, rgba(247,147,26,0.2), transparent); opacity:0; transition:opacity 0.3s; }
+        .stat-card:hover { border-color:rgba(247,147,26,0.2); transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+        .stat-card:hover::before { opacity:1; }
+
+        .prediction-row { transition:all 0.2s; border-left:2px solid transparent; position:relative; }
+        .prediction-row:hover { background:rgba(247,147,26,0.04); border-left-color:#f7931a; transform:translateX(4px); }
+
+        input:focus, select:focus { border-color:#f7931a !important; outline:none; box-shadow:0 0 0 3px rgba(247,147,26,0.1); }
+
+        .toast { position:fixed; bottom:24px; left:50%; transform: translateX(-50%) translateY(100px); opacity:0; transition:all 0.5s cubic-bezier(0.4,0,0.2,1); z-index:50; box-shadow:0 10px 40px rgba(0,0,0,0.4); }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity:1; }
+
+        .ticker-bar { background: linear-gradient(90deg, rgba(10,14,23,0.95), rgba(17,24,39,0.95), rgba(10,14,23,0.95)); border-bottom:1px solid rgba(148,163,184,0.08); position:relative; }
+        .ticker-bar::before { content:''; position:absolute; left:0; top:0; bottom:0; width:60px; background:linear-gradient(90deg, rgba(10,14,23,0.95), transparent); z-index:2; pointer-events:none; }
+        .ticker-bar::after { content:''; position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(270deg, rgba(10,14,23,0.95), transparent); z-index:2; pointer-events:none; }
+        .ticker-content { display:flex; animation:ticker 50s linear infinite; white-space:nowrap; }
+        @keyframes ticker { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+        .ticker-item { padding:0 24px; font-size:12px; }
+
+        /* Modal */
+        #modal-auth {
+            position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; z-index:9999;
+            background:rgba(0,0,0,0.85); display:none; padding:20px; box-sizing:border-box;
+            overflow-y:auto; -webkit-overflow-scrolling:touch; align-items:center; justify-content:center;
+        }
+        #modal-auth.visible { display:flex; }
+        #modal-content {
+            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+            border:1px solid rgba(148,163,184,0.12);
+            border-radius:20px;
+            padding:32px;
+            width:100%;
+            max-width:420px;
+            position:relative;
+            box-sizing:border-box;
+            box-shadow:0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(247,147,26,0.1);
+            animation: modalSlideIn 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        @keyframes modalSlideIn { from { opacity:0; transform:translateY(30px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+        #modal-auth input { appearance:none; border-radius:10px; width:100%; padding:14px 18px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box; transition:all 0.3s; }
+        #modal-auth input:focus { border-color:#f7931a; outline:none; box-shadow:0 0 0 3px rgba(247,147,26,0.1); background:rgba(0,0,0,0.5); }
+
+        .hero-display { background: linear-gradient(135deg, rgba(17,24,39,0.9), rgba(30,41,59,0.8)); position:relative; overflow:hidden; }
+        .hero-display::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle, rgba(247,147,26,0.03) 0%, transparent 50%); animation:heroGlow 8s ease-in-out infinite; }
+        @keyframes heroGlow { 0%,100% { transform:scale(1) rotate(0deg); } 50% { transform:scale(1.1) rotate(180deg); } }
+
+        .mini-chart { width:80px; height:30px; }
+        .chart-container { width:100%; height:420px; }
+        .tv-chart { border-radius:12px; overflow:hidden; }
+
+        .progress-track { height:4px; background:rgba(148,163,184,0.1); border-radius:2px; overflow:hidden; }
+        .progress-fill { height:100%; border-radius:2px; transition:width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+        .order-row { display:flex; justify-content:space-between; padding:2px 8px; font-size:11px; font-family:'JetBrains Mono',monospace; position:relative; transition:background 0.2s; }
+        .order-row:hover { background:rgba(255,255,255,0.02); }
+        .order-row .bar { position:absolute; top:0; height:100%; opacity:0.12; z-index:0; }
+        .order-row .content { position:relative; z-index:1; display:flex; justify-content:space-between; width:100%; }
+
+        .heatmap-cell { border-radius:6px; padding:6px 4px; font-size:10px; font-weight:700; text-align:center; transition:all 0.3s; cursor:pointer; border:1px solid transparent; }
+        .heatmap-cell:hover { transform:scale(1.08); border-color:rgba(247,147,26,0.3); z-index:10; }
+
+        @media (max-width:640px) { .chart-container { height:300px; } .scroll-area { max-height:350px; } #modal-content { padding:24px !important; margin:10px !important; } }
+        @media (prefers-reduced-motion:reduce) { * { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; } .ticker-content { animation:none; } }
+    </style>
 </head>
+
 <body class="min-h-screen relative">
 
-    <!-- Fondos decorativos -->
-    <div class="bg-grid"></div>
-    <div class="bg-glow bg-glow-1"></div>
-    <div class="bg-glow bg-glow-2"></div>
+<!-- Background -->
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
 
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-amber-500/20">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight">BCPredict <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">beta</span></h1>
+<!-- NAVBAR -->
+<nav class="sticky top-0 z-50 px-4 py-3" style="background: linear-gradient(180deg, rgba(10,14,23,0.98) 0%, rgba(17,24,39,0.95) 100%); border-bottom: 1px solid rgba(148,163,184,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-amber-500/20">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight">BCPredict <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">supabase</span></h1>
+            </div>
+        </div>
+
+        <div id="btc-price" class="hidden md:flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="live-dot"></div>
+                <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC/USD</span>
+            </div>
+            <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="price-value" style="font-family:'JetBrains Mono',monospace;">--</span>
+            <span id="price-change" class="text-xs px-2.5 py-1 rounded-lg font-bold"></span>
+            <span class="text-xs text-gray-600 font-mono" id="price-range" style="font-family:'JetBrains Mono',monospace;"></span>
+        </div>
+
+        <div id="auth-buttons" class="flex gap-2">
+            <button onclick="openModal('login')" class="btn-outline px-4 py-2.5 rounded-xl text-sm no-select font-medium">Iniciar Sesión</button>
+            <button onclick="openModal('register')" class="btn-primary px-4 py-2.5 rounded-xl text-sm no-select">Registrarse</button>
+        </div>
+
+        <div id="user-menu" class="hidden items-center gap-3">
+            <div class="text-right">
+                <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
+                <div id="user-tier" class="text-[10px] font-medium mt-0.5"></div>
+            </div>
+            <div class="relative">
+                <button onclick="toggleNotif()" class="p-2.5 rounded-xl hover:bg-white/5 transition no-select relative">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30">0</span>
+                </button>
+                <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-80 glass rounded-xl p-4 z-50 max-h-72 overflow-y-auto touch-scroll">
+                    <div class="text-sm font-semibold mb-3 text-gray-300 uppercase tracking-wider text-xs">Notificaciones</div>
+                    <div id="notif-list" class="space-y-2"></div>
                 </div>
             </div>
-            
-            <div id="btc-price" class="hidden md:flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <div class="live-dot"></div>
-                    <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC/USD</span>
-                </div>
-                <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="price-value" style="font-family:'JetBrains Mono',monospace;">--</span>
-                <span id="price-change" class="text-xs px-2.5 py-1 rounded-lg font-bold"></span>
-            </div>
-            
-            <div id="auth-buttons" class="flex gap-2">
-                <button onclick="openModal('login')" class="btn-outline px-4 py-2.5 rounded-xl text-sm no-select font-medium">Iniciar Sesion</button>
-                <button onclick="openModal('register')" class="btn-primary px-4 py-2.5 rounded-xl text-sm no-select">Registrarse</button>
-            </div>
-            
-            <div id="user-menu" class="hidden items-center gap-3">
-                <div class="text-right">
-                    <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
-                    <div id="user-tier" class="text-[10px] font-medium mt-0.5"></div>
-                </div>
-                <div class="relative">
-                    <button onclick="toggleNotif()" class="p-2.5 rounded-xl hover:bg-white/5 transition relative no-select">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                        <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30">0</span>
-                    </button>
-                    <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-80 glass rounded-xl p-4 z-50 max-h-72 overflow-y-auto touch-scroll">
-                        <div class="text-sm font-semibold mb-3 text-gray-300 uppercase tracking-wider text-xs">Notificaciones</div>
-                        <div id="notif-list" class="space-y-2"></div>
-                    </div>
-                </div>
-                <button onclick="logout()" class="p-2.5 rounded-xl hover:bg-red-500/10 text-red-400 transition no-select" title="Cerrar sesion">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <button onclick="logout()" class="p-2.5 rounded-xl hover:bg-red-500/10 text-red-400 transition no-select" title="Cerrar sesión">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
             </button>
         </div>
     </div>
@@ -79,6 +255,13 @@
     </div>
 </div>
 
+<!-- MOBILE PRICE -->
+<div class="md:hidden glass mx-4 mt-3 p-3 rounded-xl flex justify-center gap-3 items-center">
+    <div class="live-dot"></div>
+    <span class="text-amber-400 font-bold text-base font-mono" id="price-value-movil" style="font-family:'JetBrains Mono',monospace;">--</span>
+    <span id="price-change-movil" class="text-xs px-2 py-0.5 rounded-lg font-medium"></span>
+</div>
+
 <!-- TABS -->
 <div class="max-w-7xl mx-auto px-4 mt-3">
     <div class="flex border-b border-gray-800 gap-1 text-sm font-medium overflow-x-auto touch-scroll">
@@ -86,7 +269,7 @@
         <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('mercado', event)">Mercado</button>
         <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('ranking', event)">Ranking</button>
         <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('global', event)">En Vivo</button>
-        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('analisis', event)">Analisis</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('analisis', event)">Análisis</button>
         <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('orderbook', event)">Order Book</button>
         <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('calculadora', event)">Calc</button>
         <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('achievements', event)">Logros</button>
@@ -94,9 +277,8 @@
     </div>
 </div>
 
-<!-- ==================== TAB: PREDECIR ==================== -->
+<!-- ================ TAB: PREDECIR ================ -->
 <section id="tab-predict" class="max-w-6xl mx-auto px-4 py-6 relative z-10">
-    
     <div class="hero-display glass-card rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
         <div class="heartbeat-line mb-5"></div>
         <div class="flex items-center justify-center gap-2 mb-2">
@@ -111,52 +293,28 @@
         </div>
         <div class="flex items-center justify-center gap-4 mt-4 flex-wrap">
             <span id="hero-change" class="text-sm px-4 py-1.5 rounded-lg font-bold font-mono" style="font-family:'JetBrains Mono',monospace;"></span>
+            <span class="text-xs text-gray-600 font-mono" id="hero-range" style="font-family:'JetBrains Mono',monospace;"></span>
             <span class="text-xs text-gray-600 font-mono" id="hero-time" style="font-family:'JetBrains Mono',monospace;"></span>
         </div>
         <svg id="hero-sparkline" class="mini-chart mx-auto mt-4" viewBox="0 0 80 30">
-            <defs>
-                <linearGradient id="sparklineGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style="stop-color:rgba(247,147,26,0.3)"/>
-                    <stop offset="100%" style="stop-color:rgba(247,147,26,0)"/>
-                </linearGradient>
-            </defs>
+            <defs><linearGradient id="sparklineGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:rgba(247,147,26,0.3)"/><stop offset="100%" style="stop-color:rgba(247,147,26,0)"/></linearGradient></defs>
             <polygon id="sparkline-area" fill="url(#sparklineGrad)" points=""/>
             <polyline id="sparkline-path" fill="none" stroke="#f7931a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points=""/>
         </svg>
         <div class="heartbeat-line mt-5"></div>
     </div>
-    
-    <!-- Stats card -->
+
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div>
-            <div class="text-sm font-bold text-gray-200 font-mono" id="quick-mcap" style="font-family:'JetBrains Mono',monospace;">--</div>
-        </div>
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div>
-            <div class="text-sm font-bold text-gray-200 font-mono" id="quick-vol" style="font-family:'JetBrains Mono',monospace;">--</div>
-        </div>
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div>
-            <div class="text-sm font-bold text-amber-400 font-mono" id="quick-dom" style="font-family:'JetBrains Mono',monospace;">--</div>
-        </div>
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div>
-            <div class="text-sm font-bold text-green-400 font-mono" id="quick-ath" style="font-family:'JetBrains Mono',monospace;">--</div>
-        </div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div><div class="text-sm font-bold text-gray-200 font-mono" id="quick-mcap" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div><div class="text-sm font-bold text-gray-200 font-mono" id="quick-vol" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div><div class="text-sm font-bold text-amber-400 font-mono" id="quick-dom" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div><div class="text-sm font-bold text-green-400 font-mono" id="quick-ath" style="font-family:'JetBrains Mono',monospace;">--</div></div>
     </div>
 
-    <!-- Fear and Greed -->
     <div class="glass-card rounded-2xl p-6 mb-6">
         <div class="flex justify-between items-center mb-4">
-            <div>
-                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Indice Miedo & Codicia</h3>
-                <p class="text-xs text-gray-600 mt-0.5">Sentimiento del mercado en tiempo real</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <span id="fear-greed-value" class="text-3xl font-black font-mono" style="font-family:'JetBrains Mono',monospace;">--</span>
-                <span id="fear-greed-label" class="text-xs font-bold px-2 py-1 rounded-md"></span>
-            </div>
+            <div><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Índice Miedo & Codicia</h3><p class="text-xs text-gray-600 mt-0.5">Sentimiento del mercado en tiempo real</p></div>
+            <div class="flex items-center gap-2"><span id="fear-greed-value" class="text-3xl font-black font-mono" style="font-family:'JetBrains Mono',monospace;">--</span><span id="fear-greed-label" class="text-xs font-bold px-2 py-1 rounded-md"></span></div>
         </div>
         <div class="relative h-4 rounded-full overflow-hidden bg-gray-800">
             <div id="fear-greed-bar" class="h-full rounded-full" style="width:0%; background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);"></div>
@@ -166,84 +324,34 @@
                 <span class="text-[8px] text-gray-600 font-bold">EXTREMO CODICIA</span>
             </div>
         </div>
+        <div class="flex justify-between mt-2 text-[10px] text-gray-600 font-mono" style="font-family:'JetBrains Mono',monospace;"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
     </div>
 
     <div class="text-center mb-6">
         <h2 class="text-xl font-bold tracking-tight">Selecciona un Periodo</h2>
         <p class="text-sm text-gray-500 mt-1">Mayor periodo, mayores recompensas y multiplicadores</p>
     </div>
-    
-    <!-- Period selectors -->
+
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('5m', this)">
-            <div class="text-lg font-bold">5m</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Ultra Rapido</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+1 pt</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x1.0 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('15m', this)">
-            <div class="text-lg font-bold">15m</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Corto Plazo</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+2 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x1.2 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('30m', this)">
-            <div class="text-lg font-bold">30m</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Medio Plazo</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+3 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x1.5 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1h', this)">
-            <div class="text-lg font-bold">1h</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Intradia</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+4 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x2.0 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('4h', this)">
-            <div class="text-lg font-bold">4h</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Swing</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+5 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x2.5 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('24h', this)">
-            <div class="text-lg font-bold">24h</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Diario</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+8 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x3.0 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1sem', this)">
-            <div class="text-lg font-bold">7d</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Semanal</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+15 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x4.0 multiplicador</div>
-        </button>
-        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1mes', this)">
-            <div class="text-lg font-bold">30d</div>
-            <div class="text-[10px] text-gray-500 mt-0.5">Mensual</div>
-            <div class="text-[10px] text-amber-400 font-bold mt-1">+30 pts</div>
-            <div class="text-[9px] text-gray-600 mt-0.5">x5.0 multiplicador</div>
-        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('5m', this)"><div class="text-lg font-bold">5m</div><div class="text-[10px] text-gray-500 mt-0.5">Ultra Rápido</div><div class="text-[10px] text-amber-400 font-bold mt-1">+1 pt</div><div class="text-[9px] text-gray-600 mt-0.5">x1.0</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('15m', this)"><div class="text-lg font-bold">15m</div><div class="text-[10px] text-gray-500 mt-0.5">Corto Plazo</div><div class="text-[10px] text-amber-400 font-bold mt-1">+2 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x1.2</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('30m', this)"><div class="text-lg font-bold">30m</div><div class="text-[10px] text-gray-500 mt-0.5">Medio Plazo</div><div class="text-[10px] text-amber-400 font-bold mt-1">+3 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x1.5</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1h', this)"><div class="text-lg font-bold">1h</div><div class="text-[10px] text-gray-500 mt-0.5">Intradía</div><div class="text-[10px] text-amber-400 font-bold mt-1">+4 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x2.0</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('4h', this)"><div class="text-lg font-bold">4h</div><div class="text-[10px] text-gray-500 mt-0.5">Swing</div><div class="text-[10px] text-amber-400 font-bold mt-1">+5 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x2.5</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('24h', this)"><div class="text-lg font-bold">24h</div><div class="text-[10px] text-gray-500 mt-0.5">Diario</div><div class="text-[10px] text-amber-400 font-bold mt-1">+8 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x3.0</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1sem', this)"><div class="text-lg font-bold">7d</div><div class="text-[10px] text-gray-500 mt-0.5">Semanal</div><div class="text-[10px] text-amber-400 font-bold mt-1">+15 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x4.0</div></button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1mes', this)"><div class="text-lg font-bold">30d</div><div class="text-[10px] text-gray-500 mt-0.5">Mensual</div><div class="text-[10px] text-amber-400 font-bold mt-1">+30 pts</div><div class="text-[9px] text-gray-600 mt-0.5">x5.0</div></button>
     </div>
 
-    <!-- Voting area -->
     <div class="glass-card rounded-2xl p-6 text-center">
         <p class="text-gray-500 text-sm mb-4" id="instruccion">Selecciona un periodo para comenzar a predecir</p>
         <p id="periodo-activo" class="text-base font-semibold text-amber-400 hidden mb-3"></p>
-        
+
         <div id="prediccion-activa" class="hidden mb-4 p-5 rounded-xl bg-black/20 border border-amber-500/10">
             <div class="flex justify-between items-center flex-wrap gap-3">
-                <div class="text-left">
-                    <span class="text-xs text-gray-500 uppercase tracking-wider">Tu Voto</span>
-                    <div id="mi-voto" class="font-bold text-base mt-1"></div>
-                </div>
-                <div class="text-center">
-                    <span class="text-xs text-gray-500 uppercase tracking-wider">Tiempo Restante</span>
-                    <div id="tiempo-restante" class="font-bold text-amber-400 font-mono text-lg mt-1" style="font-family:'JetBrains Mono',monospace;"></div>
-                </div>
-                <div class="text-right">
-                    <span class="text-xs text-gray-500 uppercase tracking-wider">Estado</span>
-                    <div id="estado-prediccion" class="mt-1"></div>
-                </div>
+                <div class="text-left"><span class="text-xs text-gray-500 uppercase tracking-wider">Tu Voto</span><div id="mi-voto" class="font-bold text-base mt-1"></div></div>
+                <div class="text-center"><span class="text-xs text-gray-500 uppercase tracking-wider">Tiempo Restante</span><div id="tiempo-restante" class="font-bold text-amber-400 font-mono text-lg mt-1" style="font-family:'JetBrains Mono',monospace;"></div></div>
+                <div class="text-right"><span class="text-xs text-gray-500 uppercase tracking-wider">Estado</span><div id="estado-prediccion" class="mt-1"></div></div>
             </div>
             <div class="mt-4 pt-4 border-t border-white/5 flex justify-between text-xs text-gray-500 flex-wrap gap-2 font-mono" style="font-family:'JetBrains Mono',monospace;">
                 <span>Inicio: <span id="pred-precio-inicial" class="text-gray-300">--</span></span>
@@ -251,40 +359,20 @@
                 <span id="pred-diferencia">--</span>
             </div>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4 mt-4 hidden" id="botones-voto">
-            <button onclick="votar('sube')" class="vote-up py-7 rounded-xl text-xl font-bold no-select">
-                <div class="flex items-center justify-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                    SUBE
-                </div>
-                <div class="text-xs font-normal opacity-60 mt-1">El precio subira</div>
-            </button>
-            <button onclick="votar('baja')" class="vote-down py-7 rounded-xl text-xl font-bold no-select">
-                <div class="flex items-center justify-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
-                    BAJA
-                </div>
-                <div class="text-xs font-normal opacity-60 mt-1">El precio bajara</div>
-            </button>
+            <button onclick="votar('sube')" class="vote-up py-7 rounded-xl text-xl font-bold no-select"><div class="flex items-center justify-center gap-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> SUBE</div><div class="text-xs font-normal opacity-60 mt-1">El precio subirá</div></button>
+            <button onclick="votar('baja')" class="vote-down py-7 rounded-xl text-xl font-bold no-select"><div class="flex items-center justify-center gap-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg> BAJA</div><div class="text-xs font-normal opacity-60 mt-1">El precio bajará</div></button>
         </div>
         <p id="mensaje" class="mt-4 text-gray-400 text-sm min-h-[20px]"></p>
-        
+
         <div id="user-pred-stats" class="hidden mt-6 pt-4 border-t border-white/5">
             <div class="grid grid-cols-3 gap-4">
-                <div class="text-center">
-                    <div class="text-xl font-bold text-amber-400 font-mono" id="user-total-preds" style="font-family:'JetBrains Mono',monospace;">0</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Total</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xl font-bold text-green-400 font-mono" id="user-win-preds" style="font-family:'JetBrains Mono',monospace;">0</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Ganadas</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xl font-bold text-blue-400 font-mono" id="user-winrate-preds" style="font-family:'JetBrains Mono',monospace;">0%</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Winrate</div>
-                </div>
+                <div class="text-center"><div class="text-xl font-bold text-amber-400 font-mono" id="user-total-preds" style="font-family:'JetBrains Mono',monospace;">0</div><div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Total</div></div>
+                <div class="text-center"><div class="text-xl font-bold text-green-400 font-mono" id="user-win-preds" style="font-family:'JetBrains Mono',monospace;">0</div><div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Ganadas</div></div>
+                <div class="text-center"><div class="text-xl font-bold text-blue-400 font-mono" id="user-winrate-preds" style="font-family:'JetBrains Mono',monospace;">0%</div><div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Winrate</div></div>
             </div>
+            <div class="mt-4 flex justify-center gap-2 flex-wrap" id="user-achievements-preview"></div>
         </div>
     </div>
 
@@ -303,53 +391,50 @@
     </div>
 </section>
 
-<!-- ==================== TAB: MERCADO ==================== -->
+<!-- ================ TAB: MERCADO ================ -->
 <section id="tab-mercado" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
-    <div class="text-center mb-6">
-        <h2 class="text-xl font-bold tracking-tight">Analisis de Mercado</h2>
-        <p class="text-sm text-gray-500 mt-1">Datos en tiempo real del mercado cripto</p>
-    </div>
-    
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Análisis de Mercado</h2><p class="text-sm text-gray-500 mt-1">Datos en tiempo real del mercado cripto</p></div>
     <div class="glass-card rounded-2xl p-5 mb-6">
         <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
-            <div>
-                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">BTC/USD - Grafico de Velas</h3>
-                <p class="text-xs text-gray-600 mt-0.5">Actualizacion en tiempo real via WebSocket</p>
-            </div>
+            <div><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">BTC/USD - Gráfico de Velas</h3><p class="text-xs text-gray-600 mt-0.5">Actualización en tiempo real vía WebSocket</p></div>
             <div class="flex gap-1">
                 <button onclick="cambiarTimeframe('1s')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select" id="tf-1s">1s</button>
                 <button onclick="cambiarTimeframe('1m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-1m">1m</button>
                 <button onclick="cambiarTimeframe('5m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-5m">5m</button>
+                <button onclick="cambiarTimeframe('15m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-15m">15m</button>
+                <button onclick="cambiarTimeframe('1h')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-1h">1h</button>
+                <button onclick="cambiarTimeframe('4h')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-4h">4h</button>
             </div>
         </div>
         <div id="candlestick-chart" class="chart-container tv-chart"></div>
     </div>
-    
+
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div><div class="text-base font-bold text-gray-200 font-mono" id="det-mcap" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div><div class="text-base font-bold text-gray-200 font-mono" id="det-vol" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Ranking</div><div class="text-base font-bold text-amber-400 font-mono" style="font-family:'JetBrains Mono',monospace;">#1</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Max 24h</div><div class="text-base font-bold text-green-400 font-mono" id="det-high" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Min 24h</div><div class="text-base font-bold text-red-400 font-mono" id="det-low" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div><div class="text-base font-bold text-amber-400 font-mono" id="det-ath" style="font-family:'JetBrains Mono',monospace;">--</div><div class="text-[10px] text-gray-600 mt-0.5" id="det-ath-date">--</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Supply</div><div class="text-base font-bold text-gray-200 font-mono" id="det-supply" style="font-family:'JetBrains Mono',monospace;">--</div><div class="progress-track mt-1.5"><div class="progress-fill bg-amber-400" id="det-supply-bar" style="width:0%"></div></div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div><div class="text-base font-bold text-amber-400 font-mono" id="det-dom" style="font-family:'JetBrains Mono',monospace;">--</div><div class="progress-track mt-1.5"><div class="progress-fill bg-amber-400" id="det-dom-bar" style="width:0%"></div></div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sentimiento</div><div class="text-base font-bold text-gray-200" id="det-sentiment">--</div></div>
+    </div>
+
     <div class="glass-card rounded-2xl p-5">
         <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Top 10 Criptomonedas</h3>
         <div class="overflow-x-auto touch-scroll">
             <table class="w-full text-sm">
-                <thead class="text-gray-600 text-[10px] uppercase tracking-wider">
-                    <tr>
-                        <th class="py-2 px-3 text-left font-medium">#</th>
-                        <th class="py-2 px-3 text-left font-medium">Activo</th>
-                        <th class="py-2 px-3 text-right font-medium">Precio</th>
-                        <th class="py-2 px-3 text-right font-medium">24h</th>
-                    </tr>
-                </thead>
+                <thead class="text-gray-600 text-[10px] uppercase tracking-wider"><tr><th class="py-2 px-3 text-left font-medium">#</th><th class="py-2 px-3 text-left font-medium">Activo</th><th class="py-2 px-3 text-right font-medium">Precio</th><th class="py-2 px-3 text-right font-medium">24h</th><th class="py-2 px-3 text-right font-medium hidden sm:table-cell">Cap. Mercado</th><th class="py-2 px-3 text-right font-medium hidden md:table-cell">Volumen</th><th class="py-2 px-3 text-right font-medium hidden lg:table-cell">7d</th></tr></thead>
                 <tbody id="top-crypto-table"></tbody>
             </table>
         </div>
     </div>
 </section>
 
-<!-- ==================== TAB: RANKING ==================== -->
+<!-- ================ TAB: RANKING ================ -->
 <section id="tab-ranking" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
-    <div class="text-center mb-6">
-        <h2 class="text-xl font-bold tracking-tight">Ranking Global</h2>
-        <p class="text-sm text-gray-500 mt-1">Compite y sube de nivel</p>
-    </div>
-    
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Ranking Global</h2><p class="text-sm text-gray-500 mt-1">Compite y sube de nivel</p></div>
     <div class="flex flex-wrap justify-center gap-2 mb-6">
         <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-bronze">BRONCE 0+</span>
         <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-silver">PLATA 50+</span>
@@ -358,98 +443,1922 @@
         <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-master">MAESTRO 1000+</span>
         <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-legend">LEYENDA 5000+</span>
     </div>
-    
     <div class="glass-card rounded-xl overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-white/5 text-[10px] uppercase tracking-wider text-gray-500">
-                <tr>
-                    <th class="py-3 px-4 text-left font-medium">Pos</th>
-                    <th class="py-3 px-4 text-left font-medium">Usuario</th>
-                    <th class="py-3 px-4 text-center font-medium">Nivel</th>
-                    <th class="py-3 px-4 text-center font-medium">Pts</th>
-                    <th class="py-3 px-4 text-center font-medium">Rate</th>
-                </tr>
-            </thead>
-            <tbody id="ranking-body"></tbody>
-        </table>
+        <div class="overflow-x-auto touch-scroll">
+            <table class="w-full text-sm">
+                <thead class="bg-white/5 text-[10px] uppercase tracking-wider text-gray-500"><tr><th class="py-3 px-4 text-left font-medium">Pos</th><th class="py-3 px-4 text-left font-medium">Usuario</th><th class="py-3 px-4 text-center font-medium">Nivel</th><th class="py-3 px-4 text-center font-medium">Pts</th><th class="py-3 px-4 text-center font-medium">Win</th><th class="py-3 px-4 text-center font-medium">Total</th><th class="py-3 px-4 text-center font-medium">Rate</th><th class="py-3 px-4 text-center font-medium hidden sm:table-cell">Racha</th></tr></thead>
+                <tbody id="ranking-body"></tbody>
+            </table>
+        </div>
+    </div>
+    <div id="mi-posicion" class="mt-6 glass-card rounded-xl p-5 hidden">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-3">Tu Posición</h3>
+        <div class="flex items-center gap-4">
+            <div class="text-3xl font-bold text-amber-400 font-mono" id="mi-rank-pos" style="font-family:'JetBrains Mono',monospace;">--</div>
+            <div class="flex-1">
+                <div class="flex justify-between text-xs mb-1.5"><span class="text-gray-500">Progreso al siguiente nivel</span><span class="text-amber-400 font-mono" id="tier-progreso-text" style="font-family:'JetBrains Mono',monospace;">--</span></div>
+                <div class="progress-track"><div class="progress-fill bg-amber-400" id="tier-progreso-bar" style="width:0%"></div></div>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- ==================== TAB: GLOBAL ==================== -->
+<!-- ================ TAB: GLOBAL ================ -->
 <section id="tab-global" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
-    <div class="text-center mb-6">
-        <h2 class="text-xl font-bold tracking-tight">Predicciones en Vivo</h2>
-        <p class="text-sm text-gray-500 mt-1">Actividad de la comunidad en tiempo real</p>
-    </div>
-    
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Predicciones en Vivo</h2><p class="text-sm text-gray-500 mt-1">Actividad de la comunidad en tiempo real</p></div>
     <div id="user-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Puntos</div>
-            <div class="text-xl font-bold text-amber-400 font-mono" id="stats-puntos" style="font-family:'JetBrains Mono',monospace;">0</div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Puntos</div><div class="text-xl font-bold text-amber-400 font-mono" id="stats-puntos" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Aciertos</div><div class="text-xl font-bold text-green-400 font-mono" id="stats-aciertos" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Fallos</div><div class="text-xl font-bold text-red-400 font-mono" id="stats-fallos" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Winrate</div><div class="text-xl font-bold text-blue-400 font-mono" id="stats-winrate" style="font-family:'JetBrains Mono',monospace;">0%</div></div>
+    </div>
+    <div class="flex gap-1 mb-4 flex-wrap">
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select" onclick="filtrarGlobal('todos')" id="filtro-todos">Todos</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('activos')" id="filtro-activos">Activos</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('cerrados')" id="filtro-cerrados">Cerrados</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('sube')" id="filtro-sube">Subidas</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('baja')" id="filtro-baja">Bajadas</button>
+    </div>
+    <div class="flex justify-between items-center mb-3"><span class="text-xs text-gray-600 font-mono" id="global-count" style="font-family:'JetBrains Mono',monospace;">0 predicciones</span><span class="text-xs text-gray-600 font-mono" id="global-activas-count" style="font-family:'JetBrains Mono',monospace;">0 activas</span></div>
+    <div id="global-predicciones" class="space-y-2 scroll-area"><p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones...</p></div>
+</section>
+
+<!-- ================ TAB: ANALISIS ================ -->
+<section id="tab-analisis" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Análisis de la Comunidad</h2><p class="text-sm text-gray-500 mt-1">Estadísticas y tendencias globales</p></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Predicciones</div><div class="text-lg font-bold text-gray-200 font-mono" id="anal-total" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Winrate Global</div><div class="text-lg font-bold text-green-400 font-mono" id="anal-winrate" style="font-family:'JetBrains Mono',monospace;">0%</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Activas</div><div class="text-lg font-bold text-amber-400 font-mono" id="anal-activas" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Usuarios</div><div class="text-lg font-bold text-blue-400 font-mono" id="anal-usuarios" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-5"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Distribución de Votos</h3>
+            <div class="flex items-center gap-3 mb-3"><span class="text-green-400 text-xs font-medium w-12">SUBE</span><div class="flex-1 progress-track h-2"><div class="progress-fill bg-green-500" id="dist-sube-bar" style="width:50%"></div></div><span class="text-xs font-bold w-10 text-right font-mono" id="dist-sube-pct" style="font-family:'JetBrains Mono',monospace;">50%</span></div>
+            <div class="flex items-center gap-3"><span class="text-red-400 text-xs font-medium w-12">BAJA</span><div class="flex-1 progress-track h-2"><div class="progress-fill bg-red-500" id="dist-baja-bar" style="width:50%"></div></div><span class="text-xs font-bold w-10 text-right font-mono" id="dist-baja-pct" style="font-family:'JetBrains Mono',monospace;">50%</span></div>
         </div>
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Aciertos</div>
-            <div class="text-xl font-bold text-green-400 font-mono" id="stats-aciertos" style="font-family:'JetBrains Mono',monospace;">0</div>
+        <div class="glass-card rounded-2xl p-5"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mejores Periodos</h3><div id="mejores-periodos" class="space-y-2"><p class="text-gray-600 text-sm">Cargando datos...</p></div></div>
+    </div>
+    <div class="glass-card rounded-2xl p-5"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Últimos Resultados</h3><div id="ultimos-resultados" class="space-y-1.5"><p class="text-gray-600 text-sm">Cargando resultados...</p></div></div>
+</section>
+
+<!-- ================ TAB: ORDER BOOK ================ -->
+<section id="tab-orderbook" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Order Book Simulado</h2><p class="text-sm text-gray-500 mt-1">Profundidad de mercado en tiempo real</p></div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-4"><div class="flex justify-between items-center mb-3"><h3 class="font-bold text-sm uppercase tracking-wider text-green-400">Compras (Bids)</h3><span class="text-xs text-gray-600 font-mono" id="bid-total" style="font-family:'JetBrains Mono',monospace;">-- BTC</span></div><div id="orderbook-bids" class="space-y-0.5"><div class="order-row"><div class="bar bg-green-500" style="width:0%"></div><div class="content"><span class="text-green-400">--</span><span class="text-gray-500">--</span></div></div></div></div>
+        <div class="glass-card rounded-2xl p-4"><div class="flex justify-between items-center mb-3"><h3 class="font-bold text-sm uppercase tracking-wider text-red-400">Ventas (Asks)</h3><span class="text-xs text-gray-600 font-mono" id="ask-total" style="font-family:'JetBrains Mono',monospace;">-- BTC</span></div><div id="orderbook-asks" class="space-y-0.5"><div class="order-row"><div class="bar bg-red-500" style="width:0%"></div><div class="content"><span class="text-red-400">--</span><span class="text-gray-500">--</span></div></div></div></div>
+    </div>
+    <div class="glass-card rounded-2xl p-5 mb-6">
+        <div class="flex justify-between items-center"><div><span class="text-[10px] text-gray-500 uppercase tracking-wider">Spread</span><div class="text-lg font-bold text-amber-400 font-mono" id="orderbook-spread" style="font-family:'JetBrains Mono',monospace;">--</div></div><div class="text-right"><span class="text-[10px] text-gray-500 uppercase tracking-wider">Ratio Compra/Venta</span><div class="text-lg font-bold font-mono" id="orderbook-ratio" style="font-family:'JetBrains Mono',monospace;">--</div></div></div>
+        <div class="mt-4"><div class="flex justify-between text-[10px] text-gray-600 mb-1"><span>Presión de compra</span><span id="buy-pressure-pct">50%</span></div><div class="h-3 rounded-full overflow-hidden bg-gray-800"><div id="buy-pressure-bar" class="h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width:50%"></div></div></div>
+    </div>
+    <div class="glass-card rounded-2xl p-5"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mapa de Calor de Liquidaciones</h3><div class="grid grid-cols-5 gap-1" id="liquidation-heatmap"></div><div class="flex justify-between mt-3 text-[10px] text-gray-600 font-mono" style="font-family:'JetBrains Mono',monospace;"><span>Soporte Fuerte</span><span>Precio Actual</span><span>Resistencia Fuerte</span></div></div>
+</section>
+
+<!-- ================ TAB: CALCULADORA ================ -->
+<section id="tab-calculadora" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Calculadora de Trading</h2><p class="text-sm text-gray-500 mt-1">Simula tus operaciones y predicciones</p></div>
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Calculadora de Ganancias</h3>
+            <div class="space-y-4">
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Precio de Entrada ($)</label><input type="number" id="calc-entry" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="65000" oninput="calcularGanancia()"></div>
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Precio de Salida ($)</label><input type="number" id="calc-exit" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="70000" oninput="calcularGanancia()"></div>
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Cantidad (BTC)</label><input type="number" id="calc-amount" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="0.5" step="0.001" oninput="calcularGanancia()"></div>
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Apalancamiento (x)</label><input type="range" id="calc-leverage" class="w-full" min="1" max="125" value="1" oninput="document.getElementById('lev-display').textContent = this.value + 'x'; calcularGanancia()"><div class="text-right text-xs text-amber-400 font-mono mt-1" id="lev-display" style="font-family:'JetBrains Mono',monospace;">1x</div></div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center mb-2"><span class="text-sm text-gray-500">Ganancia/Pérdida</span><span class="text-xl font-bold font-mono" id="calc-result" style="font-family:'JetBrains Mono',monospace;">$0.00</span></div>
+                <div class="flex justify-between items-center"><span class="text-sm text-gray-500">ROI</span><span class="text-lg font-bold font-mono" id="calc-roi" style="font-family:'JetBrains Mono',monospace;">0%</span></div>
+                <div class="flex justify-between items-center mt-2"><span class="text-sm text-gray-500">Liquidación</span><span class="text-sm font-bold font-mono text-red-400" id="calc-liquidation" style="font-family:'JetBrains Mono',monospace;">--</span></div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Fallos</div>
-            <div class="text-xl font-bold text-red-400 font-mono" id="stats-fallos" style="font-family:'JetBrains Mono',monospace;">0</div>
-        </div>
-        <div class="stat-card">
-            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Winrate</div>
-            <div class="text-xl font-bold text-blue-400 font-mono" id="stats-winrate" style="font-family:'JetBrains Mono',monospace;">0%</div>
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Simulador de Predicción</h3>
+            <div class="space-y-4">
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Precio Actual BTC ($)</label><input type="number" id="sim-current" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="65000" oninput="simularPrediccion()"></div>
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Predicción de Precio ($)</label><input type="number" id="sim-target" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="70000" oninput="simularPrediccion()"></div>
+                <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Periodo</label><select id="sim-periodo" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm" onchange="simularPrediccion()">
+                    <option value="5m">5 minutos (+1 pt)</option><option value="15m">15 minutos (+2 pts)</option><option value="30m">30 minutos (+3 pts)</option><option value="1h">1 hora (+4 pts)</option><option value="4h">4 horas (+5 pts)</option><option value="24h">24 horas (+8 pts)</option><option value="1sem">7 días (+15 pts)</option><option value="1mes">30 días (+30 pts)</option>
+                </select></div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center mb-2"><span class="text-sm text-gray-500">Cambio Requerido</span><span class="text-xl font-bold font-mono" id="sim-change" style="font-family:'JetBrains Mono',monospace;">0%</span></div>
+                <div class="flex justify-between items-center"><span class="text-sm text-gray-500">Puntos Potenciales</span><span class="text-lg font-bold font-mono text-amber-400" id="sim-puntos" style="font-family:'JetBrains Mono',monospace;">+0 pts</span></div>
+                <div class="mt-3 p-3 rounded-lg bg-black/20 border border-white/5"><p class="text-xs text-gray-500" id="sim-advice">Ingresa los datos para ver la simulación</p></div>
+            </div>
         </div>
     </div>
-    
-    <div id="global-predicciones" class="space-y-2 scroll-area">
-        <p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones...</p>
+    <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Conversiones Rápidas</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition"><div class="text-[10px] text-gray-500 uppercase">0.1 BTC</div><div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-01" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition"><div class="text-[10px] text-gray-500 uppercase">0.5 BTC</div><div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-05" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition"><div class="text-[10px] text-gray-500 uppercase">1 BTC</div><div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-1" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition"><div class="text-[10px] text-gray-500 uppercase">5 BTC</div><div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-5" style="font-family:'JetBrains Mono',monospace;">--</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ================ TAB: ACHIEVEMENTS ================ -->
+<section id="tab-achievements" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Logros y Recompensas</h2><p class="text-sm text-gray-500 mt-1">Desbloquea insignias exclusivas demostrando tu habilidad</p></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Logros Desbloqueados</div><div class="text-2xl font-bold text-amber-400 font-mono" id="ach-unlocked" style="font-family:'JetBrains Mono',monospace;">0/15</div></div>
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Mejor Racha</div><div class="text-2xl font-bold text-orange-400 font-mono" id="ach-best-streak" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Racha Actual</div><div class="text-2xl font-bold text-green-400 font-mono" id="ach-current-streak" style="font-family:'JetBrains Mono',monospace;">0</div></div>
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Multiplicador</div><div class="text-2xl font-bold text-purple-400 font-mono" id="ach-multiplier" style="font-family:'JetBrains Mono',monospace;">x1.0</div></div>
+    </div>
+    <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</section>
+
+<!-- ================ TAB: BOTS ================ -->
+<section id="tab-bots" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Panel de Control de Bots</h2><p class="text-sm text-gray-500 mt-1">Gestiona los bots automáticos de predicción</p></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Bots Activos</div><div class="text-2xl font-bold text-amber-400 font-mono" id="bot-count-active">0</div></div>
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Bots</div><div class="text-2xl font-bold text-blue-400 font-mono" id="bot-count-total">0</div></div>
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Predicciones Hoy</div><div class="text-2xl font-bold text-green-400 font-mono" id="bot-preds-today">0</div></div>
+        <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Winrate Promedio</div><div class="text-2xl font-bold text-purple-400 font-mono" id="bot-avg-winrate">0%</div></div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-5 mb-6">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Crear Nuevos Bots</h3>
+        <div class="grid md:grid-cols-3 gap-4 mb-4">
+            <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Cantidad</label><input type="number" id="bot-create-count" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" value="5" min="1" max="10"></div>
+            <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Personalidad</label><select id="bot-personality" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm">
+                <option value="random">Aleatoria (Mixta)</option><option value="aggressive">Agresiva</option><option value="balanced">Balanceada</option><option value="conservative">Conservadora</option><option value="whale">Whale (Experto)</option><option value="newbie">Novato</option>
+            </select></div>
+            <div><label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Skill Base (0-1)</label><input type="range" id="bot-skill" class="w-full mt-3" min="0.3" max="0.8" step="0.05" value="0.5" oninput="document.getElementById('bot-skill-display').textContent = this.value"><div class="text-right text-xs text-amber-400 font-mono mt-1" id="bot-skill-display">0.5</div></div>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+            <button onclick="createBots()" class="btn-primary px-6 py-3 rounded-xl text-sm font-bold no-select"><svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg> Crear Bots</button>
+            <button onclick="startAllBots()" class="btn-outline px-6 py-3 rounded-xl text-sm font-bold no-select"><svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Iniciar Todos</button>
+            <button onclick="stopAllBots()" class="btn-glass px-6 py-3 rounded-xl text-sm font-bold no-select text-red-400 border-red-400/20 hover:bg-red-500/10"><svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg> Detener Todos</button>
+            <button onclick="clearAllBots()" class="btn-glass px-6 py-3 rounded-xl text-sm font-bold no-select text-red-400 border-red-400/20 hover:bg-red-500/10"><svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Eliminar Todos</button>
+        </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Bots Activos</h3><button onclick="refreshBotList()" class="text-xs text-amber-400 hover:text-amber-300 transition">Actualizar</button></div>
+        <div class="overflow-x-auto touch-scroll">
+            <table class="w-full text-sm">
+                <thead class="text-gray-600 text-[10px] uppercase tracking-wider"><tr><th class="py-2 px-3 text-left font-medium">Bot</th><th class="py-2 px-3 text-left font-medium">Personalidad</th><th class="py-2 px-3 text-center font-medium">Skill</th><th class="py-2 px-3 text-center font-medium">Estado</th><th class="py-2 px-3 text-center font-medium">Pts</th><th class="py-2 px-3 text-center font-medium">Win</th><th class="py-2 px-3 text-center font-medium">Total</th><th class="py-2 px-3 text-center font-medium">Rate</th><th class="py-2 px-3 text-center font-medium">Racha</th><th class="py-2 px-3 text-center font-medium">Acciones</th></tr></thead>
+                <tbody id="bot-list-body"><tr><td colspan="10" class="text-center py-4 text-gray-600">No hay bots activos</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-5 mt-6">
+        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Log de Actividad</h3><button onclick="clearBotLog()" class="text-xs text-gray-500 hover:text-gray-300 transition">Limpiar</button></div>
+        <div id="bot-log" class="scroll-area font-mono text-xs space-y-1" style="max-height:200px; background:rgba(0,0,0,0.3); border-radius:8px; padding:12px;"><span class="text-gray-600">Esperando actividad de bots...</span></div>
     </div>
 </section>
 
 <!-- MODAL -->
 <div id="modal-auth">
     <div id="modal-content">
-        <div class="flex justify-between items-center mb-6">
-            <h2 id="modal-titulo" style="color:#f1f5f9; font-size:20px; font-weight:700; margin:0;">Iniciar Sesion</h2>
-            <button onclick="cerrarModal()" class="modal-close-btn" style="background:none; border:none; font-size:28px; line-height:1; padding:0 8px; cursor:pointer; color:#94a3b8;">&times;</button>
-        </div>
+        <div class="flex justify-between items-center mb-6"><h2 id="modal-titulo" style="color:#f1f5f9; font-size:20px; font-weight:700; margin:0;">Iniciar Sesión</h2><button onclick="cerrarModal()" class="modal-close-btn" style="background:none; border:none; font-size:28px; line-height:1; padding:0 8px; cursor:pointer; color:#94a3b8;">&times;</button></div>
         <div id="login-form">
-            <div style="margin-bottom:20px;">
-                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Correo Electronico</label>
-                <input type="email" id="email" placeholder="tu@email.com" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-            </div>
-            <div style="margin-bottom:20px;">
-                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Contrasena</label>
-                <input type="password" id="pass" placeholder="********" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-            </div>
+            <div style="margin-bottom:20px;"><label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Correo Electrónico</label><input type="email" id="email" placeholder="tu@email.com" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;"></div>
+            <div style="margin-bottom:20px;"><label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Contraseña</label><input type="password" id="pass" placeholder="********" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;"></div>
             <button onclick="login()" style="width:100%; padding:14px; border-radius:10px; background:linear-gradient(135deg, #f7931a, #e8850f); color:#000; font-weight:700; font-size:14px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(247,147,26,0.3);">Entrar</button>
             <p style="text-align:center; margin-top:20px; color:#64748b; font-size:14px;">No tienes cuenta? <a href="#" onclick="openModal('register')" style="color:#f7931a; text-decoration:none; font-weight:600;">Registrarse</a></p>
         </div>
         <div id="register-form" style="display:none;">
-            <div style="margin-bottom:20px;">
-                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Usuario</label>
-                <input type="text" id="username" placeholder="TraderPro" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-            </div>
-            <div style="margin-bottom:20px;">
-                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Correo Electronico</label>
-                <input type="email" id="email-reg" placeholder="tu@email.com" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-            </div>
-            <div style="margin-bottom:20px;">
-                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Contrasena (min 6)</label>
-                <input type="password" id="pass-reg" placeholder="********" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;">
-            </div>
+            <div style="margin-bottom:20px;"><label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Usuario</label><input type="text" id="username" placeholder="TraderPro" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;"></div>
+            <div style="margin-bottom:20px;"><label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Correo Electrónico</label><input type="email" id="email-reg" placeholder="tu@email.com" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;"></div>
+            <div style="margin-bottom:20px;"><label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Contraseña (min 6)</label><input type="password" id="pass-reg" placeholder="********" style="width:100%; padding:14px 18px; border-radius:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box;"></div>
             <button onclick="register()" style="width:100%; padding:14px; border-radius:10px; background:linear-gradient(135deg, #f7931a, #e8850f); color:#000; font-weight:700; font-size:14px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(247,147,26,0.3);">Crear Cuenta</button>
-            <p style="text-align:center; margin-top:20px; color:#64748b; font-size:14px;">Ya tienes cuenta? <a href="#" onclick="openModal('login')" style="color:#f7931a; text-decoration:none; font-weight:600;">Iniciar Sesion</a></p>
+            <p style="text-align:center; margin-top:20px; color:#64748b; font-size:14px;">Ya tienes cuenta? <a href="#" onclick="openModal('login')" style="color:#f7931a; text-decoration:none; font-weight:600;">Iniciar Sesión</a></p>
         </div>
     </div>
 </div>
 
 <!-- TOAST -->
-<div id="toast" class="toast glass px-6 py-3 rounded-xl text-sm font-medium">
-    <span id="toast-text"></span>
-</div>
+<div id="toast" class="toast glass px-6 py-3 rounded-xl text-sm font-medium"><span id="toast-text"></span></div>
 
-<!-- Script principal -->
-<script src="app.js"></script>
+<script>
+// ================================================
+//  CONFIGURACIÓN SUPABASE (ANON KEY PÚBLICA)
+// ================================================
+const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
+
+// Cliente Supabase
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { autoRefreshToken: true, persistSession: true }
+});
+
+// ================================================
+//  VARIABLES GLOBALES
+// ================================================
+let usuarioActual = null;          // { uid, email, username, puntos, aciertos, total_votos, racha, mejor_racha, logros }
+let periodoSeleccionado = null;
+let precioBTC = 0;
+let precioAnterior = 0;
+let intervaloTiempo = null;
+let prediccionActivaId = null;
+let unsubscribeGlobal = null;
+let filtroGlobal = 'todos';
+let filtroMisPreds = 'todos';
+let todasPrediccionesGlobal = [];
+let intervalosGlobales = [];
+let notificaciones = [];
+let candleSeries = null;
+let chartTV = null;
+let wsBinance = null;
+let currentTF = '1m';
+let lastCandle = null;
+let priceHistory = [];
+let maxHistory = 80;
+let wsPrice = null;
+let userAchievements = [];
+let streakMultiplier = 1.0;
+let botManagerState = { bots: [], lastFetch: 0, cacheMs: 30000, isLoading: false };
+let botLogEntries = [];
+
+// Constantes
+const DURACIONES = {
+    '5m': 5 * 60 * 1000, '15m': 15 * 60 * 1000, '30m': 30 * 60 * 1000,
+    '1h': 60 * 60 * 1000, '4h': 4 * 60 * 60 * 1000, '24h': 24 * 60 * 60 * 1000,
+    '1sem': 7 * 24 * 60 * 60 * 1000, '1mes': 30 * 24 * 60 * 60 * 1000
+};
+const PUNTOS_POR_PERIODO = { '5m':1,'15m':2,'30m':3,'1h':4,'4h':5,'24h':8,'1sem':15,'1mes':30 };
+const MULTIPLICADORES = { '5m':1.0,'15m':1.2,'30m':1.5,'1h':2.0,'4h':2.5,'24h':3.0,'1sem':4.0,'1mes':5.0 };
+const TIERS = [ { nombre:'Bronce', min:0, clase:'tier-bronze' }, { nombre:'Plata', min:50, clase:'tier-silver' }, { nombre:'Oro', min:200, clase:'tier-gold' }, { nombre:'Platino', min:500, clase:'tier-platinum' }, { nombre:'Maestro', min:1000, clase:'tier-master' }, { nombre:'Leyenda', min:5000, clase:'tier-legend' } ];
+const ACHIEVEMENTS = [
+    { id:'first_win', nombre:'Primer Acierto', desc:'Acierta tu primera predicción', icon:'🎯', cond:(u)=>(u.aciertos||0)>=1, pts:5 },
+    { id:'streak_3', nombre:'Racha de 3', desc:'Acierta 3 predicciones seguidas', icon:'🔥', cond:(u)=>(u.racha||0)>=3, pts:10 },
+    { id:'streak_5', nombre:'Racha de 5', desc:'Acierta 5 predicciones seguidas', icon:'⚡', cond:(u)=>(u.racha||0)>=5, pts:25 },
+    { id:'streak_10', nombre:'Imparable', desc:'Acierta 10 predicciones seguidas', icon:'👑', cond:(u)=>(u.racha||0)>=10, pts:100 },
+    { id:'points_50', nombre:'Novato', desc:'Alcanza 50 puntos', icon:'⭐', cond:(u)=>(u.puntos||0)>=50, pts:5 },
+    { id:'points_200', nombre:'Experto', desc:'Alcanza 200 puntos', icon:'⭐', cond:(u)=>(u.puntos||0)>=200, pts:15 },
+    { id:'points_500', nombre:'Veterano', desc:'Alcanza 500 puntos', icon:'⭐', cond:(u)=>(u.puntos||0)>=500, pts:30 },
+    { id:'points_1000', nombre:'Leyenda Viva', desc:'Alcanza 1000 puntos', icon:'👑', cond:(u)=>(u.puntos||0)>=1000, pts:50 },
+    { id:'total_10', nombre:'Participante', desc:'Realiza 10 predicciones', icon:'📊', cond:(u)=>(u.total_votos||0)>=10, pts:5 },
+    { id:'total_50', nombre:'Adicto', desc:'Realiza 50 predicciones', icon:'📊', cond:(u)=>(u.total_votos||0)>=50, pts:20 },
+    { id:'winrate_60', nombre:'Preciso', desc:'Alcanza 60% de winrate (min 10)', icon:'🎯', cond:(u)=>(u.total_votos||0)>=10 && ((u.aciertos/u.total_votos)*100)>=60, pts:15 },
+    { id:'winrate_75', nombre:'Maestro', desc:'Alcanza 75% de winrate (min 20)', icon:'🎯', cond:(u)=>(u.total_votos||0)>=20 && ((u.aciertos/u.total_votos)*100)>=75, pts:50 },
+    { id:'monthly_1', nombre:'Mensualista', desc:'Acierta una predicción de 30 días', icon:'📅', cond:(u)=>false, pts:30 },
+    { id:'weekly_1', nombre:'Semanalista', desc:'Acierta una predicción de 7 días', icon:'📅', cond:(u)=>false, pts:15 },
+    { id:'all_periods', nombre:'Completo', desc:'Acierta en todos los periodos', icon:'🧩', cond:(u)=>false, pts:50 }
+];
+
+// Personalidades para bots (se mantienen igual)
+const PERSONALITIES = {
+    aggressive: { periodWeights:{'5m':0.4,'15m':0.3,'30m':0.2,'1h':0.1}, activityLevel:0.9, skillRange:[0.45,0.55] },
+    balanced: { periodWeights:{'5m':0.15,'15m':0.25,'30m':0.25,'1h':0.2,'4h':0.1,'24h':0.05}, activityLevel:0.7, skillRange:[0.48,0.58] },
+    conservative: { periodWeights:{'1h':0.3,'4h':0.3,'24h':0.2,'1sem':0.15,'1mes':0.05}, activityLevel:0.4, skillRange:[0.52,0.65] },
+    random: { periodWeights:null, activityLevel:0.6, skillRange:[0.3,0.7] },
+    whale: { periodWeights:{'15m':0.2,'30m':0.3,'1h':0.3,'4h':0.2}, activityLevel:0.8, skillRange:[0.6,0.75] },
+    newbie: { periodWeights:{'5m':0.5,'15m':0.3,'30m':0.2}, activityLevel:0.5, skillRange:[0.35,0.48] }
+};
+
+// ================================================
+//  INICIO
+// ================================================
+document.addEventListener('DOMContentLoaded', () => {
+    initParticles();
+    cargarPrecioBTC();
+    cargarDatosMercado();
+    cargarTopCryptos();
+    iniciarWebSocketPrecio();
+    setInterval(cargarDatosMercado, 60000);
+    setInterval(cargarTopCryptos, 60000);
+    setInterval(actualizarFearGreed, 60000);
+    verificarSesionSupabase();
+    actualizarFearGreed();
+    renderizarAchievements();
+});
+
+// ================================================
+//  PARTICLES (Three.js)
+// ================================================
+function initParticles() {
+    const canvas = document.getElementById('particles-canvas');
+    if (!canvas || !window.THREE) return;
+    try {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+        const particleCount = 80;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
+
+        for (let i = 0; i < particleCount; i++) {
+            positions[i*3] = (Math.random() - 0.5) * 20;
+            positions[i*3+1] = (Math.random() - 0.5) * 20;
+            positions[i*3+2] = (Math.random() - 0.5) * 10;
+            const c = Math.random();
+            if (c < 0.5) { colors[i*3]=0.97; colors[i*3+1]=0.58; colors[i*3+2]=0.10; }
+            else if (c < 0.8) { colors[i*3]=0.13; colors[i*3+1]=0.77; colors[i*3+2]=0.37; }
+            else { colors[i*3]=0.94; colors[i*3+1]=0.27; colors[i*3+2]=0.27; }
+            sizes[i] = Math.random() * 2 + 0.5;
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors,3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes,1));
+
+        const material = new THREE.PointsMaterial({ size:0.05, vertexColors:true, transparent:true, opacity:0.6, blending:THREE.AdditiveBlending, sizeAttenuation:true });
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+        camera.position.z = 5;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => { mouseX = (e.clientX/window.innerWidth - 0.5)*2; mouseY = (e.clientY/window.innerHeight - 0.5)*2; });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.0005;
+            const pos = geometry.attributes.position.array;
+            for (let i=0; i<particleCount; i++) {
+                pos[i*3] += Math.sin(time + i) * 0.002;
+                pos[i*3+1] += Math.cos(time + i*0.5) * 0.002;
+            }
+            geometry.attributes.position.needsUpdate = true;
+            particles.rotation.y += 0.0003;
+            particles.rotation.x = mouseY * 0.1;
+            renderer.render(scene, camera);
+        }
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    } catch(e) { console.log('Particles init error:', e); }
+}
+
+// ================================================
+//  WEBSOCKET PRECIO (Binance)
+// ================================================
+function iniciarWebSocketPrecio() {
+    if (wsPrice) { wsPrice.close(); wsPrice = null; }
+    wsPrice = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
+    wsPrice.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        const price = parseFloat(msg.p);
+        precioAnterior = precioBTC;
+        precioBTC = price;
+        priceHistory.push(price);
+        if (priceHistory.length > maxHistory) priceHistory.shift();
+        actualizarDisplayPrecio(price);
+        actualizarSparkline();
+        actualizarConversions(price);
+        actualizarOrderBookSim(price, parseFloat(msg.q));
+        actualizarDiferenciaPrediccion();
+        const simCurrent = document.getElementById('sim-current');
+        if (simCurrent && !simCurrent.value) simCurrent.value = Math.round(price);
+        actualizarTendencia();
+    };
+    wsPrice.onerror = (e) => console.log('WS Price Error:', e);
+    wsPrice.onclose = () => setTimeout(iniciarWebSocketPrecio, 3000);
+}
+
+function actualizarDisplayPrecio(price) {
+    const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});
+    const fmtRaw = fmt.format(price);
+    const parts = fmtRaw.split('.');
+    const entero = parts[0];
+    const decimal = parts[1] ? '.' + parts[1] : '';
+
+    const heroPrice = document.getElementById('hero-price');
+    const heroDec = document.getElementById('hero-price-dec');
+    if (heroPrice) {
+        heroPrice.textContent = entero;
+        if (heroDec) heroDec.textContent = decimal;
+        if (precioAnterior > 0) {
+            heroPrice.classList.remove('price-flash-up', 'price-flash-down');
+            void heroPrice.offsetWidth;
+            if (price > precioAnterior) heroPrice.classList.add('price-flash-up');
+            else if (price < precioAnterior) heroPrice.classList.add('price-flash-down');
+        }
+    }
+    const priceValue = document.getElementById('price-value');
+    const priceValueMovil = document.getElementById('price-value-movil');
+    if (priceValue) priceValue.textContent = fmtRaw;
+    if (priceValueMovil) priceValueMovil.textContent = fmtRaw;
+    const heroTime = document.getElementById('hero-time');
+    if (heroTime) heroTime.textContent = new Date().toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const predAct = document.getElementById('pred-precio-actual');
+    if (predAct) predAct.textContent = fmtRaw;
+}
+
+function actualizarTendencia() {
+    if (priceHistory.length < 10) return;
+    const recent = priceHistory.slice(-10);
+    const first = recent[0];
+    const last = recent[recent.length-1];
+    const change = ((last - first) / first) * 100;
+    const trendEl = document.getElementById('market-trend');
+    if (trendEl) {
+        if (change > 0.5) { trendEl.textContent = 'ALCISTA'; trendEl.className = 'text-[10px] px-2 py-0.5 rounded-md bg-green-500/10 text-green-400 font-bold border border-green-500/20'; }
+        else if (change < -0.5) { trendEl.textContent = 'BAJISTA'; trendEl.className = 'text-[10px] px-2 py-0.5 rounded-md bg-red-500/10 text-red-400 font-bold border border-red-500/20'; }
+        else { trendEl.textContent = 'LATERAL'; trendEl.className = 'text-[10px] px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-400 font-bold border border-yellow-500/20'; }
+    }
+}
+
+function actualizarSparkline() {
+    if (priceHistory.length < 2) return;
+    const svg = document.getElementById('sparkline-path');
+    const area = document.getElementById('sparkline-area');
+    if (!svg) return;
+    const min = Math.min(...priceHistory);
+    const max = Math.max(...priceHistory);
+    const range = max - min || 1;
+    const points = priceHistory.map((p, i) => {
+        const x = (i / (maxHistory - 1)) * 80;
+        const y = 30 - ((p - min) / range) * 26 - 2;
+        return x + ',' + y;
+    }).join(' ');
+    svg.setAttribute('points', points);
+    if (area) { const ap = '0,30 ' + points + ' 80,30'; area.setAttribute('points', ap); }
+    const first = priceHistory[0];
+    const last = priceHistory[priceHistory.length-1];
+    svg.setAttribute('stroke', last >= first ? '#22c55e' : '#ef4444');
+}
+
+// ================================================
+//  FEAR & GREED
+// ================================================
+async function actualizarFearGreed() {
+    try {
+        const res = await fetch('https://api.alternative.me/fng/?limit=1');
+        const data = await res.json();
+        if (data.data && data.data[0]) {
+            const val = parseInt(data.data[0].value);
+            const label = data.data[0].value_classification;
+            const elVal = document.getElementById('fear-greed-value');
+            const elBar = document.getElementById('fear-greed-bar');
+            const elLabel = document.getElementById('fear-greed-label');
+            if (elVal) { let color='#f59e0b'; if(val<=25) color='#ef4444'; else if(val>=75) color='#22c55e'; elVal.textContent=val; elVal.style.color=color; }
+            if (elBar) elBar.style.width = val + '%';
+            if (elLabel) {
+                let cls = 'text-xs font-bold px-2 py-1 rounded-md ';
+                if (val <= 20) cls += 'bg-red-500/20 text-red-400 border border-red-500/20';
+                else if (val <= 40) cls += 'bg-orange-500/20 text-orange-400 border border-orange-500/20';
+                else if (val <= 60) cls += 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20';
+                else if (val <= 80) cls += 'bg-green-500/20 text-green-400 border border-green-500/20';
+                else cls += 'bg-green-400/20 text-green-300 border border-green-400/20';
+                elLabel.className = cls;
+                elLabel.textContent = label.toUpperCase();
+            }
+            const detSent = document.getElementById('det-sentiment');
+            if (detSent) {
+                let cls = 'px-2 py-0.5 rounded text-[10px] font-bold border ';
+                if (val <= 20) cls += 'bg-red-500/20 text-red-400 border-red-500/20';
+                else if (val <= 40) cls += 'bg-orange-500/20 text-orange-400 border-orange-500/20';
+                else if (val <= 60) cls += 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20';
+                else if (val <= 80) cls += 'bg-green-500/20 text-green-400 border-green-500/20';
+                else cls += 'bg-green-400/20 text-green-300 border-green-400/20';
+                detSent.innerHTML = '<span class="' + cls + '">' + label.toUpperCase() + '</span>';
+            }
+        }
+    } catch(e) {}
+}
+
+// ================================================
+//  ORDER BOOK SIM
+// ================================================
+let orderBookData = { bids: [], asks: [] };
+
+function actualizarOrderBookSim(price, qty) {
+    const spread = price * 0.0005;
+    const levels = 12;
+    orderBookData.bids = []; orderBookData.asks = [];
+    for (let i=0; i<levels; i++) {
+        const bidPrice = price - spread - (i * price * 0.0002);
+        const askPrice = price + spread + (i * price * 0.0002);
+        const bidQty = (Math.random() * 5 + 0.1) * (1 - i * 0.08);
+        const askQty = (Math.random() * 5 + 0.1) * (1 - i * 0.08);
+        orderBookData.bids.push({ price:bidPrice, qty:Math.max(0.01, bidQty) });
+        orderBookData.asks.push({ price:askPrice, qty:Math.max(0.01, askQty) });
+    }
+    renderizarOrderBook();
+}
+
+function renderizarOrderBook() {
+    const bidsContainer = document.getElementById('orderbook-bids');
+    const asksContainer = document.getElementById('orderbook-asks');
+    if (!bidsContainer || !asksContainer) return;
+    const maxBidQty = Math.max(...orderBookData.bids.map(b=>b.qty));
+    const maxAskQty = Math.max(...orderBookData.asks.map(a=>a.qty));
+    const totalBids = orderBookData.bids.reduce((s,b)=>s+b.qty,0);
+    const totalAsks = orderBookData.asks.reduce((s,a)=>s+a.qty,0);
+
+    bidsContainer.innerHTML = orderBookData.bids.map(b => {
+        const pct = (b.qty / maxBidQty) * 100;
+        return '<div class="order-row"><div class="bar bg-green-500" style="width:'+pct+'%;right:0;"></div><div class="content"><span class="text-green-400 font-mono">'+b.price.toFixed(2)+'</span><span class="text-gray-500 font-mono">'+b.qty.toFixed(4)+'</span></div></div>';
+    }).join('');
+    asksContainer.innerHTML = orderBookData.asks.map(a => {
+        const pct = (a.qty / maxAskQty) * 100;
+        return '<div class="order-row"><div class="bar bg-red-500" style="width:'+pct+'%;left:0;"></div><div class="content"><span class="text-red-400 font-mono">'+a.price.toFixed(2)+'</span><span class="text-gray-500 font-mono">'+a.qty.toFixed(4)+'</span></div></div>';
+    }).join('');
+
+    document.getElementById('bid-total').textContent = totalBids.toFixed(2) + ' BTC';
+    document.getElementById('ask-total').textContent = totalAsks.toFixed(2) + ' BTC';
+
+    const spreadEl = document.getElementById('orderbook-spread');
+    if (spreadEl && orderBookData.asks[0] && orderBookData.bids[0]) {
+        const spread = orderBookData.asks[0].price - orderBookData.bids[0].price;
+        const spreadPct = (spread / precioBTC * 100).toFixed(3);
+        spreadEl.textContent = '$' + spread.toFixed(2) + ' (' + spreadPct + '%)';
+    }
+    const ratioEl = document.getElementById('orderbook-ratio');
+    if (ratioEl) {
+        const ratio = totalBids / (totalAsks || 1);
+        ratioEl.textContent = ratio.toFixed(2);
+        ratioEl.className = 'text-lg font-bold font-mono ' + (ratio > 1 ? 'text-green-400' : 'text-red-400');
+    }
+    const buyPressure = totalBids / (totalBids + totalAsks) * 100;
+    document.getElementById('buy-pressure-bar').style.width = buyPressure + '%';
+    document.getElementById('buy-pressure-pct').textContent = buyPressure.toFixed(1) + '%';
+    renderizarLiquidationHeatmap();
+}
+
+function renderizarLiquidationHeatmap() {
+    const container = document.getElementById('liquidation-heatmap');
+    if (!container || !precioBTC) return;
+    const steps = 5;
+    const range = precioBTC * 0.15;
+    const cells = [];
+    for (let i=0; i<steps*5; i++) {
+        const priceLevel = precioBTC - range + (i / (steps*5 - 1)) * range * 2;
+        const dist = Math.abs(priceLevel - precioBTC) / precioBTC;
+        const intensity = Math.max(0, 1 - dist * 5);
+        let bg, text;
+        if (priceLevel < precioBTC) { bg='rgba(34,197,94,'+(intensity*0.6+0.1)+')'; text='#4ade80'; }
+        else { bg='rgba(239,68,68,'+(intensity*0.6+0.1)+')'; text='#f87171'; }
+        const isCurrent = Math.abs(priceLevel - precioBTC) < precioBTC * 0.005;
+        cells.push('<div class="heatmap-cell" style="background:'+bg+';color:'+text+';'+(isCurrent?'border:2px solid #f7931a;box-shadow:0 0 10px rgba(247,147,26,0.3);':'')+'">'+(priceLevel/1000).toFixed(1)+'K</div>');
+    }
+    container.innerHTML = cells.join('');
+}
+
+// ================================================
+//  CALCULADORA
+// ================================================
+function calcularGanancia() {
+    const entry = parseFloat(document.getElementById('calc-entry').value) || 0;
+    const exit = parseFloat(document.getElementById('calc-exit').value) || 0;
+    const amount = parseFloat(document.getElementById('calc-amount').value) || 0;
+    const leverage = parseFloat(document.getElementById('calc-leverage').value) || 1;
+    if (entry <= 0 || exit <= 0 || amount <= 0) {
+        document.getElementById('calc-result').textContent = '$0.00';
+        document.getElementById('calc-roi').textContent = '0%';
+        document.getElementById('calc-liquidation').textContent = '--';
+        return;
+    }
+    const diff = exit - entry;
+    const profit = diff * amount * leverage;
+    const roi = (diff / entry) * 100 * leverage;
+    const resultEl = document.getElementById('calc-result');
+    const roiEl = document.getElementById('calc-roi');
+    resultEl.textContent = (profit >= 0 ? '+' : '') + '$' + Math.abs(profit).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+    resultEl.className = 'text-xl font-bold font-mono ' + (profit >= 0 ? 'text-green-400' : 'text-red-400');
+    roiEl.textContent = (roi >= 0 ? '+' : '') + roi.toFixed(2) + '%';
+    roiEl.className = 'text-lg font-bold font-mono ' + (roi >= 0 ? 'text-green-400' : 'text-red-400');
+    const liqPrice = entry * (1 - (1 / leverage));
+    document.getElementById('calc-liquidation').textContent = '$' + liqPrice.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function simularPrediccion() {
+    const current = parseFloat(document.getElementById('sim-current').value) || 0;
+    const target = parseFloat(document.getElementById('sim-target').value) || 0;
+    const periodo = document.getElementById('sim-periodo').value;
+    if (current <= 0 || target <= 0) {
+        document.getElementById('sim-change').textContent = '0%';
+        document.getElementById('sim-puntos').textContent = '+0 pts';
+        document.getElementById('sim-advice').textContent = 'Ingresa los datos para ver la simulación';
+        return;
+    }
+    const change = ((target - current) / current) * 100;
+    const pts = PUNTOS_POR_PERIODO[periodo] || 1;
+    const mult = MULTIPLICADORES[periodo] || 1.0;
+    const totalPts = Math.round(pts * mult);
+    const changeEl = document.getElementById('sim-change');
+    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    changeEl.className = 'text-xl font-bold font-mono ' + (change >= 0 ? 'text-green-400' : 'text-red-400');
+    document.getElementById('sim-puntos').textContent = '+' + totalPts + ' pts (x' + mult + ')';
+    const advice = document.getElementById('sim-advice');
+    if (Math.abs(change) < 0.5) { advice.textContent = 'El cambio es muy pequeño. Considera un periodo más corto o ajusta tu predicción.'; advice.className = 'text-xs text-yellow-400'; }
+    else if (Math.abs(change) > 20 && (periodo === '5m' || periodo === '15m')) { advice.textContent = 'Cambio muy agresivo para este periodo. Considera un periodo más largo.'; advice.className = 'text-xs text-red-400'; }
+    else if (Math.abs(change) > 50 && periodo !== '1mes') { advice.textContent = 'Cambio extremo. Solo viable en periodos muy largos.'; advice.className = 'text-xs text-red-400'; }
+    else { advice.textContent = 'Predicción viable. Buena suerte!'; advice.className = 'text-xs text-green-400'; }
+}
+
+function actualizarConversions(price) {
+    if (!price) return;
+    const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0});
+    document.getElementById('conv-01').textContent = fmt.format(price * 0.1);
+    document.getElementById('conv-05').textContent = fmt.format(price * 0.5);
+    document.getElementById('conv-1').textContent = fmt.format(price);
+    document.getElementById('conv-5').textContent = fmt.format(price * 5);
+}
+
+// ================================================
+//  GRÁFICO DE VELAS (Lightweight Charts)
+// ================================================
+function initCandlestickChart() {
+    if (chartTV) return;
+    const chartContainer = document.getElementById('candlestick-chart');
+    if (!chartContainer) return;
+    chartTV = LightweightCharts.createChart(chartContainer, {
+        layout: { background: { color:'transparent' }, textColor:'#94a3b8', fontFamily:'Inter, sans-serif' },
+        grid: { vertLines:{color:'rgba(148,163,184,0.04)'}, horzLines:{color:'rgba(148,163,184,0.04)'} },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal, vertLine:{color:'rgba(247,147,26,0.3)',width:1}, horzLine:{color:'rgba(247,147,26,0.3)',width:1} },
+        rightPriceScale: { borderColor:'rgba(148,163,184,0.1)', scaleMargins:{top:0.1,bottom:0.1} },
+        timeScale: { borderColor:'rgba(148,163,184,0.1)', timeVisible:true, secondsVisible: currentTF==='1s' },
+        handleScroll: { vertTouchDrag: false },
+    });
+    candleSeries = chartTV.addCandlestickSeries({
+        upColor:'#22c55e', downColor:'#ef4444', borderUpColor:'#22c55e', borderDownColor:'#ef4444', wickUpColor:'#22c55e', wickDownColor:'#ef4444'
+    });
+    const volumeSeries = chartTV.addHistogramSeries({
+        color:'#22c55e', priceFormat:{type:'volume'}, priceScaleId:'', scaleMargins:{top:0.85,bottom:0}
+    });
+    chartTV.volumeSeries = volumeSeries;
+    if (typeof ResizeObserver !== 'undefined') {
+        new ResizeObserver(() => { chartTV.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight }); }).observe(chartContainer);
+    }
+    loadCandleHistory(currentTF);
+    connectWebSocket();
+}
+
+async function loadCandleHistory(tf) {
+    try {
+        const interval = tf === '1s' ? '1s' : tf;
+        const limit = 500;
+        const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=' + interval + '&limit=' + limit);
+        const data = await res.json();
+        const candles = data.map(d => ({ time: d[0]/1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]) }));
+        const volumes = data.map(d => ({ time: d[0]/1000, value: parseFloat(d[5]), color: parseFloat(d[4]) >= parseFloat(d[1]) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }));
+        candleSeries.setData(candles);
+        if (chartTV.volumeSeries) chartTV.volumeSeries.setData(volumes);
+        lastCandle = candles[candles.length - 1];
+        chartTV.timeScale().fitContent();
+    } catch(e) { console.error('Error cargando velas:', e); }
+}
+
+function connectWebSocket() {
+    if (wsBinance) { wsBinance.close(); wsBinance = null; }
+    const stream = currentTF === '1s' ? 'btcusdt@aggTrade' : 'btcusdt@kline_' + currentTF;
+    wsBinance = new WebSocket('wss://stream.binance.com:9443/ws/' + stream);
+    wsBinance.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        if (currentTF === '1s') {
+            const price = parseFloat(msg.p);
+            const time = Math.floor(msg.T / 1000);
+            if (!lastCandle || time > lastCandle.time) {
+                if (lastCandle) { candleSeries.update(lastCandle); if (chartTV.volumeSeries) chartTV.volumeSeries.update({ time:lastCandle.time, value: msg.q * price, color: lastCandle.close >= lastCandle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }); }
+                lastCandle = { time, open: price, high: price, low: price, close: price };
+            } else {
+                lastCandle.high = Math.max(lastCandle.high, price);
+                lastCandle.low = Math.min(lastCandle.low, price);
+                lastCandle.close = price;
+                candleSeries.update(lastCandle);
+            }
+        } else {
+            const k = msg.k;
+            const candle = { time: k.t/1000, open: parseFloat(k.o), high: parseFloat(k.h), low: parseFloat(k.l), close: parseFloat(k.c) };
+            candleSeries.update(candle);
+            if (chartTV.volumeSeries) chartTV.volumeSeries.update({ time: k.t/1000, value: parseFloat(k.v), color: candle.close >= candle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' });
+        }
+    };
+    wsBinance.onerror = (e) => console.log('WS Error:', e);
+    wsBinance.onclose = () => setTimeout(connectWebSocket, 3000);
+}
+
+function cambiarTimeframe(tf) {
+    currentTF = tf;
+    ['1s','1m','5m','15m','1h','4h'].forEach(t => {
+        const btn = document.getElementById('tf-' + t);
+        if (btn) btn.className = t === tf ? 'px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select' : 'px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select';
+    });
+    if (chartTV) chartTV.applyOptions({ timeScale: { secondsVisible: tf === '1s', timeVisible: true } });
+    loadCandleHistory(tf);
+    connectWebSocket();
+}
+
+// ================================================
+//  PRECIO BTC (fallback)
+// ================================================
+async function cargarPrecioBTC() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true');
+        const data = await res.json();
+        if (data.bitcoin) {
+            const cambio = data.bitcoin.usd_24h_change || 0;
+            const esPos = cambio >= 0;
+            const txt = (esPos ? '+' : '') + cambio.toFixed(2) + '%';
+            const cls = esPos ? 'bg-green-500/15 text-green-400 border border-green-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20';
+            const heroChange = document.getElementById('hero-change');
+            if (heroChange) { heroChange.textContent = txt; heroChange.className = 'text-sm px-4 py-1.5 rounded-lg font-bold font-mono ' + cls; }
+            document.getElementById('price-change').textContent = txt;
+            document.getElementById('price-change').className = 'text-xs px-2.5 py-1 rounded-lg font-medium ' + cls;
+            document.getElementById('price-change-movil').textContent = txt;
+            document.getElementById('price-change-movil').className = 'text-xs px-2 py-0.5 rounded-lg font-medium ' + cls;
+        }
+    } catch(e) { console.log('CoinGecko fallback error'); }
+}
+
+// ================================================
+//  DATOS MERCADO
+// ================================================
+async function cargarDatosMercado() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false');
+        const data = await res.json();
+        const md = data.market_data;
+        const mcap = md.market_cap?.usd || 0;
+        const vol = md.total_volume?.usd || 0;
+        const dom = md.market_cap_dominance || 0;
+        const ath = md.ath?.usd || 0;
+        const high24 = md.high_24h?.usd || 0;
+        const low24 = md.low_24h?.usd || 0;
+        const supply = md.circulating_supply || 0;
+        const maxSupply = md.max_supply || 21000000;
+        document.getElementById('quick-mcap').textContent = fmtNum(mcap);
+        document.getElementById('quick-vol').textContent = fmtNum(vol);
+        document.getElementById('quick-dom').textContent = dom.toFixed(1) + '%';
+        document.getElementById('quick-ath').textContent = '$' + Math.round(ath).toLocaleString();
+        document.getElementById('det-mcap').textContent = fmtNum(mcap);
+        document.getElementById('det-vol').textContent = fmtNum(vol);
+        document.getElementById('det-high').textContent = '$' + Math.round(high24).toLocaleString();
+        document.getElementById('det-low').textContent = '$' + Math.round(low24).toLocaleString();
+        document.getElementById('det-ath').textContent = '$' + Math.round(ath).toLocaleString();
+        document.getElementById('det-ath-date').textContent = md.ath_date?.usd ? new Date(md.ath_date.usd).toLocaleDateString('es-ES') : '--';
+        document.getElementById('det-supply').textContent = (supply/1e6).toFixed(2) + 'M';
+        document.getElementById('det-supply-bar').style.width = Math.min(100, (supply/maxSupply)*100).toFixed(1) + '%';
+        document.getElementById('det-dom').textContent = dom.toFixed(1) + '%';
+        document.getElementById('det-dom-bar').style.width = Math.min(100, dom).toFixed(1) + '%';
+        const heroRange = document.getElementById('hero-range');
+        if (heroRange) heroRange.textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
+        document.getElementById('price-range').textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
+    } catch(e) {}
+}
+
+async function cargarTopCryptos() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h,7d');
+        const cryptos = await res.json();
+        let ticker = '';
+        cryptos.forEach(c => {
+            const ch = c.price_change_percentage_24h || 0;
+            const col = ch >= 0 ? 'text-green-400' : 'text-red-400';
+            const ar = ch >= 0 ? '+' : '-';
+            ticker += '<span class="ticker-item">' + c.symbol.toUpperCase() + ' <span class="' + col + '">' + ar + Math.abs(ch).toFixed(1) + '%</span> <span class="text-gray-400">$' + Math.round(c.current_price).toLocaleString() + '</span></span>';
+        });
+        document.getElementById('market-ticker').innerHTML = ticker + ticker;
+        document.getElementById('top-crypto-table').innerHTML = cryptos.map((c,i) => {
+            const ch = c.price_change_percentage_24h || 0;
+            const ch7d = c.price_change_percentage_7d_in_currency || 0;
+            const col = ch >= 0 ? 'text-green-400' : 'text-red-400';
+            const col7d = ch7d >= 0 ? 'text-green-400' : 'text-red-400';
+            return '<tr class="border-t border-white/5 hover:bg-white/[0.02] transition">' +
+                '<td class="py-2.5 px-3 text-gray-600 text-xs">' + (i+1) + '</td>' +
+                '<td class="py-2.5 px-3"><div class="flex items-center gap-2.5"><img src="' + c.image + '" class="w-5 h-5 rounded-full" alt=""><span class="font-medium text-sm">' + c.name + '</span><span class="text-xs text-gray-600">' + c.symbol.toUpperCase() + '</span></div></td>' +
+                '<td class="py-2.5 px-3 text-right font-mono text-sm">$' + c.current_price.toLocaleString() + '</td>' +
+                '<td class="py-2.5 px-3 text-right ' + col + ' font-medium text-sm">' + (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%</td>' +
+                '<td class="py-2.5 px-3 text-right hidden sm:table-cell text-gray-500 text-xs font-mono">$' + fmtNum(c.market_cap) + '</td>' +
+                '<td class="py-2.5 px-3 text-right hidden md:table-cell text-gray-500 text-xs font-mono">$' + fmtNum(c.total_volume) + '</td>' +
+                '<td class="py-2.5 px-3 text-right hidden lg:table-cell ' + col7d + ' text-xs font-mono">' + (ch7d >= 0 ? '+' : '') + ch7d.toFixed(1) + '%</td>' +
+                '</tr>';
+        }).join('');
+    } catch(e) {}
+}
+
+function fmtNum(n) {
+    if (n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+    if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    return '$' + n.toLocaleString();
+}
+function fmtCompact(n) {
+    if (n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+    return n.toString();
+}
+
+// ================================================
+//  AUTENTICACIÓN CON SUPABASE
+// ================================================
+async function verificarSesionSupabase() {
+    // Obtener sesión actual
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        await cargarUsuarioSupabase(session.user);
+    } else {
+        usuarioActual = null;
+        actualizarUI();
+        document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+        document.getElementById('prediccion-activa').classList.add('hidden');
+        if (unsubscribeGlobal) { unsubscribeGlobal = null; }
+        actualizarStatsUsuario();
+        document.getElementById('user-pred-stats').classList.add('hidden');
+        userAchievements = [];
+        renderizarAchievements();
+    }
+
+    // Escuchar cambios de autenticación
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            await cargarUsuarioSupabase(session.user);
+        } else if (event === 'SIGNED_OUT') {
+            usuarioActual = null;
+            actualizarUI();
+            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+            document.getElementById('prediccion-activa').classList.add('hidden');
+            if (unsubscribeGlobal) { unsubscribeGlobal = null; }
+            actualizarStatsUsuario();
+            userAchievements = [];
+            renderizarAchievements();
+            mostrarToast('Sesión cerrada');
+        }
+    });
+}
+
+async function cargarUsuarioSupabase(user) {
+    try {
+        // Buscar usuario en tabla 'usuarios'
+        const { data: userData, error } = await supabaseClient
+            .from('usuarios')
+            .select('*')
+            .eq('uid', user.id)
+            .single();
+
+        if (error && error.code === 'PGRST116') {
+            // No existe, crear
+            const username = user.user_metadata?.username || user.email.split('@')[0];
+            const newUser = {
+                uid: user.id,
+                email: user.email,
+                username: username,
+                puntos: 0,
+                aciertos: 0,
+                total_votos: 0,
+                racha: 0,
+                mejor_racha: 0,
+                logros: [],
+                creado: new Date().toISOString()
+            };
+            const { error: insertError } = await supabaseClient
+                .from('usuarios')
+                .insert([newUser]);
+            if (insertError) throw insertError;
+            usuarioActual = newUser;
+        } else if (error) {
+            throw error;
+        } else {
+            usuarioActual = userData;
+            userAchievements = userData.logros || [];
+        }
+        actualizarUI();
+        cargarMisPredicciones();
+        cargarRanking();
+        buscarPrediccionActiva();
+        actualizarStatsUsuario();
+        cargarAnalisis();
+        renderizarAchievements();
+        verificarLogros();
+        // Suscripción en tiempo real a cambios del usuario
+        supabaseClient
+            .channel('usuario_' + user.id)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'usuarios', filter: 'uid=eq.' + user.id }, (payload) => {
+                if (payload.new) {
+                    usuarioActual = payload.new;
+                    userAchievements = payload.new.logros || [];
+                    actualizarUI();
+                    actualizarStatsUsuario();
+                    renderizarAchievements();
+                }
+            })
+            .subscribe();
+    } catch(e) {
+        console.error('Error cargando usuario:', e);
+        mostrarToast('Error al cargar usuario', 'error');
+    }
+}
+
+// ================================================
+//  REGISTRO / LOGIN / LOGOUT (Supabase Auth)
+// ================================================
+async function register() {
+    const email = document.getElementById('email-reg').value.trim();
+    const pass = document.getElementById('pass-reg').value;
+    const username = document.getElementById('username').value.trim();
+    if (!email || !pass || !username) return mostrarToast('Completa todos los campos', 'error');
+    if (pass.length < 6) return mostrarToast('Contraseña mínimo 6 caracteres', 'error');
+    if (username.length < 3) return mostrarToast('Usuario mínimo 3 caracteres', 'error');
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email, password: pass,
+            options: { data: { username } }
+        });
+        if (error) throw error;
+        mostrarToast('Cuenta creada exitosamente. Revisa tu correo para confirmar.');
+        cerrarModal();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+}
+
+async function login() {
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('pass').value;
+    if (!email || !pass) return mostrarToast('Completa todos los campos', 'error');
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+        mostrarToast('Bienvenido');
+        cerrarModal();
+    } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
+}
+
+async function logout() {
+    if (unsubscribeGlobal) { unsubscribeGlobal = null; }
+    if (wsBinance) { wsBinance.close(); wsBinance = null; }
+    if (wsPrice) { wsPrice.close(); wsPrice = null; }
+    intervalosGlobales.forEach(id => clearInterval(id));
+    intervalosGlobales = [];
+    await supabaseClient.auth.signOut();
+    usuarioActual = null;
+    actualizarUI();
+    document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+    document.getElementById('prediccion-activa').classList.add('hidden');
+    if (intervaloTiempo) clearInterval(intervaloTiempo);
+    actualizarStatsUsuario();
+    userAchievements = [];
+    renderizarAchievements();
+    mostrarToast('Sesión cerrada');
+}
+
+// ================================================
+//  UI / ESTADOS
+// ================================================
+function actualizarUI() {
+    const authBtns = document.getElementById('auth-buttons');
+    const userMenu = document.getElementById('user-menu');
+    if (usuarioActual) {
+        authBtns.classList.add('hidden');
+        userMenu.classList.remove('hidden');
+        userMenu.classList.add('flex');
+        document.getElementById('user-name').textContent = usuarioActual.username;
+        const tier = getTier(usuarioActual.puntos || 0);
+        document.getElementById('user-tier').textContent = tier.nombre;
+        document.getElementById('user-tier').className = 'text-[10px] font-medium px-2.5 py-0.5 rounded-lg ' + tier.clase;
+        document.getElementById('user-pred-stats').classList.remove('hidden');
+    } else {
+        authBtns.classList.remove('hidden');
+        userMenu.classList.add('hidden');
+        userMenu.classList.remove('flex');
+        document.getElementById('user-pred-stats').classList.add('hidden');
+    }
+}
+
+function actualizarStatsUsuario() {
+    if (!usuarioActual) {
+        ['stats-puntos','stats-aciertos','stats-fallos','stats-winrate','user-total-preds','user-win-preds','user-winrate-preds'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = id.includes('winrate') ? '0%' : '0';
+        });
+        return;
+    }
+    const pts = usuarioActual.puntos || 0;
+    const ac = usuarioActual.aciertos || 0;
+    const tot = usuarioActual.total_votos || 0;
+    const wr = tot > 0 ? ((ac/tot)*100).toFixed(1) : 0;
+    document.getElementById('stats-puntos').textContent = pts;
+    document.getElementById('stats-aciertos').textContent = ac;
+    document.getElementById('stats-fallos').textContent = tot - ac;
+    document.getElementById('stats-winrate').textContent = wr + '%';
+    document.getElementById('user-total-preds').textContent = tot;
+    document.getElementById('user-win-preds').textContent = ac;
+    document.getElementById('user-winrate-preds').textContent = wr + '%';
+
+    const preview = document.getElementById('user-achievements-preview');
+    if (preview && userAchievements.length > 0) {
+        const recent = userAchievements.slice(-3);
+        preview.innerHTML = recent.map(a => {
+            const ach = ACHIEVEMENTS.find(x => x.id === a);
+            if (!ach) return '';
+            return '<span class="achievement text-[10px]" style="border-color:rgba(247,147,26,0.3);color:#f7931a;">' + ach.icon + ' ' + ach.nombre + '</span>';
+        }).join('');
+    } else if (preview) preview.innerHTML = '';
+
+    const achUnlocked = document.getElementById('ach-unlocked');
+    if (achUnlocked) achUnlocked.textContent = (userAchievements.length || 0) + '/' + ACHIEVEMENTS.length;
+    const achBest = document.getElementById('ach-best-streak');
+    if (achBest) achBest.textContent = usuarioActual.mejor_racha || 0;
+    const achCurrent = document.getElementById('ach-current-streak');
+    if (achCurrent) achCurrent.textContent = usuarioActual.racha || 0;
+
+    const racha = usuarioActual.racha || 0;
+    streakMultiplier = racha >= 10 ? 3.0 : racha >= 5 ? 2.0 : racha >= 3 ? 1.5 : 1.0;
+    const achMult = document.getElementById('ach-multiplier');
+    if (achMult) { achMult.textContent = 'x' + streakMultiplier.toFixed(1); achMult.className = 'text-2xl font-bold font-mono ' + (streakMultiplier > 1 ? 'text-purple-400' : 'text-gray-500'); }
+}
+
+function getTier(puntos) {
+    let t = TIERS[0];
+    for (const x of TIERS) if (puntos >= x.min) t = x;
+    return t;
+}
+
+// ================================================
+//  ACHIEVEMENTS
+// ================================================
+function renderizarAchievements() {
+    const container = document.getElementById('achievements-grid');
+    if (!container) return;
+    container.innerHTML = ACHIEVEMENTS.map(a => {
+        const unlocked = userAchievements.includes(a.id);
+        const progress = usuarioActual ? (unlocked ? 100 : calcularProgresoLogro(a)) : 0;
+        return '<div class="glass-card rounded-xl p-4 ' + (unlocked ? 'border-amber-500/20' : 'opacity-60') + ' transition hover:opacity-100">' +
+            '<div class="flex items-start gap-3">' +
+            '<div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg ' + (unlocked ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-600') + '">' + a.icon + '</div>' +
+            '<div class="flex-1">' +
+            '<div class="flex justify-between items-start">' +
+            '<div><div class="font-bold text-sm ' + (unlocked ? 'text-amber-400' : 'text-gray-400') + '">' + a.nombre + '</div><div class="text-xs text-gray-600 mt-0.5">' + a.desc + '</div></div>' +
+            '<div class="text-xs font-bold ' + (unlocked ? 'text-amber-400' : 'text-gray-600') + '">+' + a.pts + ' pts</div>' +
+            '</div>' +
+            '<div class="mt-2"><div class="flex justify-between text-[10px] text-gray-600 mb-1"><span>' + (unlocked ? 'DESBLOQUEADO' : 'EN PROGRESO') + '</span><span>' + progress + '%</span></div>' +
+            '<div class="progress-track"><div class="progress-fill ' + (unlocked ? 'bg-amber-400' : 'bg-gray-600') + '" style="width:' + progress + '%"></div></div></div>' +
+            '</div></div></div>';
+    }).join('');
+}
+
+function calcularProgresoLogro(ach) {
+    if (!usuarioActual) return 0;
+    switch(ach.id) {
+        case 'first_win': return Math.min(100, ((usuarioActual.aciertos||0)/1)*100);
+        case 'streak_3': return Math.min(100, ((usuarioActual.racha||0)/3)*100);
+        case 'streak_5': return Math.min(100, ((usuarioActual.racha||0)/5)*100);
+        case 'streak_10': return Math.min(100, ((usuarioActual.racha||0)/10)*100);
+        case 'points_50': return Math.min(100, ((usuarioActual.puntos||0)/50)*100);
+        case 'points_200': return Math.min(100, ((usuarioActual.puntos||0)/200)*100);
+        case 'points_500': return Math.min(100, ((usuarioActual.puntos||0)/500)*100);
+        case 'points_1000': return Math.min(100, ((usuarioActual.puntos||0)/1000)*100);
+        case 'total_10': return Math.min(100, ((usuarioActual.total_votos||0)/10)*100);
+        case 'total_50': return Math.min(100, ((usuarioActual.total_votos||0)/50)*100);
+        case 'winrate_60': if ((usuarioActual.total_votos||0) < 10) return Math.min(100, ((usuarioActual.total_votos||0)/10)*100);
+            return Math.min(100, (((usuarioActual.aciertos/usuarioActual.total_votos)*100)/60)*100);
+        case 'winrate_75': if ((usuarioActual.total_votos||0) < 20) return Math.min(100, ((usuarioActual.total_votos||0)/20)*100);
+            return Math.min(100, (((usuarioActual.aciertos/usuarioActual.total_votos)*100)/75)*100);
+        default: return 0;
+    }
+}
+
+async function verificarLogros() {
+    if (!usuarioActual) return;
+    const nuevos = [];
+    for (const ach of ACHIEVEMENTS) {
+        if (!userAchievements.includes(ach.id) && ach.cond(usuarioActual)) {
+            nuevos.push(ach);
+        }
+    }
+    if (nuevos.length > 0) {
+        const nuevosIds = nuevos.map(a=>a.id);
+        userAchievements = [...userAchievements, ...nuevosIds];
+        const totalPts = nuevos.reduce((s,a)=>s+a.pts,0);
+        // Actualizar en Supabase
+        const { error } = await supabaseClient
+            .from('usuarios')
+            .update({
+                logros: userAchievements,
+                puntos: (usuarioActual.puntos || 0) + totalPts
+            })
+            .eq('uid', usuarioActual.uid);
+        if (error) console.error('Error actualizando logros:', error);
+        else {
+            usuarioActual.puntos = (usuarioActual.puntos || 0) + totalPts;
+            usuarioActual.logros = userAchievements;
+            if (window.confetti) confetti({ particleCount:100, spread:70, origin:{y:0.6}, colors:['#f7931a','#22c55e','#FFD700'] });
+            nuevos.forEach(a => { mostrarToast('Logro desbloqueado: ' + a.nombre + ' +' + a.pts + ' pts', 'success'); agregarNotif('Logro: ' + a.nombre + ' +' + a.pts + ' pts', 'success'); });
+            renderizarAchievements();
+            actualizarStatsUsuario();
+        }
+    }
+}
+
+// ================================================
+//  NOTIFICACIONES
+// ================================================
+function toggleNotif() { document.getElementById('notif-panel').classList.toggle('hidden'); }
+function agregarNotif(msg, tipo) {
+    notificaciones.unshift({ msg, tipo, time: new Date() });
+    if (notificaciones.length > 20) notificaciones.pop();
+    const badge = document.getElementById('notif-badge');
+    badge.textContent = notificaciones.length;
+    badge.classList.remove('hidden');
+    renderizarNotif();
+}
+function renderizarNotif() {
+    const list = document.getElementById('notif-list');
+    if (notificaciones.length === 0) { list.innerHTML = '<p class="text-gray-600 text-xs text-center">Sin notificaciones</p>'; document.getElementById('notif-badge').classList.add('hidden'); return; }
+    list.innerHTML = notificaciones.map(n => {
+        const col = n.tipo === 'success' ? 'text-green-400' : n.tipo === 'error' ? 'text-red-400' : 'text-amber-400';
+        const icon = n.tipo === 'success' ? '✅' : n.tipo === 'error' ? '❌' : 'ℹ️';
+        const t = n.time.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+        return '<div class="text-xs p-2.5 rounded-lg bg-white/5 ' + col + ' border border-white/5"><div class="flex justify-between"><span class="font-bold">' + icon + '</span><span class="text-gray-600">' + t + '</span></div><div class="mt-0.5 text-gray-300">' + n.msg + '</div></div>';
+    }).join('');
+}
+
+// ================================================
+//  PREDICCIÓN ACTIVA
+// ================================================
+async function buscarPrediccionActiva() {
+    if (!usuarioActual) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('predicciones')
+            .select('*')
+            .eq('usuarioId', usuarioActual.uid)
+            .eq('estado', 'activo')
+            .order('creado', { ascending: false })
+            .limit(1);
+        if (error) throw error;
+        if (data && data.length > 0) {
+            const pred = data[0];
+            prediccionActivaId = pred.id;
+            mostrarPredActiva(pred);
+            if (intervaloTiempo) clearInterval(intervaloTiempo);
+            intervaloTiempo = setInterval(() => actualizarTiempoRestante(pred.cierre), 1000);
+        } else {
+            document.getElementById('prediccion-activa').classList.add('hidden');
+            document.getElementById('botones-voto').classList.remove('hidden');
+            if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
+        }
+    } catch(e) { console.error(e); }
+}
+
+function mostrarPredActiva(pred) {
+    document.getElementById('prediccion-activa').classList.remove('hidden');
+    const voto = pred.voto === 'sube' ? 'SUBE' : 'BAJA';
+    const cls = pred.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+    const icon = pred.voto === 'sube' ? '▲' : '▼';
+    document.getElementById('mi-voto').innerHTML = '<span class="' + cls + '">' + icon + ' ' + voto + '</span>';
+    document.getElementById('tiempo-restante').textContent = calcTiempoRestante(pred.cierre);
+    document.getElementById('estado-prediccion').innerHTML = '<span class="px-2.5 py-1 rounded-md text-[10px] font-bold badge-pending">PENDIENTE</span>';
+    document.getElementById('pred-precio-inicial').textContent = '$' + Math.round(pred.precioInicial || 0).toLocaleString();
+    document.getElementById('pred-precio-actual').textContent = precioBTC > 0 ? '$' + Math.round(precioBTC).toLocaleString() : '--';
+    actualizarDiferenciaPrediccion();
+}
+
+function actualizarDiferenciaPrediccion() {
+    const diffEl = document.getElementById('pred-diferencia');
+    if (!diffEl || !prediccionActivaId) return;
+    const inicialEl = document.getElementById('pred-precio-inicial');
+    if (!inicialEl || inicialEl.textContent === '--') return;
+    const inicial = parseFloat(inicialEl.textContent.replace(/[$,]/g, ''));
+    if (!inicial || precioBTC === 0) return;
+    const diff = ((precioBTC - inicial) / inicial) * 100;
+    const col = diff >= 0 ? 'text-green-400' : 'text-red-400';
+    const ar = diff >= 0 ? '▲' : '▼';
+    diffEl.innerHTML = '<span class="' + col + '">' + ar + ' ' + Math.abs(diff).toFixed(2) + '%</span>';
+}
+
+function actualizarTiempoRestante(cierre) {
+    document.getElementById('tiempo-restante').textContent = calcTiempoRestante(cierre);
+    if (new Date() >= new Date(cierre)) { clearInterval(intervaloTiempo); intervaloTiempo = null; verificarResultadosPendientes(); }
+}
+
+function calcTiempoRestante(cierre) {
+    const diff = new Date(cierre) - new Date();
+    if (diff <= 0) return 'Finalizado';
+    const s = Math.floor(diff/1000);
+    const m = Math.floor(s/60);
+    const h = Math.floor(m/60);
+    const d = Math.floor(h/24);
+    if (d > 0) return d + 'd ' + (h%24) + 'h ' + (m%60) + 'm';
+    if (h > 0) return h + 'h ' + (m%60) + 'm ' + (s%60) + 's';
+    if (m > 0) return m + 'm ' + (s%60) + 's';
+    return s + 's';
+}
+
+// ================================================
+//  VOTACIÓN
+// ================================================
+function selectPeriodo(periodo, btn) {
+    if (prediccionActivaId) { mostrarToast('Ya tienes una predicción activa', 'error'); return; }
+    periodoSeleccionado = periodo;
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('botones-voto').classList.remove('hidden');
+    document.getElementById('periodo-activo').classList.remove('hidden');
+    document.getElementById('periodo-activo').textContent = 'Periodo: ' + periodo + ' (+' + PUNTOS_POR_PERIODO[periodo] + ' pts x' + MULTIPLICADORES[periodo] + ')';
+    document.getElementById('instruccion').classList.add('hidden');
+    document.getElementById('mensaje').textContent = '';
+}
+
+async function votar(direccion) {
+    if (!usuarioActual) { openModal('login'); return mostrarToast('Inicia sesión para votar', 'error'); }
+    if (!periodoSeleccionado) return mostrarToast('Selecciona un periodo', 'error');
+    if (prediccionActivaId) return mostrarToast('Ya tienes una predicción activa', 'error');
+    const cierre = new Date(Date.now() + DURACIONES[periodoSeleccionado]);
+    try {
+        // Verificar si ya votó en este periodo (activo)
+        const { data: exist, error: existErr } = await supabaseClient
+            .from('predicciones')
+            .select('id')
+            .eq('usuarioId', usuarioActual.uid)
+            .eq('periodo', periodoSeleccionado)
+            .eq('estado', 'activo')
+            .limit(1);
+        if (existErr) throw existErr;
+        if (exist && exist.length > 0) return mostrarToast('Ya votaste en este periodo', 'error');
+
+        const { error } = await supabaseClient
+            .from('predicciones')
+            .insert([{
+                usuarioId: usuarioActual.uid,
+                periodo: periodoSeleccionado,
+                voto: direccion,
+                precioInicial: precioBTC,
+                cierre: cierre.toISOString(),
+                estado: 'activo',
+                creado: new Date().toISOString()
+            }]);
+        if (error) throw error;
+        mostrarToast('Voto registrado: ' + direccion.toUpperCase());
+        document.getElementById('mensaje').textContent = 'Voto registrado exitosamente';
+        document.getElementById('botones-voto').classList.add('hidden');
+        buscarPrediccionActiva();
+        cargarMisPredicciones();
+    } catch(e) { mostrarToast('Error al registrar voto: ' + e.message, 'error'); }
+}
+
+// ================================================
+//  VERIFICACIÓN RESULTADOS
+// ================================================
+async function verificarResultadosPendientes() {
+    try {
+        const { data: preds, error } = await supabaseClient
+            .from('predicciones')
+            .select('*')
+            .eq('estado', 'activo');
+        if (error) throw error;
+        if (!preds || preds.length === 0) return;
+        let alguna = false;
+        const ahora = new Date();
+        for (const pred of preds) {
+            const cierre = new Date(pred.cierre);
+            if (cierre > ahora) continue;
+            alguna = true;
+            let precioFinal = precioBTC;
+            if (precioFinal === 0) {
+                try { const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'); const d = await r.json(); precioFinal = d.bitcoin.usd; } catch(e) { precioFinal = pred.precioInicial; }
+            }
+            const subio = precioFinal > pred.precioInicial;
+            const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
+            const basePts = PUNTOS_POR_PERIODO[pred.periodo] || 1;
+            const mult = MULTIPLICADORES[pred.periodo] || 1.0;
+            const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : 0;
+
+            // Actualizar predicción
+            await supabaseClient
+                .from('predicciones')
+                .update({
+                    precioFinal: precioFinal,
+                    estado: 'cerrado',
+                    resultado: acierto ? 'acierto' : 'fallo',
+                    puntosGanados: pts,
+                    cerrado: new Date().toISOString()
+                })
+                .eq('id', pred.id);
+
+            // Actualizar usuario
+            const { data: userData, error: userErr } = await supabaseClient
+                .from('usuarios')
+                .select('*')
+                .eq('uid', pred.usuarioId)
+                .single();
+            if (userErr) { console.error('Error obteniendo usuario:', userErr); continue; }
+            const updateData = {};
+            if (acierto) {
+                const nr = (userData.racha || 0) + 1;
+                const nmr = Math.max(nr, userData.mejor_racha || 0);
+                updateData.puntos = (userData.puntos || 0) + pts;
+                updateData.aciertos = (userData.aciertos || 0) + 1;
+                updateData.total_votos = (userData.total_votos || 0) + 1;
+                updateData.racha = nr;
+                updateData.mejor_racha = nmr;
+            } else {
+                updateData.total_votos = (userData.total_votos || 0) + 1;
+                updateData.racha = 0;
+            }
+            await supabaseClient
+                .from('usuarios')
+                .update(updateData)
+                .eq('uid', pred.usuarioId);
+
+            if (usuarioActual && usuarioActual.uid === pred.usuarioId) {
+                if (acierto) {
+                    usuarioActual.puntos = (usuarioActual.puntos || 0) + pts;
+                    usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
+                    usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+                    usuarioActual.racha = (userData.racha || 0) + 1;
+                    usuarioActual.mejor_racha = Math.max(usuarioActual.mejor_racha || 0, usuarioActual.racha);
+                    actualizarUI(); actualizarStatsUsuario();
+                    mostrarToast('Acertaste! +' + pts + ' pts (x' + streakMultiplier + ' racha)', 'success');
+                    agregarNotif('+' + pts + ' pts en ' + pred.periodo + ' (racha x' + streakMultiplier + ')', 'success');
+                    if (window.confetti && streakMultiplier > 1) confetti({ particleCount: 50 * streakMultiplier, spread: 60, origin: { y: 0.7 }, colors: ['#f7931a', '#22c55e', '#FFD700', '#8A2BE2'] });
+                } else {
+                    usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+                    usuarioActual.racha = 0;
+                    actualizarStatsUsuario();
+                    mostrarToast('Fallaste. BTC ' + (subio ? 'subió' : 'bajó'), 'error');
+                    agregarNotif('Fallo en ' + pred.periodo, 'error');
+                }
+            }
+            if (prediccionActivaId === pred.id) {
+                prediccionActivaId = null;
+                document.getElementById('prediccion-activa').classList.add('hidden');
+                document.getElementById('botones-voto').classList.remove('hidden');
+                if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
+            }
+        }
+        if (alguna) { cargarMisPredicciones(); cargarRanking(); buscarPrediccionActiva(); cargarAnalisis(); verificarLogros(); }
+    } catch(e) { console.error('Error verificando resultados:', e); }
+}
+
+// ================================================
+//  MIS PREDICCIONES
+// ================================================
+async function cargarMisPredicciones() {
+    if (!usuarioActual) { document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>'; return; }
+    try {
+        const { data: preds, error } = await supabaseClient
+            .from('predicciones')
+            .select('*')
+            .eq('usuarioId', usuarioActual.uid)
+            .order('creado', { ascending: false })
+            .limit(50);
+        if (error) throw error;
+        const cont = document.getElementById('mis-predicciones');
+        if (!preds || preds.length === 0) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No tienes predicciones registradas</p>'; return; }
+        let docs = preds;
+        if (filtroMisPreds === 'activos') docs = docs.filter(p => p.estado === 'activo');
+        else if (filtroMisPreds === 'cerrados') docs = docs.filter(p => p.estado === 'cerrado');
+        if (docs.length === 0) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones en esta categoría</p>'; return; }
+        cont.innerHTML = docs.map(p => {
+            const activo = p.estado === 'activo';
+            let estadoCls, estadoTxt;
+            if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
+            else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO +' + (p.puntosGanados || 1); }
+            else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
+            const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+            const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
+            let tiempo = '';
+            if (activo && p.cierre) { tiempo = '<div class="text-xs text-amber-400 font-mono mt-1">' + calcTiempoRestante(p.cierre) + '</div>'; }
+            let resultado = '';
+            if (!activo && p.precioFinal) {
+                const subio = p.precioFinal > p.precioInicial;
+                const cambio = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2);
+                resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precioFinal).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
+            }
+            const fecha = new Date(p.creado);
+            const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) + ' ' + fecha.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+            return '<div class="prediction-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in">' +
+                '<div><span class="font-bold text-sm">' + p.periodo + '</span><span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span></div>' +
+                '<div class="text-right"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' + tiempo + resultado + '<div class="text-[10px] text-gray-600 mt-1">' + fechaStr + '</div></div>' +
+                '</div>';
+        }).join('');
+    } catch(e) { console.error(e); }
+}
+
+function filtrarMisPreds(filtro) {
+    filtroMisPreds = filtro;
+    ['todos','activos','cerrados'].forEach(f => {
+        const btn = document.getElementById('misfiltro-' + f);
+        if (btn) btn.className = f === filtro ? 'px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select' : 'px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select';
+    });
+    cargarMisPredicciones();
+}
+
+// ================================================
+//  GLOBAL EN VIVO (con Realtime de Supabase)
+// ================================================
+function iniciarEscuchaGlobal() {
+    if (unsubscribeGlobal) { unsubscribeGlobal = null; }
+    intervalosGlobales.forEach(id => clearInterval(id));
+    intervalosGlobales = [];
+
+    // Carga inicial
+    cargarGlobal();
+
+    // Suscripción en tiempo real
+    const channel = supabaseClient
+        .channel('global-predicciones')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'predicciones' }, (payload) => {
+            cargarGlobal();
+        })
+        .subscribe();
+    unsubscribeGlobal = () => { supabaseClient.removeChannel(channel); };
+
+    intervalosGlobales.push(setInterval(actualizarContadoresGlobales, 1000));
+}
+
+async function cargarGlobal() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('predicciones')
+            .select('*')
+            .order('creado', { ascending: false })
+            .limit(100);
+        if (error) throw error;
+        todasPrediccionesGlobal = data || [];
+        renderizarGlobal();
+        actualizarContGlobal();
+    } catch(e) { console.error(e); }
+}
+
+function actualizarContadoresGlobales() {
+    document.querySelectorAll('.countdown-tiempo').forEach(el => {
+        const cierreStr = el.getAttribute('data-cierre');
+        if (cierreStr) {
+            const tr = calcTiempoRestante(cierreStr);
+            el.textContent = tr;
+            if (tr === 'Finalizado') {
+                const parent = el.closest('.prediction-row');
+                if (parent) {
+                    const badge = parent.querySelector('.badge-pending');
+                    if (badge) { badge.textContent = 'FINALIZANDO'; badge.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold badge-loss'; }
+                }
+            }
+        }
+    });
+}
+
+function actualizarContGlobal() {
+    const activas = todasPrediccionesGlobal.filter(p => p.estado === 'activo').length;
+    document.getElementById('global-count').textContent = todasPrediccionesGlobal.length + ' predicciones';
+    document.getElementById('global-activas-count').textContent = activas + ' activas';
+}
+
+function filtrarGlobal(filtro) {
+    filtroGlobal = filtro;
+    ['todos','activos','cerrados','sube','baja'].forEach(f => {
+        const btn = document.getElementById('filtro-' + f);
+        if (btn) btn.className = f === filtro ? 'px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select' : 'px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select';
+    });
+    renderizarGlobal();
+}
+
+function renderizarGlobal() {
+    const cont = document.getElementById('global-predicciones');
+    let filtradas = todasPrediccionesGlobal;
+    if (filtroGlobal === 'activos') filtradas = filtradas.filter(p => p.estado === 'activo');
+    else if (filtroGlobal === 'cerrados') filtradas = filtradas.filter(p => p.estado === 'cerrado');
+    else if (filtroGlobal === 'sube') filtradas = filtradas.filter(p => p.voto === 'sube');
+    else if (filtroGlobal === 'baja') filtradas = filtradas.filter(p => p.voto === 'baja');
+    if (filtradas.length === 0) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones que mostrar</p>'; return; }
+    let cache = {};
+    Promise.all(filtradas.map(async (p) => {
+        let username = 'Anónimo';
+        if (p.usuarioId) {
+            if (!cache[p.usuarioId]) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('usuarios')
+                        .select('username')
+                        .eq('uid', p.usuarioId)
+                        .single();
+                    if (data) cache[p.usuarioId] = data.username || 'Anónimo';
+                    else cache[p.usuarioId] = 'Anónimo';
+                } catch(e) { cache[p.usuarioId] = 'Anónimo'; }
+            }
+            username = cache[p.usuarioId];
+        }
+        const activo = p.estado === 'activo';
+        const esMio = usuarioActual && p.usuarioId === usuarioActual.uid;
+        let estadoCls, estadoTxt;
+        if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
+        else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO'; }
+        else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
+        const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+        const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
+        let tiempo = '';
+        if (activo && p.cierre) { tiempo = '<span class="text-xs text-amber-400 countdown-tiempo font-mono" data-cierre="' + p.cierre + '">' + calcTiempoRestante(p.cierre) + '</span>'; }
+        let resultado = '';
+        if (!activo && p.precioFinal) {
+            const subio = p.precioFinal > p.precioInicial;
+            const cambio = ((p.precioFinal - p.precioInicial) / p.precioInicial * 100).toFixed(2);
+            resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precioFinal).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
+        }
+        const fecha = new Date(p.creado);
+        const fechaStr = fecha.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
+        const precioInicio = p.precioInicial ? '$' + Math.round(p.precioInicial).toLocaleString() : '--';
+        return '<div class="prediction-row glass-card rounded-lg p-3.5 ' + (esMio ? 'border-l-2 border-amber-500/50' : '') + '">' +
+            '<div class="flex justify-between items-center flex-wrap gap-2">' +
+            '<div class="flex items-center gap-2 flex-wrap">' +
+            '<span class="font-bold text-sm text-gray-200">' + username + '</span>' + (esMio ? '<span class="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded">TU</span>' : '') +
+            '<span class="text-[10px] text-gray-600 font-medium">' + p.periodo + '</span>' +
+            '<span class="' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span>' +
+            '</div>' +
+            '<div class="flex items-center gap-2 flex-wrap">' +
+            '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
+            tiempo + resultado + '<span class="text-[10px] text-gray-600">' + fechaStr + '</span>' +
+            '</div></div>' +
+            '<div class="text-[10px] text-gray-600 mt-1 font-mono">Inicio: ' + precioInicio + '</div></div>';
+    })).then(res => { cont.innerHTML = res.join(''); });
+}
+
+// ================================================
+//  RANKING
+// ================================================
+async function cargarRanking() {
+    try {
+        const { data: usuarios, error } = await supabaseClient
+            .from('usuarios')
+            .select('*')
+            .order('puntos', { ascending: false })
+            .limit(50);
+        if (error) throw error;
+        const tbody = document.getElementById('ranking-body');
+        if (!usuarios || usuarios.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-600">Sin usuarios registrados</td></tr>'; return; }
+        let miPos = -1;
+        usuarios.forEach((u, i) => { if (usuarioActual && u.uid === usuarioActual.uid) miPos = i + 1; });
+        tbody.innerHTML = usuarios.map((u, i) => {
+            const tier = getTier(u.puntos || 0);
+            const wr = u.total_votos ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : 0;
+            const esYo = usuarioActual && u.uid === usuarioActual.uid;
+            const racha = u.racha || 0;
+            const rachaIcon = racha >= 5 ? '🔥' : racha >= 3 ? '⚡' : '';
+            let rank = '';
+            if (i === 0) rank = '🥇';
+            else if (i === 1) rank = '🥈';
+            else if (i === 2) rank = '🥉';
+            else rank = (i + 1).toString();
+            return '<tr class="rank-glow ' + (esYo ? 'bg-amber-500/5' : '') + ' border-t border-white/5 transition">' +
+                '<td class="py-3 px-4 font-bold text-xs ' + (i < 3 ? 'text-amber-400' : 'text-gray-500') + '">' + rank + '</td>' +
+                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anónimo') + '</span>' + (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
+                '<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ' + tier.clase + '">' + tier.nombre.toUpperCase() + '</span></td>' +
+                '<td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">' + (u.puntos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center text-green-400 font-mono text-sm">' + (u.aciertos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center text-gray-500 font-mono text-sm">' + (u.total_votos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center font-medium text-sm">' + wr + '%</td>' +
+                '<td class="py-3 px-4 text-center hidden sm:table-cell text-xs text-gray-500">' + (racha > 0 ? rachaIcon + ' ' + racha : '-') + '</td>' +
+                '</tr>';
+        }).join('');
+        if (miPos > 0 && usuarioActual) {
+            document.getElementById('mi-posicion').classList.remove('hidden');
+            document.getElementById('mi-rank-pos').textContent = '#' + miPos;
+            const tierActual = getTier(usuarioActual.puntos || 0);
+            const tierIdx = TIERS.indexOf(tierActual);
+            const sigTier = tierIdx < TIERS.length - 1 ? TIERS[tierIdx + 1] : null;
+            if (sigTier) {
+                const prog = Math.min(100, ((usuarioActual.puntos || 0) / sigTier.min) * 100);
+                document.getElementById('tier-progreso-text').textContent = (usuarioActual.puntos || 0) + ' / ' + sigTier.min + ' pts';
+                document.getElementById('tier-progreso-bar').style.width = prog + '%';
+            } else {
+                document.getElementById('tier-progreso-text').textContent = 'NIVEL MÁXIMO';
+                document.getElementById('tier-progreso-bar').style.width = '100%';
+            }
+        } else document.getElementById('mi-posicion').classList.add('hidden');
+    } catch(e) { console.error(e); }
+}
+
+// ================================================
+//  ANÁLISIS
+// ================================================
+async function cargarAnalisis() {
+    try {
+        const { data: preds, error } = await supabaseClient
+            .from('predicciones')
+            .select('*');
+        if (error) throw error;
+        if (!preds) return;
+        const total = preds.length;
+        const activas = preds.filter(p => p.estado === 'activo').length;
+        const cerradas = preds.filter(p => p.estado === 'cerrado');
+        const aciertos = cerradas.filter(p => p.resultado === 'acierto').length;
+        const wrGlobal = cerradas.length > 0 ? ((aciertos / cerradas.length) * 100).toFixed(1) : 0;
+        const usuariosUnicos = new Set(preds.map(p => p.usuarioId)).size;
+        document.getElementById('anal-total').textContent = total;
+        document.getElementById('anal-winrate').textContent = wrGlobal + '%';
+        document.getElementById('anal-activas').textContent = activas;
+        document.getElementById('anal-usuarios').textContent = usuariosUnicos;
+        const subidas = preds.filter(p => p.voto === 'sube').length;
+        const bajadas = preds.filter(p => p.voto === 'baja').length;
+        const totalV = subidas + bajadas;
+        if (totalV > 0) {
+            const ps = ((subidas / totalV) * 100).toFixed(1);
+            const pb = ((bajadas / totalV) * 100).toFixed(1);
+            document.getElementById('dist-sube-bar').style.width = ps + '%';
+            document.getElementById('dist-sube-pct').textContent = ps + '%';
+            document.getElementById('dist-baja-bar').style.width = pb + '%';
+            document.getElementById('dist-baja-pct').textContent = pb + '%';
+        }
+        const periodosStats = {};
+        cerradas.forEach(p => {
+            if (!periodosStats[p.periodo]) periodosStats[p.periodo] = { total: 0, aciertos: 0 };
+            periodosStats[p.periodo].total++;
+            if (p.resultado === 'acierto') periodosStats[p.periodo].aciertos++;
+        });
+        const mejores = Object.entries(periodosStats).map(([periodo, s]) => ({ periodo, winrate: s.total > 0 ? ((s.aciertos / s.total) * 100).toFixed(1) : 0, total: s.total })).sort((a,b) => parseFloat(b.winrate) - parseFloat(a.winrate)).slice(0,5);
+        document.getElementById('mejores-periodos').innerHTML = mejores.length > 0 ? mejores.map(p => '<div class="flex justify-between items-center text-sm"><span class="text-gray-500">' + p.periodo + '</span><span class="font-bold font-mono ' + (p.winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + p.winrate + '% <span class="text-gray-600 text-xs">(' + p.total + ')</span></span></div>').join('') : '<p class="text-gray-600 text-sm">Sin datos suficientes</p>';
+        const ultimos = cerradas.sort((a,b) => new Date(b.cerrado || b.creado) - new Date(a.cerrado || a.creado)).slice(0,10);
+        document.getElementById('ultimos-resultados').innerHTML = ultimos.length > 0 ? ultimos.map(p => {
+            const esA = p.resultado === 'acierto';
+            return '<div class="flex justify-between items-center text-xs p-2.5 rounded-lg ' + (esA ? 'bg-green-500/5 border border-green-500/10' : 'bg-red-500/5 border border-red-500/10') + '">' +
+                '<span class="text-gray-400">' + p.periodo + ' - ' + (p.voto === 'sube' ? '▲' : '▼') + '</span>' +
+                '<span class="' + (esA ? 'text-green-400' : 'text-red-400') + ' font-bold font-mono">' + (esA ? '+' + (p.puntosGanados || 1) : 'FALLO') + '</span>' +
+                '</div>';
+        }).join('') : '<p class="text-gray-600 text-sm">Sin resultados aún</p>';
+    } catch(e) { console.error(e); }
+}
+
+// ================================================
+//  MODAL
+// ================================================
+function openModal(tipo) {
+    const modal = document.getElementById('modal-auth');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const titulo = document.getElementById('modal-titulo');
+    modal.className = 'visible';
+    modal.style.display = 'flex';
+    if (tipo === 'login') {
+        loginForm.style.display = 'block'; registerForm.style.display = 'none'; titulo.textContent = 'Iniciar Sesión';
+        setTimeout(() => document.getElementById('email')?.focus(), 300);
+    } else {
+        loginForm.style.display = 'none'; registerForm.style.display = 'block'; titulo.textContent = 'Crear Cuenta';
+        setTimeout(() => document.getElementById('username')?.focus(), 300);
+    }
+}
+function cerrarModal() {
+    const modal = document.getElementById('modal-auth');
+    modal.className = ''; modal.style.display = 'none';
+    document.getElementById('email').value = '';
+    document.getElementById('pass').value = '';
+    document.getElementById('email-reg').value = '';
+    document.getElementById('pass-reg').value = '';
+    document.getElementById('username').value = '';
+}
+
+// ================================================
+//  UTILIDADES
+// ================================================
+function switchTab(tab, event) {
+    document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+    const tabEl = document.getElementById('tab-' + tab);
+    if (tabEl) tabEl.classList.remove('hidden');
+    document.querySelectorAll('[onclick^="switchTab"]').forEach(b => { b.classList.remove('tab-active'); b.classList.add('text-gray-500'); });
+    if (event && event.target) { event.target.classList.add('tab-active'); event.target.classList.remove('text-gray-500'); }
+    if (tab === 'ranking') cargarRanking();
+    if (tab === 'predict' && usuarioActual) { cargarMisPredicciones(); buscarPrediccionActiva(); }
+    if (tab === 'global') { if (!unsubscribeGlobal && usuarioActual) iniciarEscuchaGlobal(); else cargarGlobal(); }
+    if (tab === 'mercado') { initCandlestickChart(); cargarDatosMercado(); cargarTopCryptos(); }
+    if (tab === 'analisis') cargarAnalisis();
+    if (tab === 'orderbook') { renderizarOrderBook(); renderizarLiquidationHeatmap(); }
+    if (tab === 'calculadora') { if (precioBTC) actualizarConversions(precioBTC); }
+    if (tab === 'achievements') renderizarAchievements();
+    if (tab === 'bots') startBotAutoRefresh(); else stopBotAutoRefresh();
+}
+
+function mostrarToast(mensaje, tipo) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-text').textContent = mensaje;
+    const bg = tipo === 'success' ? 'border-green-500/30 text-green-400' : tipo === 'error' ? 'border-red-500/30 text-red-400' : 'border-amber-500/30 text-amber-400';
+    toast.className = 'toast glass px-6 py-3 rounded-xl text-sm font-medium border ' + bg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+document.getElementById('modal-auth').addEventListener('click', function(e) { if (e.target === this) cerrarModal(); });
+document.addEventListener('click', function(e) {
+    const panel = document.getElementById('notif-panel');
+    const btn = e.target.closest('button[onclick="toggleNotif()"]');
+    if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn) panel.classList.add('hidden');
+});
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') cerrarModal(); });
+
+// ================================================
+//  BOTS (Integración con Supabase)
+// ================================================
+function selectRandomPersonality() {
+    const weights = { aggressive:0.15, balanced:0.30, conservative:0.20, random:0.10, whale:0.10, newbie:0.15 };
+    const total = Object.values(weights).reduce((a,b)=>a+b,0);
+    let random = Math.random() * total;
+    for (const [p,w] of Object.entries(weights)) { random -= w; if (random <= 0) return p; }
+    return 'balanced';
+}
+
+function generateBotName(index, personality) {
+    const prefixes = { aggressive:['Alpha','Turbo','Flash','Rocket','Blitz','Fury','Storm'], balanced:['Pro','Smart','Trade','Crypto','Wise','Edge','Nexus'], conservative:['Safe','Steady','Solid','Calm','Zen','Vault','Fortress'], random:['Chaos','Wild','Lucky','Dice','Random','Mystic','Joker'], whale:['Whale','Mega','Giant','Titan','King','Emperor','Legend'], newbie:['New','Rookie','Noob','Starter','Trainee','Learner','Padawan'] };
+    const suffixes = ['Trader','Bot','AI','Predictor','Analyzer','Master','Hunter','Scout','Ninja','Wolf','Fox','Bear','Bull'];
+    const prefixList = prefixes[personality] || prefixes.balanced;
+    const prefix = prefixList[Math.floor(Math.random() * prefixList.length)];
+    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    return prefix + suffix + '_' + (Math.floor(Math.random() * 999) + 1);
+}
+
+async function createBotFirebase(config) {
+    if (!usuarioActual) throw new Error('Inicia sesión primero');
+    const personality = config.personality || selectRandomPersonality();
+    const personalityConfig = PERSONALITIES[personality];
+    const skill = config.skill !== undefined ? config.skill : (personalityConfig.skillRange[0] + Math.random() * (personalityConfig.skillRange[1] - personalityConfig.skillRange[0]));
+    const uid = 'bot_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const username = config.username || generateBotName(botManagerState.bots.length, personality);
+    const botData = {
+        uid, username, email: 'bot_' + uid.substr(0,8) + '@bcpredict.bot',
+        personality, skill: Math.round(skill * 100) / 100,
+        activityLevel: Math.round(personalityConfig.activityLevel * 100) / 100,
+        isActive: true, esBot: true, puntos: 0, aciertos: 0, total_votos: 0, racha: 0, mejor_racha: 0, logros: [],
+        creado: new Date().toISOString(), lastActive: new Date().toISOString(),
+        createdBy: usuarioActual.uid, createdByName: usuarioActual.username
+    };
+    // Insertar en ambas tablas
+    const { error: err1 } = await supabaseClient.from('usuarios').insert([botData]);
+    if (err1) throw err1;
+    const { error: err2 } = await supabaseClient.from('bots').insert([{ uid, username, personality, isActive: true, puntos: 0, creado: new Date().toISOString(), createdBy: usuarioActual.uid }]);
+    if (err2) throw err2;
+    return { success: true, bot: botData };
+}
+
+async function getBotsCached(forceRefresh = false) {
+    const now = Date.now();
+    if (!forceRefresh && botManagerState.bots.length > 0 && (now - botManagerState.lastFetch) < botManagerState.cacheMs) return botManagerState.bots;
+    if (botManagerState.isLoading) return botManagerState.bots;
+    botManagerState.isLoading = true;
+    try {
+        const { data, error } = await supabaseClient
+            .from('usuarios')
+            .select('*')
+            .eq('esBot', true)
+            .order('creado', { ascending: false })
+            .limit(50);
+        if (error) throw error;
+        const bots = (data || []).map(u => ({
+            uid: u.uid, username: u.username, personality: u.personality || 'balanced',
+            isActive: u.isActive !== false, puntos: u.puntos || 0, aciertos: u.aciertos || 0,
+            total_votos: u.total_votos || 0, racha: u.racha || 0, mejor_racha: u.mejor_racha || 0,
+            skill: u.skill || 0.5, activityLevel: u.activityLevel || 0.7,
+            logros: u.logros || [], creado: new Date(u.creado), lastActive: u.lastActive ? new Date(u.lastActive) : new Date()
+        }));
+        botManagerState.bots = bots;
+        botManagerState.lastFetch = now;
+        return bots;
+    } catch(e) { console.error('Error cargando bots:', e); return botManagerState.bots; }
+    finally { botManagerState.isLoading = false; }
+}
+
+async function createBots() {
+    if (!usuarioActual) { mostrarToast('Inicia sesión para crear bots', 'error'); openModal('login'); return; }
+    const count = parseInt(document.getElementById('bot-create-count')?.value) || 5;
+    const personality = document.getElementById('bot-personality')?.value || 'random';
+    const skill = parseFloat(document.getElementById('bot-skill')?.value) || 0.5;
+    if (count > 10) { mostrarToast('Máximo 10 bots por lote', 'warn'); return; }
+    logBot('Creando ' + count + ' bots...', 'info');
+    let created = 0;
+    for (let i=0; i<count; i++) {
+        try {
+            const config = { personality: personality === 'random' ? undefined : personality, skill: personality === 'random' ? undefined : skill };
+            const result = await createBotFirebase(config);
+            if (result.success) { created++; logBot('✓ ' + result.bot.username, 'success'); }
+        } catch(e) { logBot('✗ ' + e.message, 'error'); }
+        await new Promise(r => setTimeout(r, 200));
+    }
+    await refreshBotList(true);
+    if (created > 0) mostrarToast(created + ' bots creados', 'success');
+}
+
+async function refreshBotList(force = false) {
+    const tbody = document.getElementById('bot-list-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-gray-500">Cargando...</td></tr>';
+    const bots = await getBotsCached(force);
+    renderizarBotList(bots);
+    updateBotStats(bots);
+}
+
+async function startAllBots() {
+    const bots = botManagerState.bots.filter(b => !b.isActive);
+    if (bots.length === 0) { mostrarToast('Todos los bots ya están activos', 'info'); return; }
+    logBot('Activando ' + bots.length + ' bots...', 'info');
+    const now = new Date().toISOString();
+    for (const bot of bots) {
+        await supabaseClient.from('usuarios').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
+        await supabaseClient.from('bots').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
+        bot.isActive = true;
+    }
+    renderizarBotList(botManagerState.bots);
+    mostrarToast(bots.length + ' bots activados', 'success');
+    logBot(bots.length + ' bots activados', 'success');
+}
+
+async function stopAllBots() {
+    const bots = botManagerState.bots.filter(b => b.isActive);
+    if (bots.length === 0) { mostrarToast('Todos los bots ya están inactivos', 'info'); return; }
+    const now = new Date().toISOString();
+    for (const bot of bots) {
+        await supabaseClient.from('usuarios').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
+        await supabaseClient.from('bots').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
+        bot.isActive = false;
+    }
+    renderizarBotList(botManagerState.bots);
+    mostrarToast(bots.length + ' bots detenidos', 'warn');
+    logBot(bots.length + ' bots detenidos', 'warn');
+}
+
+async function clearAllBots() {
+    if (!confirm('¿Eliminar TODOS los bots permanentemente?')) return;
+    logBot('Eliminando bots...', 'error');
+    for (const bot of botManagerState.bots) {
+        await supabaseClient.from('usuarios').delete().eq('uid', bot.uid);
+        await supabaseClient.from('bots').delete().eq('uid', bot.uid);
+    }
+    botManagerState.bots = [];
+    renderizarBotList([]);
+    updateBotStats([]);
+    mostrarToast('Bots eliminados', 'success');
+    logBot('Todos los bots eliminados', 'info');
+}
+
+async function toggleBot(uid) {
+    const bot = botManagerState.bots.find(b => b.uid === uid);
+    if (!bot) return;
+    const newState = !bot.isActive;
+    const now = new Date().toISOString();
+    await supabaseClient.from('usuarios').update({ isActive: newState, lastActive: now }).eq('uid', uid);
+    await supabaseClient.from('bots').update({ isActive: newState, lastActive: now }).eq('uid', uid);
+    bot.isActive = newState;
+    renderizarBotList(botManagerState.bots);
+    logBot(bot.username + ' ' + (newState ? 'activado' : 'pausado'), 'success');
+}
+
+function renderizarBotList(bots) {
+    const tbody = document.getElementById('bot-list-body');
+    if (!tbody) return;
+    if (bots.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-gray-600">No hay bots.<br><span class="text-xs text-gray-500">Crea bots arriba.</span></td></tr>'; return; }
+    tbody.innerHTML = bots.map((bot, index) => {
+        const tier = getTier(bot.puntos || 0);
+        const statusColor = bot.isActive ? 'text-green-400' : 'text-gray-500';
+        const statusText = bot.isActive ? 'ACTIVO' : 'INACTIVO';
+        const winrate = bot.total_votos > 0 ? ((bot.aciertos / bot.total_votos) * 100).toFixed(1) : 0;
+        const skillBar = Math.round((bot.skill || 0.5) * 100);
+        const racha = bot.racha || 0;
+        const rachaIcon = racha >= 5 ? '🔥' : racha >= 3 ? '⚡' : '';
+        return '<tr class="border-t border-white/5 hover:bg-white/[0.02] transition">' +
+            '<td class="py-2.5 px-3"><div class="flex items-center gap-2"><span class="text-xs text-gray-600">#' + (index + 1) + '</span><span class="font-semibold text-sm text-gray-200">' + bot.username + '</span><span class="px-1.5 py-0.5 rounded text-[9px] font-bold ' + tier.clase + '">' + tier.nombre + '</span></div></td>' +
+            '<td class="py-2.5 px-3 text-xs text-gray-400 capitalize">' + (bot.personality || 'balanced') + '</td>' +
+            '<td class="py-2.5 px-3 text-center"><div class="w-full bg-gray-800 rounded-full h-1.5"><div class="bg-amber-400 rounded-full h-1.5" style="width:' + skillBar + '%"></div></div><span class="text-[10px] text-gray-500">' + skillBar + '%</span></td>' +
+            '<td class="py-2.5 px-3 text-center"><span class="text-xs font-bold ' + statusColor + '">' + statusText + '</span></td>' +
+            '<td class="py-2.5 px-3 text-center font-mono text-amber-400 text-sm">' + (bot.puntos || 0) + '</td>' +
+            '<td class="py-2.5 px-3 text-center font-mono text-green-400 text-sm">' + (bot.aciertos || 0) + '</td>' +
+            '<td class="py-2.5 px-3 text-center font-mono text-gray-400 text-sm">' + (bot.total_votos || 0) + '</td>' +
+            '<td class="py-2.5 px-3 text-center font-mono text-sm ' + (winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + winrate + '%</td>' +
+            '<td class="py-2.5 px-3 text-center text-xs text-gray-500">' + (racha > 0 ? rachaIcon + ' ' + racha : '-') + '</td>' +
+            '<td class="py-2.5 px-3 text-center"><button onclick="toggleBot(\'' + bot.uid + '\')" class="text-xs px-2 py-1 rounded bg-white/5 hover:bg-white/10 transition text-gray-400">' + (bot.isActive ? 'Pausar' : 'Reanudar') + '</button></td>' +
+        '</tr>';
+    }).join('');
+}
+
+function updateBotStats(bots) {
+    const active = bots.filter(b => b.isActive).length;
+    const totalVotos = bots.reduce((s, b) => s + (b.total_votos || 0), 0);
+    const totalAciertos = bots.reduce((s, b) => s + (b.aciertos || 0), 0);
+    const avgWinrate = totalVotos > 0 ? ((totalAciertos / totalVotos) * 100).toFixed(1) : 0;
+    document.getElementById('bot-count-active').textContent = active;
+    document.getElementById('bot-count-total').textContent = bots.length;
+    document.getElementById('bot-avg-winrate').textContent = avgWinrate + '%';
+}
+
+function logBot(message, type) {
+    if (!message) return;
+    const timestamp = new Date().toLocaleTimeString('es-ES');
+    botLogEntries.unshift({ message, type, timestamp });
+    if (botLogEntries.length > 50) botLogEntries.pop();
+    const logContainer = document.getElementById('bot-log');
+    if (!logContainer) return;
+    const colors = { info:'text-gray-400', success:'text-green-400', error:'text-red-400', warn:'text-amber-400' };
+    logContainer.innerHTML = botLogEntries.map(e => '<div class="' + (colors[e.type] || 'text-gray-400') + '">[' + e.timestamp + '] ' + e.message + '</div>').join('');
+}
+
+function clearBotLog() {
+    botLogEntries = [];
+    const logContainer = document.getElementById('bot-log');
+    if (logContainer) logContainer.innerHTML = '<span class="text-gray-600">Log limpiado</span>';
+}
+
+let botRefreshTimer = null;
+function startBotAutoRefresh() {
+    refreshBotList(true);
+    if (botRefreshTimer) clearInterval(botRefreshTimer);
+    botRefreshTimer = setInterval(() => refreshBotList(false), 15000);
+}
+function stopBotAutoRefresh() {
+    if (botRefreshTimer) { clearInterval(botRefreshTimer); botRefreshTimer = null; }
+}
+
+// Inicializar escucha global si hay usuario
+setTimeout(() => {
+    if (usuarioActual) iniciarEscuchaGlobal();
+}, 2000);
+
+console.log('🚀 BCPredict con Supabase - Migración completa!');
+</script>
 </body>
 </html>
