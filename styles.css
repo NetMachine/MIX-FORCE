@@ -1,748 +1,245 @@
 /* ============================================================
    BCPREDICT - STYLES.CSS
    Estilos personalizados para Bitcoin Predict Pro
-   Optimizado para rendimiento y experiencia visual
    ============================================================ */
 
-/* ============================================================
-   1. VARIABLES CSS Y CONFIGURACION BASE
-   ============================================================ */
-
+/* --- Variables CSS --- */
 :root {
-    /* Colores principales */
-    --color-bg: #0a0a0a;
-    --color-surface: rgba(255, 255, 255, 0.03);
-    --color-border: rgba(255, 255, 255, 0.08);
-    --color-text: #e5e5e5;
-    --color-text-muted: #6b7280;
-    
-    /* Colores de estado */
-    --color-up: #22c55e;
-    --color-down: #ef4444;
-    --color-amber: #f7931a;
-    --color-amber-light: #fbbf24;
-    
-    /* Sombras */
-    --shadow-glow: 0 0 20px rgba(247, 147, 26, 0.15);
-    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
-    
-    /* Transiciones */
-    --transition-fast: 150ms ease;
-    --transition-normal: 250ms ease;
-    --transition-slow: 400ms ease;
-    
-    /* Bordes redondeados */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
+    --bg: #0a0a0a;
+    --surface: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.08);
+    --text: #e5e5e5;
+    --muted: #6b7280;
+    --up: #22c55e;
+    --down: #ef4444;
+    --amber: #f7931a;
 }
 
-/* ============================================================
-   2. RESET Y ESTILOS BASE
-   ============================================================ */
-
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    line-height: 1.5;
-    overflow-x: hidden;
-    min-height: 100vh;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    overflow-x: hidden; min-height: 100vh;
 }
 
-/* ============================================================
-   3. FONDOS Y EFECTOS VISUALES
-   ============================================================ */
-
-/* Grid de fondo */
+/* --- Fondos --- */
 .bg-grid {
-    position: fixed;
-    inset: 0;
-    background-image: 
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-    z-index: 0;
+    position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px; pointer-events: none; z-index: 0;
 }
-
-/* Glows flotantes */
 .bg-glow {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(80px);
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.15;
+    position: fixed; border-radius: 50%; filter: blur(80px);
+    pointer-events: none; z-index: 0; opacity: 0.15;
 }
-
 .bg-glow-1 {
-    width: 400px;
-    height: 400px;
+    width: 400px; height: 400px;
     background: radial-gradient(circle, #f7931a 0%, transparent 70%);
-    top: -100px;
-    right: -100px;
+    top: -100px; right: -100px;
     animation: float-glow 8s ease-in-out infinite;
 }
-
 .bg-glow-2 {
-    width: 300px;
-    height: 300px;
+    width: 300px; height: 300px;
     background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
-    bottom: -50px;
-    left: -50px;
+    bottom: -50px; left: -50px;
     animation: float-glow 10s ease-in-out infinite reverse;
 }
-
 @keyframes float-glow {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(30px, -30px) scale(1.1); }
+    0%,100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(30px,-30px) scale(1.1); }
 }
 
-/* ============================================================
-   4. COMPONENTES REUTILIZABLES
-   ============================================================ */
-
-/* Glassmorphism base */
+/* --- Glassmorphism --- */
 .glass {
-    background: rgba(20, 20, 20, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--color-border);
+    background: rgba(20,20,20,0.7); backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border);
 }
-
-/* Tarjeta glass */
 .glass-card {
-    background: var(--color-surface);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    background: var(--surface); backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); border: 1px solid var(--border);
+    border-radius: 16px; transition: transform 250ms ease, box-shadow 250ms ease;
 }
+.glass-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 
-.glass-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card);
-}
-
-/* Botones */
+/* --- Botones --- */
 .btn-primary {
     background: linear-gradient(135deg, #f7931a 0%, #ea580c 100%);
-    color: #000;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    box-shadow: 0 4px 15px rgba(247, 147, 26, 0.3);
+    color: #000; font-weight: 600; border: none; cursor: pointer;
+    transition: all 150ms ease; box-shadow: 0 4px 15px rgba(247,147,26,0.3);
 }
-
-.btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(247, 147, 26, 0.4);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(247,147,26,0.4); }
+.btn-primary:active { transform: translateY(0); }
 
 .btn-outline {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--color-text);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
+    background: rgba(255,255,255,0.05); color: var(--text);
+    border: 1px solid rgba(255,255,255,0.1); font-weight: 500;
+    cursor: pointer; transition: all 150ms ease;
 }
+.btn-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
 
-.btn-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Botones de voto */
+/* --- Votos --- */
 .vote-up {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
-    color: #22c55e;
-    border: 2px solid rgba(34, 197, 94, 0.3);
-    cursor: pointer;
-    transition: all var(--transition-normal);
+    background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%);
+    color: #22c55e; border: 2px solid rgba(34,197,94,0.3); cursor: pointer;
+    transition: all 250ms ease;
 }
-
 .vote-up:hover {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.1) 100%);
-    border-color: rgba(34, 197, 94, 0.5);
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
+    background: linear-gradient(135deg, rgba(34,197,94,0.25) 0%, rgba(34,197,94,0.1) 100%);
+    border-color: rgba(34,197,94,0.5); box-shadow: 0 0 30px rgba(34,197,94,0.2);
     transform: translateY(-2px);
 }
-
 .vote-down {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
-    color: #ef4444;
-    border: 2px solid rgba(239, 68, 68, 0.3);
-    cursor: pointer;
-    transition: all var(--transition-normal);
+    background: linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%);
+    color: #ef4444; border: 2px solid rgba(239,68,68,0.3); cursor: pointer;
+    transition: all 250ms ease;
 }
-
 .vote-down:hover {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%);
-    border-color: rgba(239, 68, 68, 0.5);
-    box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+    background: linear-gradient(135deg, rgba(239,68,68,0.25) 0%, rgba(239,68,68,0.1) 100%);
+    border-color: rgba(239,68,68,0.5); box-shadow: 0 0 30px rgba(239,68,68,0.2);
     transform: translateY(-2px);
 }
 
-/* Tarjetas de estadisticas */
+/* --- Stats --- */
 .stat-card {
-    background: var(--color-surface);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    transition: all var(--transition-normal);
+    background: var(--surface); backdrop-filter: blur(10px);
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 1rem; transition: all 250ms ease;
 }
+.stat-card:hover { border-color: rgba(247,147,26,0.2); transform: translateY(-2px); }
 
-.stat-card:hover {
-    border-color: rgba(247, 147, 26, 0.2);
-    transform: translateY(-2px);
-}
-
-/* Tarjetas de periodo */
-.period-btn {
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    position: relative;
-    overflow: hidden;
-}
-
+/* --- Periodos --- */
+.period-btn { cursor: pointer; transition: all 250ms ease; position: relative; overflow: hidden; }
 .period-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(247, 147, 26, 0.1) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity var(--transition-normal);
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(247,147,26,0.1) 0%, transparent 100%);
+    opacity: 0; transition: opacity 250ms ease;
 }
+.period-btn:hover::before { opacity: 1; }
+.period-btn:hover { border-color: rgba(247,147,26,0.3); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+.period-btn.selected { border-color: var(--amber); background: rgba(247,147,26,0.1); box-shadow: 0 0 20px rgba(247,147,26,0.15); }
 
-.period-btn:hover::before {
-    opacity: 1;
-}
-
-.period-btn:hover {
-    border-color: rgba(247, 147, 26, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.period-btn.selected {
-    border-color: var(--color-amber);
-    background: rgba(247, 147, 26, 0.1);
-    box-shadow: var(--shadow-glow);
-}
-
-/* ============================================================
-   5. NAVEGACION Y TABS
-   ============================================================ */
-
-/* Navbar */
+/* --- Navbar --- */
 #main-nav {
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--color-border);
+    background: rgba(10,10,10,0.8); backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
 }
 
-/* Tabs */
-.tab-active {
-    color: var(--color-amber);
-    border-bottom: 2px solid var(--color-amber);
-    font-weight: 600;
-}
+/* --- Tabs --- */
+.tab-active { color: var(--amber); border-bottom: 2px solid var(--amber); font-weight: 600; }
 
-/* ============================================================
-   6. TICKER DE MERCADO
-   ============================================================ */
-
+/* --- Ticker --- */
 .ticker-bar {
     background: linear-gradient(90deg, rgba(247,147,26,0.05) 0%, rgba(59,130,246,0.05) 100%);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--border);
 }
+.ticker-content { display: flex; gap: 2rem; white-space: nowrap; animation: ticker-scroll 30s linear infinite; }
+@keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.ticker-item { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-family: monospace; }
 
-.ticker-content {
-    display: flex;
-    gap: 2rem;
-    white-space: nowrap;
-    animation: ticker-scroll 30s linear infinite;
-}
-
-@keyframes ticker-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-
-.ticker-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-/* ============================================================
-   7. INDICADORES Y ESTADOS
-   ============================================================ */
-
-/* Punto de estado "live" */
+/* --- Live dot --- */
 .live-dot {
-    width: 8px;
-    height: 8px;
-    background: #22c55e;
-    border-radius: 50%;
-    animation: pulse-dot 2s ease-in-out infinite;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    width: 8px; height: 8px; background: #22c55e; border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite; box-shadow: 0 0 8px rgba(34,197,94,0.5);
 }
+@keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 
-@keyframes pulse-dot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-}
+/* --- Heartbeat --- */
+.heartbeat-line { height: 2px; background: linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent); animation: heartbeat 2s ease-in-out infinite; }
+@keyframes heartbeat { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-/* Linea de latido */
-.heartbeat-line {
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent);
-    animation: heartbeat 2s ease-in-out infinite;
-}
+/* --- Sparkline --- */
+.mini-chart { width: 80px; height: 30px; }
 
-@keyframes heartbeat {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 1; }
-}
+/* --- Progress --- */
+.progress-track { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 400ms ease; }
 
-/* Sparkline */
-.mini-chart {
-    width: 80px;
-    height: 30px;
-}
+/* --- Tiers --- */
+.tier-bronze { background: rgba(180,83,9,0.2); color: #d97706; border: 1px solid rgba(180,83,9,0.3); }
+.tier-silver { background: rgba(156,163,175,0.2); color: #9ca3af; border: 1px solid rgba(156,163,175,0.3); }
+.tier-gold { background: rgba(234,179,8,0.2); color: #eab308; border: 1px solid rgba(234,179,8,0.3); }
+.tier-platinum { background: rgba(6,182,212,0.2); color: #06b6d4; border: 1px solid rgba(6,182,212,0.3); }
+.tier-master { background: rgba(139,92,246,0.2); color: #8b5cf6; border: 1px solid rgba(139,92,246,0.3); }
+.tier-legend { background: linear-gradient(135deg, rgba(234,179,8,0.2), rgba(139,92,246,0.2)); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
 
-/* Barra de progreso */
-.progress-track {
-    height: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width var(--transition-slow);
-}
-
-/* ============================================================
-   8. TIER SYSTEM (NIVELES DE USUARIO)
-   ============================================================ */
-
-.tier-bronze { background: rgba(180, 83, 9, 0.2); color: #d97706; border: 1px solid rgba(180, 83, 9, 0.3); }
-.tier-silver { background: rgba(156, 163, 175, 0.2); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.3); }
-.tier-gold { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); }
-.tier-platinum { background: rgba(6, 182, 212, 0.2); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
-.tier-master { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
-.tier-legend { background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(139, 92, 246, 0.2)); color: #fbbf24; border: 1px solid rgba(234, 179, 8, 0.3); }
-
-/* ============================================================
-   9. TARJETAS DE PREDICCION
-   ============================================================ */
-
+/* --- Pred cards --- */
 .pred-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    transition: all var(--transition-normal);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; transition: all 250ms ease;
     animation: slide-in 0.3s ease-out;
 }
+@keyframes slide-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.pred-card:hover { border-color: rgba(247,147,26,0.2); }
+.pred-card.acierto { border-left: 3px solid #22c55e; }
+.pred-card.fallo { border-left: 3px solid #ef4444; }
+.pred-card.activo { border-left: 3px solid #f7931a; }
 
-@keyframes slide-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+/* --- Order book --- */
+.order-row { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; border-radius: 4px; overflow: hidden; }
+.order-row .bar { position: absolute; left: 0; top: 0; bottom: 0; opacity: 0.15; border-radius: 4px; transition: width 250ms ease; }
+.order-row .content { position: relative; z-index: 1; display: flex; justify-content: space-between; width: 100%; font-size: 0.75rem; font-family: monospace; }
 
-.pred-card:hover {
-    border-color: rgba(247, 147, 26, 0.2);
-}
+/* --- Achievements --- */
+.achievement-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; transition: all 250ms ease; position: relative; overflow: hidden; }
+.achievement-card.unlocked { border-color: rgba(247,147,26,0.3); }
+.achievement-card.unlocked::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(247,147,26,0.05) 0%, transparent 70%); animation: achievement-glow 3s ease-in-out infinite; }
+@keyframes achievement-glow { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+.achievement-card.locked { opacity: 0.5; }
+.achievement-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.75rem; }
 
-.pred-card.acierto {
-    border-left: 3px solid #22c55e;
-}
+/* --- Filter buttons --- */
+.filter-btn { padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: all 150ms ease; border: 1px solid transparent; }
+.filter-btn.active { background: rgba(247,147,26,0.2); color: var(--amber); border-color: rgba(247,147,26,0.3); }
+.filter-btn:not(.active) { background: rgba(255,255,255,0.05); color: var(--muted); }
+.filter-btn:not(.active):hover { background: rgba(255,255,255,0.1); color: var(--text); }
 
-.pred-card.fallo {
-    border-left: 3px solid #ef4444;
-}
+/* --- Tables --- */
+table { border-collapse: collapse; width: 100%; }
+tbody tr { transition: background 150ms ease; border-bottom: 1px solid var(--border); }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody tr:last-child { border-bottom: none; }
 
-.pred-card.activo {
-    border-left: 3px solid #f7931a;
-}
+/* --- Scroll --- */
+.touch-scroll { -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+.touch-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+.touch-scroll::-webkit-scrollbar-track { background: transparent; }
+.touch-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.no-select { user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.scroll-area { max-height: 400px; overflow-y: auto; }
 
-/* ============================================================
-   10. ORDER BOOK
-   ============================================================ */
+/* --- Toast --- */
+#toast { animation: toast-in 0.3s ease-out; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
-.order-row {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 8px;
-    border-radius: 4px;
-    overflow: hidden;
-}
+/* --- Chart --- */
+.chart-container { width: 100%; height: 400px; border-radius: 12px; overflow: hidden; }
 
-.order-row .bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    opacity: 0.15;
-    border-radius: 4px;
-    transition: width var(--transition-normal);
-}
+/* --- Inputs --- */
+input, select { outline: none; transition: border-color 150ms ease, box-shadow 150ms ease; color: var(--text); }
+input:focus, select:focus { border-color: rgba(247,147,26,0.5) !important; box-shadow: 0 0 0 3px rgba(247,147,26,0.1); }
+input::placeholder { color: var(--muted); }
 
-.order-row .content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-}
+/* --- Heatmap --- */
+.heatmap-cell { aspect-ratio: 1; border-radius: 4px; transition: transform 150ms ease; }
+.heatmap-cell:hover { transform: scale(1.1); z-index: 1; }
 
-/* ============================================================
-   11. LOGROS
-   ============================================================ */
+/* --- Notifs --- */
+.notif-item { padding: 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); transition: all 150ms ease; }
+.notif-item:hover { background: rgba(255,255,255,0.05); }
+.notif-item.unread { border-left: 2px solid var(--amber); }
 
-.achievement-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1.25rem;
-    transition: all var(--transition-normal);
-    position: relative;
-    overflow: hidden;
-}
-
-.achievement-card.unlocked {
-    border-color: rgba(247, 147, 26, 0.3);
-}
-
-.achievement-card.unlocked::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(247,147,26,0.05) 0%, transparent 70%);
-    animation: achievement-glow 3s ease-in-out infinite;
-}
-
-@keyframes achievement-glow {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
-
-.achievement-card.locked {
-    opacity: 0.5;
-}
-
-.achievement-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-}
-
-/* ============================================================
-   12. BOTONES DE FILTRO
-   ============================================================ */
-
-.filter-btn {
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    border: 1px solid transparent;
-}
-
-.filter-btn.active {
-    background: rgba(247, 147, 26, 0.2);
-    color: var(--color-amber);
-    border-color: rgba(247, 147, 26, 0.3);
-}
-
-.filter-btn:not(.active) {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--color-text-muted);
-}
-
-.filter-btn:not(.active):hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--color-text);
-}
-
-/* ============================================================
-   13. TABLAS
-   ============================================================ */
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-tbody tr {
-    transition: background var(--transition-fast);
-    border-bottom: 1px solid var(--color-border);
-}
-
-tbody tr:hover {
-    background: rgba(255, 255, 255, 0.02);
-}
-
-tbody tr:last-child {
-    border-bottom: none;
-}
-
-/* ============================================================
-   14. SCROLL Y UTILIDADES
-   ============================================================ */
-
-/* Scroll suave en areas con overflow */
-.touch-scroll {
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.1) transparent;
-}
-
-.touch-scroll::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-}
-
-.touch-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.touch-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-}
-
-/* No seleccionable */
-.no-select {
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* Area de scroll */
-.scroll-area {
-    max-height: 400px;
-    overflow-y: auto;
-    touch-scroll: auto;
-}
-
-/* ============================================================
-   15. TOAST NOTIFICATION
-   ============================================================ */
-
-#toast {
-    animation: toast-in 0.3s ease-out;
-}
-
-@keyframes toast-in {
-    from { opacity: 0; transform: translate(-50%, 20px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-/* ============================================================
-   16. RESPONSIVE DESIGN
-   ============================================================ */
-
+/* --- Responsive --- */
 @media (max-width: 768px) {
-    .hero-display {
-        padding: 1.5rem !important;
-    }
-    
-    #hero-price {
-        font-size: 2.5rem !important;
-    }
-    
-    .stat-card {
-        padding: 0.75rem;
-    }
-    
-    .vote-up, .vote-down {
-        padding: 1.5rem !important;
-        font-size: 1.25rem !important;
-    }
-    
-    .glass-card {
-        padding: 1rem !important;
-    }
+    .hero-display { padding: 1.5rem !important; }
+    #hero-price { font-size: 2.5rem !important; }
+    .stat-card { padding: 0.75rem; }
+    .vote-up, .vote-down { padding: 1.5rem !important; font-size: 1.25rem !important; }
+    .glass-card { padding: 1rem !important; }
 }
-
 @media (max-width: 640px) {
-    #hero-price {
-        font-size: 2rem !important;
-    }
-    
-    .period-btn {
-        padding: 0.75rem !important;
-    }
-}
-
-/* ============================================================
-   17. ANIMACIONES ADICIONALES
-   ============================================================ */
-
-/* Fade in */
-.fade-in {
-    animation: fade-in 0.5s ease-out;
-}
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Scale in */
-.scale-in {
-    animation: scale-in 0.3s ease-out;
-}
-
-@keyframes scale-in {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-/* ============================================================
-   18. CHART CONTAINER (Lightweight Charts)
-   ============================================================ */
-
-.chart-container {
-    width: 100%;
-    height: 400px;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
-
-.tv-chart {
-    background: transparent !important;
-}
-
-/* ============================================================
-   19. INPUTS Y FORMULARIOS
-   ============================================================ */
-
-input, select {
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    color: var(--color-text);
-}
-
-input:focus, select:focus {
-    border-color: rgba(247, 147, 26, 0.5) !important;
-    box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.1);
-}
-
-input::placeholder {
-    color: var(--color-text-muted);
-}
-
-/* ============================================================
-   20. MAPA DE CALOR (Liquidaciones)
-   ============================================================ */
-
-.heatmap-cell {
-    aspect-ratio: 1;
-    border-radius: 4px;
-    transition: transform var(--transition-fast);
-}
-
-.heatmap-cell:hover {
-    transform: scale(1.1);
-    z-index: 1;
-}
-
-/* ============================================================
-   21. MODAL
-   ============================================================ */
-
-#auth-modal {
-    animation: modal-fade 0.2s ease-out;
-}
-
-@keyframes modal-fade {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* ============================================================
-   22. UTILIDADES DE TEXTO
-   ============================================================ */
-
-.font-mono {
-    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-}
-
-/* ============================================================
-   23. ANIMACION DE CARGA
-   ============================================================ */
-
-.loading-pulse {
-    animation: loading-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes loading-pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 1; }
-}
-
-/* ============================================================
-   24. NOTIFICACIONES
-   ============================================================ */
-
-.notif-item {
-    padding: 0.75rem;
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--color-border);
-    transition: all var(--transition-fast);
-}
-
-.notif-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.notif-item.unread {
-    border-left: 2px solid var(--color-amber);
+    #hero-price { font-size: 2rem !important; }
+    .period-btn { padding: 0.75rem !important; }
 }
