@@ -2133,6 +2133,10 @@ async function verificarSesion() {
   });
 }
 
+
+
+
+
 async function cargarUsuario(user) {
   try {
     const { data, error } = await supabaseClient
@@ -2142,7 +2146,11 @@ async function cargarUsuario(user) {
       .single();
     
     if (error || !data) {
-      const username = user.user_metadata?.username || user.email.split('@')[0];
+      // Leer username del metadata (guardado durante signUp)
+      const username = user.user_metadata?.username 
+        || user.email?.split('@')[0] 
+        || 'Usuario' + Math.floor(Math.random() * 1000);
+      
       const newUser = {
         id: user.id,
         email: user.email,
@@ -2160,7 +2168,10 @@ async function cargarUsuario(user) {
         .from('usuarios')
         .insert([newUser]);
       
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Error creando usuario en BD:', insertError);
+        throw insertError;
+      }
       
       usuarioActual = { uid: user.id, ...newUser };
     } else {
@@ -2178,6 +2189,9 @@ async function cargarUsuario(user) {
     verificarLogros();
     
     // Realtime listener para cambios en el usuario
+    if (unsubscribeGlobal) {
+      unsubscribeGlobal.unsubscribe();
+    }
     unsubscribeGlobal = supabaseClient
       .channel('usuario-' + user.id)
       .on('postgres_changes', { 
@@ -2201,6 +2215,7 @@ async function cargarUsuario(user) {
     mostrarToast('Error al cargar usuario', 'error'); 
   }
 }
+
 
 async function register() {
   const email = document.getElementById('email-reg').value.trim();
