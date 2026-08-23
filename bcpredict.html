@@ -10,122 +10,79 @@
     <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Supabase JS (v2) -->
+    <!-- Supabase JS v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        /* ===== ESTILOS COMPLETOS (igual que antes) ===== */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
         * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         html, body { margin: 0; padding: 0; min-height: 100%; -webkit-text-size-adjust: 100%; }
         body { background: #0a0e17; color: #f1f5f9; overflow-x: hidden; }
 
-        .bg-grid {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: linear-gradient(rgba(247,147,26,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(247,147,26,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .bg-glow {
-            position: fixed;
-            width: 600px; height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(247,147,26,0.08) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-            animation: floatGlow 20s ease-in-out infinite;
-        }
-        .bg-glow-1 { top: -200px; left: -200px; animation-delay: 0s; }
-        .bg-glow-2 { bottom: -200px; right: -200px; animation-delay: -10s; background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+        .bg-grid { position: fixed; top:0; left:0; right:0; bottom:0; background-image: linear-gradient(rgba(247,147,26,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(247,147,26,0.03) 1px, transparent 1px); background-size:50px 50px; pointer-events:none; z-index:0; }
+        .bg-glow { position:fixed; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(247,147,26,0.08) 0%, transparent 70%); pointer-events:none; z-index:0; animation:floatGlow 20s ease-in-out infinite; }
+        .bg-glow-1 { top:-200px; left:-200px; animation-delay:0s; }
+        .bg-glow-2 { bottom:-200px; right:-200px; animation-delay:-10s; background:radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+        @keyframes floatGlow { 0%,100% { transform:translate(0,0) scale(1); } 25% { transform:translate(50px,30px) scale(1.1); } 50% { transform:translate(-30px,50px) scale(0.9); } 75% { transform:translate(40px,-20px) scale(1.05); } }
 
-        @keyframes floatGlow { 0%,100% { transform: translate(0,0) scale(1); } 25% { transform: translate(50px,30px) scale(1.1); } 50% { transform: translate(-30px,50px) scale(0.9); } 75% { transform: translate(40px,-20px) scale(1.05); } }
+        :root { --bg-primary:#0a0e17; --bg-secondary:#111827; --bg-card:rgba(17,24,39,0.85); --border:rgba(148,163,184,0.12); --accent:#f7931a; --accent-hover:#e8850f; --green:#22c55e; --red:#ef4444; --text-primary:#f1f5f9; --text-secondary:#94a3b8; --text-muted:#64748b; }
 
-        :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #111827;
-            --bg-card: rgba(17,24,39,0.85);
-            --border: rgba(148,163,184,0.12);
-            --accent: #f7931a;
-            --accent-hover: #e8850f;
-            --green: #22c55e;
-            --red: #ef4444;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-        }
+        .glass { background:rgba(17,24,39,0.85); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); border:1px solid rgba(148,163,184,0.12); }
+        .glass:hover { border-color:rgba(247,147,26,0.2); }
+        .glass-card { background:linear-gradient(135deg, rgba(17,24,39,0.9) 0%, rgba(30,41,59,0.8) 100%); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px); border:1px solid rgba(148,163,184,0.08); border-radius:16px; position:relative; overflow:hidden; }
+        .glass-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent); }
 
-        .glass { background: rgba(17,24,39,0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid rgba(148,163,184,0.12); }
-        .glass:hover { border-color: rgba(247,147,26,0.2); }
-        .glass-card {
-            background: linear-gradient(135deg, rgba(17,24,39,0.9) 0%, rgba(30,41,59,0.8) 100%);
-            -webkit-backdrop-filter: blur(20px);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(148,163,184,0.08);
-            border-radius: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-        .glass-card::before { content: ''; position: absolute; top:0; left:0; right:0; height:1px; background: linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent); }
+        .tab-active { border-bottom:2px solid #f7931a; color:#f7931a; }
+        .btn-primary { background:linear-gradient(135deg, #f7931a, #e8850f); color:#000; font-weight:700; transition:all 0.3s; box-shadow:0 4px 15px rgba(247,147,26,0.3); }
+        .btn-primary:hover { background:linear-gradient(135deg, #e8850f, #d97706); transform:translateY(-2px); box-shadow:0 8px 25px rgba(247,147,26,0.4); }
+        .btn-primary:active { transform:translateY(0); box-shadow:0 2px 10px rgba(247,147,26,0.3); }
+        .btn-outline { border:1px solid rgba(247,147,26,0.4); color:#f7931a; transition:all 0.3s; background:rgba(247,147,26,0.05); }
+        .btn-outline:hover { background:rgba(247,147,26,0.15); border-color:#f7931a; box-shadow:0 0 20px rgba(247,147,26,0.1); }
+        .btn-glass { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#94a3b8; transition:all 0.3s; }
+        .btn-glass:hover { background:rgba(255,255,255,0.1); border-color:rgba(247,147,26,0.3); color:#f1f5f9; }
 
-        .tab-active { border-bottom: 2px solid #f7931a; color: #f7931a; }
-        .btn-primary {
-            background: linear-gradient(135deg, #f7931a, #e8850f);
-            color: #000;
-            font-weight: 700;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(247,147,26,0.3);
-        }
-        .btn-primary:hover { background: linear-gradient(135deg, #e8850f, #d97706); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(247,147,26,0.4); }
-        .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(247,147,26,0.3); }
-        .btn-outline { border: 1px solid rgba(247,147,26,0.4); color: #f7931a; transition: all 0.3s; background: rgba(247,147,26,0.05); }
-        .btn-outline:hover { background: rgba(247,147,26,0.15); border-color: #f7931a; box-shadow: 0 0 20px rgba(247,147,26,0.1); }
-        .btn-glass { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; transition: all 0.3s; }
-        .btn-glass:hover { background: rgba(255,255,255,0.1); border-color: rgba(247,147,26,0.3); color: #f1f5f9; }
+        .tier-bronze { background:linear-gradient(135deg, #8B6914, #CD7F32); color:#000; box-shadow:0 0 15px rgba(205,127,50,0.3); }
+        .tier-silver { background:linear-gradient(135deg, #8899a6, #c0c0c0); color:#000; box-shadow:0 0 15px rgba(192,192,192,0.3); }
+        .tier-gold { background:linear-gradient(135deg, #DAA520, #FFD700); color:#000; box-shadow:0 0 15px rgba(255,215,0,0.3); }
+        .tier-platinum { background:linear-gradient(135deg, #E5E4E2, #B0C4DE); color:#000; box-shadow:0 0 15px rgba(176,196,222,0.3); }
+        .tier-master { background:linear-gradient(135deg, #4B0082, #8A2BE2); color:#fff; box-shadow:0 0 15px rgba(138,43,226,0.3); }
+        .tier-legend { background:linear-gradient(135deg, #FF4500, #FFD700); color:#000; box-shadow:0 0 20px rgba(255,69,0,0.4); }
 
-        .tier-bronze { background: linear-gradient(135deg, #8B6914, #CD7F32); color: #000; box-shadow: 0 0 15px rgba(205,127,50,0.3); }
-        .tier-silver { background: linear-gradient(135deg, #8899a6, #c0c0c0); color: #000; box-shadow: 0 0 15px rgba(192,192,192,0.3); }
-        .tier-gold { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-        .tier-platinum { background: linear-gradient(135deg, #E5E4E2, #B0C4DE); color: #000; box-shadow: 0 0 15px rgba(176,196,222,0.3); }
-        .tier-master { background: linear-gradient(135deg, #4B0082, #8A2BE2); color: #fff; box-shadow: 0 0 15px rgba(138,43,226,0.3); }
-        .tier-legend { background: linear-gradient(135deg, #FF4500, #FFD700); color: #000; box-shadow: 0 0 20px rgba(255,69,0,0.4); }
+        .period-btn { transition:all 0.3s; border:1px solid rgba(148,163,184,0.12); cursor:pointer; position:relative; overflow:hidden; }
+        .period-btn::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg, transparent, rgba(247,147,26,0.1), transparent); transition:left 0.5s; }
+        .period-btn:hover::after { left:100%; }
+        .period-btn:hover { border-color:rgba(247,147,26,0.4); background:rgba(247,147,26,0.08); transform:translateY(-2px); box-shadow:0 4px 15px rgba(247,147,26,0.1); }
+        .period-btn.selected { border-color:#f7931a; background:linear-gradient(135deg, rgba(247,147,26,0.15), rgba(247,147,26,0.05)); box-shadow:0 0 20px rgba(247,147,26,0.2); transform:translateY(-2px); }
 
-        .period-btn { transition: all 0.3s; border: 1px solid rgba(148,163,184,0.12); cursor: pointer; position: relative; overflow: hidden; }
-        .period-btn::after { content: ''; position: absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(247,147,26,0.1), transparent); transition: left 0.5s; }
-        .period-btn:hover::after { left: 100%; }
-        .period-btn:hover { border-color: rgba(247,147,26,0.4); background: rgba(247,147,26,0.08); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(247,147,26,0.1); }
-        .period-btn.selected { border-color: #f7931a; background: linear-gradient(135deg, rgba(247,147,26,0.15), rgba(247,147,26,0.05)); box-shadow: 0 0 20px rgba(247,147,26,0.2); transform: translateY(-2px); }
+        .vote-up { background:linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05)); border:1px solid rgba(34,197,94,0.3); color:#22c55e; transition:all 0.3s; }
+        .vote-up:hover { background:linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); border-color:#22c55e; box-shadow:0 0 25px rgba(34,197,94,0.2); transform:translateY(-2px); }
+        .vote-down { background:linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border:1px solid rgba(239,68,68,0.3); color:#ef4444; transition:all 0.3s; }
+        .vote-down:hover { background:linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1)); border-color:#ef4444; box-shadow:0 0 25px rgba(239,68,68,0.2); transform:translateY(-2px); }
 
-        .vote-up { background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05)); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; transition: all 0.3s; }
-        .vote-up:hover { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); border-color: #22c55e; box-shadow: 0 0 25px rgba(34,197,94,0.2); transform: translateY(-2px); }
-        .vote-down { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; transition: all 0.3s; }
-        .vote-down:hover { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1)); border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.2); transform: translateY(-2px); }
+        .badge-pending { background:linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1)); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); }
+        .badge-win { background:linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); color:#4ade80; border:1px solid rgba(34,197,94,0.3); }
+        .badge-loss { background:linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1)); color:#f87171; border:1px solid rgba(239,68,68,0.3); }
 
-        .badge-pending { background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1)); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
-        .badge-win { background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1)); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
-        .badge-loss { background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1)); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .scroll-area { max-height:480px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+        .scroll-area::-webkit-scrollbar { width:4px; }
+        .scroll-area::-webkit-scrollbar-track { background:transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background:linear-gradient(180deg, #f7931a, #e8850f); border-radius:4px; }
 
-        .scroll-area { max-height: 480px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .scroll-area::-webkit-scrollbar { width: 4px; }
-        .scroll-area::-webkit-scrollbar-track { background: transparent; }
-        .scroll-area::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #f7931a, #e8850f); border-radius: 4px; }
-
-        .live-dot { width: 8px; height: 8px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px rgba(34,197,94,0.5); }
+        .live-dot { width:8px; height:8px; background:linear-gradient(135deg, #22c55e, #16a34a); border-radius:50%; animation:pulse 2s infinite; box-shadow:0 0 10px rgba(34,197,94,0.5); }
         @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); box-shadow:0 0 10px rgba(34,197,94,0.5); } 50% { opacity:0.4; transform:scale(0.8); box-shadow:0 0 20px rgba(34,197,94,0.2); } }
 
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4,0,0.2,1); }
-        @keyframes fadeIn { from { opacity:0; transform: translateY(12px) scale(0.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+        .fade-in { animation:fadeIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(12px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+        .slide-up { animation:slideUp 0.5s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
 
-        .slide-up { animation: slideUp 0.5s cubic-bezier(0.4,0,0.2,1); }
-        @keyframes slideUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+        .price-flash-up { animation:flashUp 0.5s ease; }
+        .price-flash-down { animation:flashDown 0.5s ease; }
+        @keyframes flashUp { 0% { text-shadow:none; } 30% { text-shadow:0 0 30px rgba(34,197,94,0.8); color:#4ade80; } 100% { text-shadow:none; } }
+        @keyframes flashDown { 0% { text-shadow:none; } 30% { text-shadow:0 0 30px rgba(239,68,68,0.8); color:#f87171; } 100% { text-shadow:none; } }
 
-        .price-flash-up { animation: flashUp 0.5s ease; }
-        .price-flash-down { animation: flashDown 0.5s ease; }
-        @keyframes flashUp { 0% { text-shadow: none; } 30% { text-shadow: 0 0 30px rgba(34,197,94,0.8); color: #4ade80; } 100% { text-shadow: none; } }
-        @keyframes flashDown { 0% { text-shadow: none; } 30% { text-shadow: 0 0 30px rgba(239,68,68,0.8); color: #f87171; } 100% { text-shadow: none; } }
-
-        .stat-card { background: linear-gradient(135deg, rgba(17,24,39,0.8), rgba(30,41,59,0.6)); border:1px solid rgba(148,163,184,0.08); border-radius:12px; padding:16px; transition:all 0.3s; position:relative; overflow:hidden; }
+        .stat-card { background:linear-gradient(135deg, rgba(17,24,39,0.8), rgba(30,41,59,0.6)); border:1px solid rgba(148,163,184,0.08); border-radius:12px; padding:16px; transition:all 0.3s; position:relative; overflow:hidden; }
         .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, rgba(247,147,26,0.2), transparent); opacity:0; transition:opacity 0.3s; }
         .stat-card:hover { border-color:rgba(247,147,26,0.2); transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
         .stat-card:hover::before { opacity:1; }
@@ -135,10 +92,10 @@
 
         input:focus, select:focus { border-color:#f7931a !important; outline:none; box-shadow:0 0 0 3px rgba(247,147,26,0.1); }
 
-        .toast { position:fixed; bottom:24px; left:50%; transform: translateX(-50%) translateY(100px); opacity:0; transition:all 0.5s cubic-bezier(0.4,0,0.2,1); z-index:50; box-shadow:0 10px 40px rgba(0,0,0,0.4); }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity:1; }
+        .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); opacity:0; transition:all 0.5s cubic-bezier(0.4,0,0.2,1); z-index:50; box-shadow:0 10px 40px rgba(0,0,0,0.4); }
+        .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
 
-        .ticker-bar { background: linear-gradient(90deg, rgba(10,14,23,0.95), rgba(17,24,39,0.95), rgba(10,14,23,0.95)); border-bottom:1px solid rgba(148,163,184,0.08); position:relative; }
+        .ticker-bar { background:linear-gradient(90deg, rgba(10,14,23,0.95), rgba(17,24,39,0.95), rgba(10,14,23,0.95)); border-bottom:1px solid rgba(148,163,184,0.08); position:relative; }
         .ticker-bar::before { content:''; position:absolute; left:0; top:0; bottom:0; width:60px; background:linear-gradient(90deg, rgba(10,14,23,0.95), transparent); z-index:2; pointer-events:none; }
         .ticker-bar::after { content:''; position:absolute; right:0; top:0; bottom:0; width:60px; background:linear-gradient(270deg, rgba(10,14,23,0.95), transparent); z-index:2; pointer-events:none; }
         .ticker-content { display:flex; animation:ticker 50s linear infinite; white-space:nowrap; }
@@ -146,29 +103,14 @@
         .ticker-item { padding:0 24px; font-size:12px; }
 
         /* Modal */
-        #modal-auth {
-            position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; z-index:9999;
-            background:rgba(0,0,0,0.85); display:none; padding:20px; box-sizing:border-box;
-            overflow-y:auto; -webkit-overflow-scrolling:touch; align-items:center; justify-content:center;
-        }
+        #modal-auth { position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; z-index:9999; background:rgba(0,0,0,0.85); display:none; padding:20px; box-sizing:border-box; overflow-y:auto; -webkit-overflow-scrolling:touch; align-items:center; justify-content:center; }
         #modal-auth.visible { display:flex; }
-        #modal-content {
-            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
-            border:1px solid rgba(148,163,184,0.12);
-            border-radius:20px;
-            padding:32px;
-            width:100%;
-            max-width:420px;
-            position:relative;
-            box-sizing:border-box;
-            box-shadow:0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(247,147,26,0.1);
-            animation: modalSlideIn 0.4s cubic-bezier(0.4,0,0.2,1);
-        }
+        #modal-content { background:linear-gradient(135deg, #111827 0%, #1e293b 100%); border:1px solid rgba(148,163,184,0.12); border-radius:20px; padding:32px; width:100%; max-width:420px; position:relative; box-sizing:border-box; box-shadow:0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(247,147,26,0.1); animation:modalSlideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
         @keyframes modalSlideIn { from { opacity:0; transform:translateY(30px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
         #modal-auth input { appearance:none; border-radius:10px; width:100%; padding:14px 18px; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); color:#f1f5f9; font-size:14px; box-sizing:border-box; transition:all 0.3s; }
         #modal-auth input:focus { border-color:#f7931a; outline:none; box-shadow:0 0 0 3px rgba(247,147,26,0.1); background:rgba(0,0,0,0.5); }
 
-        .hero-display { background: linear-gradient(135deg, rgba(17,24,39,0.9), rgba(30,41,59,0.8)); position:relative; overflow:hidden; }
+        .hero-display { background:linear-gradient(135deg, rgba(17,24,39,0.9), rgba(30,41,59,0.8)); position:relative; overflow:hidden; }
         .hero-display::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle, rgba(247,147,26,0.03) 0%, transparent 50%); animation:heroGlow 8s ease-in-out infinite; }
         @keyframes heroGlow { 0%,100% { transform:scale(1) rotate(0deg); } 50% { transform:scale(1.1) rotate(180deg); } }
 
@@ -199,23 +141,18 @@
 <div class="bg-glow bg-glow-1"></div>
 <div class="bg-glow bg-glow-2"></div>
 
-<!-- NAVBAR -->
+<!-- ===== NAVBAR ===== -->
 <nav class="sticky top-0 z-50 px-4 py-3" style="background: linear-gradient(180deg, rgba(10,14,23,0.98) 0%, rgba(17,24,39,0.95) 100%); border-bottom: 1px solid rgba(148,163,184,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-amber-500/20">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
             </div>
-            <div>
-                <h1 class="text-lg font-bold tracking-tight">BCPredict <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">supabase</span></h1>
-            </div>
+            <div><h1 class="text-lg font-bold tracking-tight">BCPredict <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">supabase</span></h1></div>
         </div>
 
         <div id="btc-price" class="hidden md:flex items-center gap-4">
-            <div class="flex items-center gap-2">
-                <div class="live-dot"></div>
-                <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC/USD</span>
-            </div>
+            <div class="flex items-center gap-2"><div class="live-dot"></div><span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC/USD</span></div>
             <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="price-value" style="font-family:'JetBrains Mono',monospace;">--</span>
             <span id="price-change" class="text-xs px-2.5 py-1 rounded-lg font-bold"></span>
             <span class="text-xs text-gray-600 font-mono" id="price-range" style="font-family:'JetBrains Mono',monospace;"></span>
@@ -227,10 +164,7 @@
         </div>
 
         <div id="user-menu" class="hidden items-center gap-3">
-            <div class="text-right">
-                <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
-                <div id="user-tier" class="text-[10px] font-medium mt-0.5"></div>
-            </div>
+            <div class="text-right"><div id="user-name" class="font-semibold text-sm text-gray-200"></div><div id="user-tier" class="text-[10px] font-medium mt-0.5"></div></div>
             <div class="relative">
                 <button onclick="toggleNotif()" class="p-2.5 rounded-xl hover:bg-white/5 transition no-select relative">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -248,21 +182,19 @@
     </div>
 </nav>
 
-<!-- TICKER -->
+<!-- ===== TICKER ===== -->
 <div class="ticker-bar py-2.5 overflow-hidden relative">
-    <div class="ticker-content" id="market-ticker">
-        <span class="ticker-item text-gray-500">Cargando mercado...</span>
-    </div>
+    <div class="ticker-content" id="market-ticker"><span class="ticker-item text-gray-500">Cargando mercado...</span></div>
 </div>
 
-<!-- MOBILE PRICE -->
+<!-- ===== MOBILE PRICE ===== -->
 <div class="md:hidden glass mx-4 mt-3 p-3 rounded-xl flex justify-center gap-3 items-center">
     <div class="live-dot"></div>
     <span class="text-amber-400 font-bold text-base font-mono" id="price-value-movil" style="font-family:'JetBrains Mono',monospace;">--</span>
     <span id="price-change-movil" class="text-xs px-2 py-0.5 rounded-lg font-medium"></span>
 </div>
 
-<!-- TABS -->
+<!-- ===== TABS ===== -->
 <div class="max-w-7xl mx-auto px-4 mt-3">
     <div class="flex border-b border-gray-800 gap-1 text-sm font-medium overflow-x-auto touch-scroll">
         <button class="py-3 px-4 tab-active whitespace-nowrap no-select" onclick="switchTab('predict', event)">Predecir</button>
@@ -277,7 +209,9 @@
     </div>
 </div>
 
-<!-- ================ TAB: PREDECIR ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: PREDECIR ===== -->
+<!-- ============================================================ -->
 <section id="tab-predict" class="max-w-6xl mx-auto px-4 py-6 relative z-10">
     <div class="hero-display glass-card rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
         <div class="heartbeat-line mb-5"></div>
@@ -317,7 +251,7 @@
             <div class="flex items-center gap-2"><span id="fear-greed-value" class="text-3xl font-black font-mono" style="font-family:'JetBrains Mono',monospace;">--</span><span id="fear-greed-label" class="text-xs font-bold px-2 py-1 rounded-md"></span></div>
         </div>
         <div class="relative h-4 rounded-full overflow-hidden bg-gray-800">
-            <div id="fear-greed-bar" class="h-full rounded-full" style="width:0%; background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);"></div>
+            <div id="fear-greed-bar" class="h-full rounded-full" style="width:0%; background:linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);"></div>
             <div class="absolute inset-0 flex justify-between items-center px-3">
                 <span class="text-[8px] text-gray-600 font-bold">EXTREMO MIEDO</span>
                 <span class="text-[8px] text-gray-600 font-bold">NEUTRAL</span>
@@ -391,7 +325,9 @@
     </div>
 </section>
 
-<!-- ================ TAB: MERCADO ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: MERCADO ===== -->
+<!-- ============================================================ -->
 <section id="tab-mercado" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Análisis de Mercado</h2><p class="text-sm text-gray-500 mt-1">Datos en tiempo real del mercado cripto</p></div>
     <div class="glass-card rounded-2xl p-5 mb-6">
@@ -432,7 +368,9 @@
     </div>
 </section>
 
-<!-- ================ TAB: RANKING ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: RANKING ===== -->
+<!-- ============================================================ -->
 <section id="tab-ranking" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Ranking Global</h2><p class="text-sm text-gray-500 mt-1">Compite y sube de nivel</p></div>
     <div class="flex flex-wrap justify-center gap-2 mb-6">
@@ -463,7 +401,9 @@
     </div>
 </section>
 
-<!-- ================ TAB: GLOBAL ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: GLOBAL ===== -->
+<!-- ============================================================ -->
 <section id="tab-global" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Predicciones en Vivo</h2><p class="text-sm text-gray-500 mt-1">Actividad de la comunidad en tiempo real</p></div>
     <div id="user-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -483,7 +423,9 @@
     <div id="global-predicciones" class="space-y-2 scroll-area"><p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones...</p></div>
 </section>
 
-<!-- ================ TAB: ANALISIS ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: ANALISIS ===== -->
+<!-- ============================================================ -->
 <section id="tab-analisis" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Análisis de la Comunidad</h2><p class="text-sm text-gray-500 mt-1">Estadísticas y tendencias globales</p></div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -502,7 +444,9 @@
     <div class="glass-card rounded-2xl p-5"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Últimos Resultados</h3><div id="ultimos-resultados" class="space-y-1.5"><p class="text-gray-600 text-sm">Cargando resultados...</p></div></div>
 </section>
 
-<!-- ================ TAB: ORDER BOOK ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: ORDER BOOK ===== -->
+<!-- ============================================================ -->
 <section id="tab-orderbook" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Order Book Simulado</h2><p class="text-sm text-gray-500 mt-1">Profundidad de mercado en tiempo real</p></div>
     <div class="grid md:grid-cols-2 gap-4 mb-6">
@@ -516,7 +460,9 @@
     <div class="glass-card rounded-2xl p-5"><h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mapa de Calor de Liquidaciones</h3><div class="grid grid-cols-5 gap-1" id="liquidation-heatmap"></div><div class="flex justify-between mt-3 text-[10px] text-gray-600 font-mono" style="font-family:'JetBrains Mono',monospace;"><span>Soporte Fuerte</span><span>Precio Actual</span><span>Resistencia Fuerte</span></div></div>
 </section>
 
-<!-- ================ TAB: CALCULADORA ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: CALCULADORA ===== -->
+<!-- ============================================================ -->
 <section id="tab-calculadora" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Calculadora de Trading</h2><p class="text-sm text-gray-500 mt-1">Simula tus operaciones y predicciones</p></div>
     <div class="grid md:grid-cols-2 gap-4 mb-6">
@@ -561,7 +507,9 @@
     </div>
 </section>
 
-<!-- ================ TAB: ACHIEVEMENTS ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: ACHIEVEMENTS ===== -->
+<!-- ============================================================ -->
 <section id="tab-achievements" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Logros y Recompensas</h2><p class="text-sm text-gray-500 mt-1">Desbloquea insignias exclusivas demostrando tu habilidad</p></div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -573,7 +521,9 @@
     <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 </section>
 
-<!-- ================ TAB: BOTS ================ -->
+<!-- ============================================================ -->
+<!-- ===== TAB: BOTS ===== -->
+<!-- ============================================================ -->
 <section id="tab-bots" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
     <div class="text-center mb-6"><h2 class="text-xl font-bold tracking-tight">Panel de Control de Bots</h2><p class="text-sm text-gray-500 mt-1">Gestiona los bots automáticos de predicción</p></div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -616,7 +566,7 @@
     </div>
 </section>
 
-<!-- MODAL -->
+<!-- ===== MODAL ===== -->
 <div id="modal-auth">
     <div id="modal-content">
         <div class="flex justify-between items-center mb-6"><h2 id="modal-titulo" style="color:#f1f5f9; font-size:20px; font-weight:700; margin:0;">Iniciar Sesión</h2><button onclick="cerrarModal()" class="modal-close-btn" style="background:none; border:none; font-size:28px; line-height:1; padding:0 8px; cursor:pointer; color:#94a3b8;">&times;</button></div>
@@ -636,25 +586,28 @@
     </div>
 </div>
 
-<!-- TOAST -->
+<!-- ===== TOAST ===== -->
 <div id="toast" class="toast glass px-6 py-3 rounded-xl text-sm font-medium"><span id="toast-text"></span></div>
 
 <script>
-// ================================================
-//  CONFIGURACIÓN SUPABASE (ANON KEY PÚBLICA)
-// ================================================
+// ================================================================
+//  SUPABASE CLIENT
+// ================================================================
 const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
 
-// Cliente Supabase
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { autoRefreshToken: true, persistSession: true }
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+    }
 });
 
-// ================================================
+// ================================================================
 //  VARIABLES GLOBALES
-// ================================================
-let usuarioActual = null;          // { uid, email, username, puntos, aciertos, total_votos, racha, mejor_racha, logros }
+// ================================================================
+let usuarioActual = null;
 let periodoSeleccionado = null;
 let precioBTC = 0;
 let precioAnterior = 0;
@@ -706,7 +659,6 @@ const ACHIEVEMENTS = [
     { id:'all_periods', nombre:'Completo', desc:'Acierta en todos los periodos', icon:'🧩', cond:(u)=>false, pts:50 }
 ];
 
-// Personalidades para bots (se mantienen igual)
 const PERSONALITIES = {
     aggressive: { periodWeights:{'5m':0.4,'15m':0.3,'30m':0.2,'1h':0.1}, activityLevel:0.9, skillRange:[0.45,0.55] },
     balanced: { periodWeights:{'5m':0.15,'15m':0.25,'30m':0.25,'1h':0.2,'4h':0.1,'24h':0.05}, activityLevel:0.7, skillRange:[0.48,0.58] },
@@ -716,9 +668,9 @@ const PERSONALITIES = {
     newbie: { periodWeights:{'5m':0.5,'15m':0.3,'30m':0.2}, activityLevel:0.5, skillRange:[0.35,0.48] }
 };
 
-// ================================================
+// ================================================================
 //  INICIO
-// ================================================
+// ================================================================
 document.addEventListener('DOMContentLoaded', () => {
     initParticles();
     cargarPrecioBTC();
@@ -733,9 +685,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizarAchievements();
 });
 
-// ================================================
+// ================================================================
 //  PARTICLES (Three.js)
-// ================================================
+// ================================================================
 function initParticles() {
     const canvas = document.getElementById('particles-canvas');
     if (!canvas || !window.THREE) return;
@@ -792,9 +744,9 @@ function initParticles() {
     } catch(e) { console.log('Particles init error:', e); }
 }
 
-// ================================================
+// ================================================================
 //  WEBSOCKET PRECIO (Binance)
-// ================================================
+// ================================================================
 function iniciarWebSocketPrecio() {
     if (wsPrice) { wsPrice.close(); wsPrice = null; }
     wsPrice = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
@@ -881,9 +833,9 @@ function actualizarSparkline() {
     svg.setAttribute('stroke', last >= first ? '#22c55e' : '#ef4444');
 }
 
-// ================================================
+// ================================================================
 //  FEAR & GREED
-// ================================================
+// ================================================================
 async function actualizarFearGreed() {
     try {
         const res = await fetch('https://api.alternative.me/fng/?limit=1');
@@ -920,9 +872,9 @@ async function actualizarFearGreed() {
     } catch(e) {}
 }
 
-// ================================================
+// ================================================================
 //  ORDER BOOK SIM
-// ================================================
+// ================================================================
 let orderBookData = { bids: [], asks: [] };
 
 function actualizarOrderBookSim(price, qty) {
@@ -998,9 +950,9 @@ function renderizarLiquidationHeatmap() {
     container.innerHTML = cells.join('');
 }
 
-// ================================================
+// ================================================================
 //  CALCULADORA
-// ================================================
+// ================================================================
 function calcularGanancia() {
     const entry = parseFloat(document.getElementById('calc-entry').value) || 0;
     const exit = parseFloat(document.getElementById('calc-exit').value) || 0;
@@ -1059,9 +1011,9 @@ function actualizarConversions(price) {
     document.getElementById('conv-5').textContent = fmt.format(price * 5);
 }
 
-// ================================================
+// ================================================================
 //  GRÁFICO DE VELAS (Lightweight Charts)
-// ================================================
+// ================================================================
 function initCandlestickChart() {
     if (chartTV) return;
     const chartContainer = document.getElementById('candlestick-chart');
@@ -1143,9 +1095,9 @@ function cambiarTimeframe(tf) {
     connectWebSocket();
 }
 
-// ================================================
+// ================================================================
 //  PRECIO BTC (fallback)
-// ================================================
+// ================================================================
 async function cargarPrecioBTC() {
     try {
         const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true');
@@ -1165,9 +1117,9 @@ async function cargarPrecioBTC() {
     } catch(e) { console.log('CoinGecko fallback error'); }
 }
 
-// ================================================
+// ================================================================
 //  DATOS MERCADO
-// ================================================
+// ================================================================
 async function cargarDatosMercado() {
     try {
         const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false');
@@ -1243,28 +1195,36 @@ function fmtCompact(n) {
     return n.toString();
 }
 
-// ================================================
-//  AUTENTICACIÓN CON SUPABASE
-// ================================================
+// ================================================================
+//  AUTENTICACIÓN CON SUPABASE (CORREGIDO)
+// ================================================================
 async function verificarSesionSupabase() {
-    // Obtener sesión actual
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    // 1. Obtener sesión actual
+    const { data: { session } } = await supabase.auth.getSession();
+
     if (session) {
         await cargarUsuarioSupabase(session.user);
     } else {
-        usuarioActual = null;
-        actualizarUI();
-        document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
-        document.getElementById('prediccion-activa').classList.add('hidden');
-        if (unsubscribeGlobal) { unsubscribeGlobal = null; }
-        actualizarStatsUsuario();
-        document.getElementById('user-pred-stats').classList.add('hidden');
-        userAchievements = [];
-        renderizarAchievements();
+        // 2. Revisar si hay sesión en la URL (magic link / confirmación)
+        const { data: urlData } = await supabase.auth.getSession();
+        if (urlData.session) {
+            await cargarUsuarioSupabase(urlData.session.user);
+        } else {
+            usuarioActual = null;
+            actualizarUI();
+            document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+            document.getElementById('prediccion-activa').classList.add('hidden');
+            if (unsubscribeGlobal) { unsubscribeGlobal = null; }
+            actualizarStatsUsuario();
+            document.getElementById('user-pred-stats').classList.add('hidden');
+            userAchievements = [];
+            renderizarAchievements();
+        }
     }
 
-    // Escuchar cambios de autenticación
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    // 3. Escuchar cambios de autenticación
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth event:', event);
         if (event === 'SIGNED_IN' && session) {
             await cargarUsuarioSupabase(session.user);
         } else if (event === 'SIGNED_OUT') {
@@ -1277,6 +1237,8 @@ async function verificarSesionSupabase() {
             userAchievements = [];
             renderizarAchievements();
             mostrarToast('Sesión cerrada');
+        } else if (event === 'TOKEN_REFRESHED') {
+            // Token renovado, no hacer nada especial
         }
     });
 }
@@ -1284,7 +1246,7 @@ async function verificarSesionSupabase() {
 async function cargarUsuarioSupabase(user) {
     try {
         // Buscar usuario en tabla 'usuarios'
-        const { data: userData, error } = await supabaseClient
+        const { data: userData, error } = await supabase
             .from('usuarios')
             .select('*')
             .eq('uid', user.id)
@@ -1305,11 +1267,12 @@ async function cargarUsuarioSupabase(user) {
                 logros: [],
                 creado: new Date().toISOString()
             };
-            const { error: insertError } = await supabaseClient
+            const { error: insertError } = await supabase
                 .from('usuarios')
                 .insert([newUser]);
             if (insertError) throw insertError;
             usuarioActual = newUser;
+            mostrarToast('¡Bienvenido ' + username + '!', 'success');
         } else if (error) {
             throw error;
         } else {
@@ -1324,8 +1287,9 @@ async function cargarUsuarioSupabase(user) {
         cargarAnalisis();
         renderizarAchievements();
         verificarLogros();
+
         // Suscripción en tiempo real a cambios del usuario
-        supabaseClient
+        const channel = supabase
             .channel('usuario_' + user.id)
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'usuarios', filter: 'uid=eq.' + user.id }, (payload) => {
                 if (payload.new) {
@@ -1337,15 +1301,19 @@ async function cargarUsuarioSupabase(user) {
                 }
             })
             .subscribe();
+
+        // Guardar referencia para limpiar después
+        window._userChannel = channel;
+
     } catch(e) {
         console.error('Error cargando usuario:', e);
-        mostrarToast('Error al cargar usuario', 'error');
+        mostrarToast('Error al cargar usuario: ' + e.message, 'error');
     }
 }
 
-// ================================================
+// ================================================================
 //  REGISTRO / LOGIN / LOGOUT (Supabase Auth)
-// ================================================
+// ================================================================
 async function register() {
     const email = document.getElementById('email-reg').value.trim();
     const pass = document.getElementById('pass-reg').value;
@@ -1354,13 +1322,35 @@ async function register() {
     if (pass.length < 6) return mostrarToast('Contraseña mínimo 6 caracteres', 'error');
     if (username.length < 3) return mostrarToast('Usuario mínimo 3 caracteres', 'error');
     try {
-        const { data, error } = await supabaseClient.auth.signUp({
-            email, password: pass,
-            options: { data: { username } }
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password: pass,
+            options: {
+                data: { username: username }
+            }
         });
         if (error) throw error;
-        mostrarToast('Cuenta creada exitosamente. Revisa tu correo para confirmar.');
-        cerrarModal();
+        if (data.user) {
+            // Crear usuario en la tabla 'usuarios'
+            const newUser = {
+                uid: data.user.id,
+                email: email,
+                username: username,
+                puntos: 0,
+                aciertos: 0,
+                total_votos: 0,
+                racha: 0,
+                mejor_racha: 0,
+                logros: [],
+                creado: new Date().toISOString()
+            };
+            const { error: insertError } = await supabase
+                .from('usuarios')
+                .insert([newUser]);
+            if (insertError) throw insertError;
+            mostrarToast('Cuenta creada exitosamente. Revisa tu correo para confirmar.');
+            cerrarModal();
+        }
     } catch(e) { mostrarToast('Error: ' + e.message, 'error'); }
 }
 
@@ -1369,7 +1359,10 @@ async function login() {
     const pass = document.getElementById('pass').value;
     if (!email || !pass) return mostrarToast('Completa todos los campos', 'error');
     try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: pass
+        });
         if (error) throw error;
         mostrarToast('Bienvenido');
         cerrarModal();
@@ -1382,7 +1375,12 @@ async function logout() {
     if (wsPrice) { wsPrice.close(); wsPrice = null; }
     intervalosGlobales.forEach(id => clearInterval(id));
     intervalosGlobales = [];
-    await supabaseClient.auth.signOut();
+    // Limpiar canal de usuario
+    if (window._userChannel) {
+        supabase.removeChannel(window._userChannel);
+        window._userChannel = null;
+    }
+    await supabase.auth.signOut();
     usuarioActual = null;
     actualizarUI();
     document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
@@ -1394,9 +1392,9 @@ async function logout() {
     mostrarToast('Sesión cerrada');
 }
 
-// ================================================
+// ================================================================
 //  UI / ESTADOS
-// ================================================
+// ================================================================
 function actualizarUI() {
     const authBtns = document.getElementById('auth-buttons');
     const userMenu = document.getElementById('user-menu');
@@ -1466,9 +1464,9 @@ function getTier(puntos) {
     return t;
 }
 
-// ================================================
+// ================================================================
 //  ACHIEVEMENTS
-// ================================================
+// ================================================================
 function renderizarAchievements() {
     const container = document.getElementById('achievements-grid');
     if (!container) return;
@@ -1523,7 +1521,7 @@ async function verificarLogros() {
         userAchievements = [...userAchievements, ...nuevosIds];
         const totalPts = nuevos.reduce((s,a)=>s+a.pts,0);
         // Actualizar en Supabase
-        const { error } = await supabaseClient
+        const { error } = await supabase
             .from('usuarios')
             .update({
                 logros: userAchievements,
@@ -1542,9 +1540,9 @@ async function verificarLogros() {
     }
 }
 
-// ================================================
+// ================================================================
 //  NOTIFICACIONES
-// ================================================
+// ================================================================
 function toggleNotif() { document.getElementById('notif-panel').classList.toggle('hidden'); }
 function agregarNotif(msg, tipo) {
     notificaciones.unshift({ msg, tipo, time: new Date() });
@@ -1565,13 +1563,13 @@ function renderizarNotif() {
     }).join('');
 }
 
-// ================================================
+// ================================================================
 //  PREDICCIÓN ACTIVA
-// ================================================
+// ================================================================
 async function buscarPrediccionActiva() {
     if (!usuarioActual) return;
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('predicciones')
             .select('*')
             .eq('usuarioId', usuarioActual.uid)
@@ -1637,9 +1635,9 @@ function calcTiempoRestante(cierre) {
     return s + 's';
 }
 
-// ================================================
+// ================================================================
 //  VOTACIÓN
-// ================================================
+// ================================================================
 function selectPeriodo(periodo, btn) {
     if (prediccionActivaId) { mostrarToast('Ya tienes una predicción activa', 'error'); return; }
     periodoSeleccionado = periodo;
@@ -1659,7 +1657,7 @@ async function votar(direccion) {
     const cierre = new Date(Date.now() + DURACIONES[periodoSeleccionado]);
     try {
         // Verificar si ya votó en este periodo (activo)
-        const { data: exist, error: existErr } = await supabaseClient
+        const { data: exist, error: existErr } = await supabase
             .from('predicciones')
             .select('id')
             .eq('usuarioId', usuarioActual.uid)
@@ -1669,7 +1667,7 @@ async function votar(direccion) {
         if (existErr) throw existErr;
         if (exist && exist.length > 0) return mostrarToast('Ya votaste en este periodo', 'error');
 
-        const { error } = await supabaseClient
+        const { error } = await supabase
             .from('predicciones')
             .insert([{
                 usuarioId: usuarioActual.uid,
@@ -1689,12 +1687,12 @@ async function votar(direccion) {
     } catch(e) { mostrarToast('Error al registrar voto: ' + e.message, 'error'); }
 }
 
-// ================================================
+// ================================================================
 //  VERIFICACIÓN RESULTADOS
-// ================================================
+// ================================================================
 async function verificarResultadosPendientes() {
     try {
-        const { data: preds, error } = await supabaseClient
+        const { data: preds, error } = await supabase
             .from('predicciones')
             .select('*')
             .eq('estado', 'activo');
@@ -1717,7 +1715,7 @@ async function verificarResultadosPendientes() {
             const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : 0;
 
             // Actualizar predicción
-            await supabaseClient
+            await supabase
                 .from('predicciones')
                 .update({
                     precioFinal: precioFinal,
@@ -1729,7 +1727,7 @@ async function verificarResultadosPendientes() {
                 .eq('id', pred.id);
 
             // Actualizar usuario
-            const { data: userData, error: userErr } = await supabaseClient
+            const { data: userData, error: userErr } = await supabase
                 .from('usuarios')
                 .select('*')
                 .eq('uid', pred.usuarioId)
@@ -1748,7 +1746,7 @@ async function verificarResultadosPendientes() {
                 updateData.total_votos = (userData.total_votos || 0) + 1;
                 updateData.racha = 0;
             }
-            await supabaseClient
+            await supabase
                 .from('usuarios')
                 .update(updateData)
                 .eq('uid', pred.usuarioId);
@@ -1783,13 +1781,13 @@ async function verificarResultadosPendientes() {
     } catch(e) { console.error('Error verificando resultados:', e); }
 }
 
-// ================================================
+// ================================================================
 //  MIS PREDICCIONES
-// ================================================
+// ================================================================
 async function cargarMisPredicciones() {
     if (!usuarioActual) { document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>'; return; }
     try {
-        const { data: preds, error } = await supabaseClient
+        const { data: preds, error } = await supabase
             .from('predicciones')
             .select('*')
             .eq('usuarioId', usuarioActual.uid)
@@ -1837,9 +1835,9 @@ function filtrarMisPreds(filtro) {
     cargarMisPredicciones();
 }
 
-// ================================================
+// ================================================================
 //  GLOBAL EN VIVO (con Realtime de Supabase)
-// ================================================
+// ================================================================
 function iniciarEscuchaGlobal() {
     if (unsubscribeGlobal) { unsubscribeGlobal = null; }
     intervalosGlobales.forEach(id => clearInterval(id));
@@ -1849,20 +1847,20 @@ function iniciarEscuchaGlobal() {
     cargarGlobal();
 
     // Suscripción en tiempo real
-    const channel = supabaseClient
+    const channel = supabase
         .channel('global-predicciones')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'predicciones' }, (payload) => {
             cargarGlobal();
         })
         .subscribe();
-    unsubscribeGlobal = () => { supabaseClient.removeChannel(channel); };
+    unsubscribeGlobal = () => { supabase.removeChannel(channel); };
 
     intervalosGlobales.push(setInterval(actualizarContadoresGlobales, 1000));
 }
 
 async function cargarGlobal() {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('predicciones')
             .select('*')
             .order('creado', { ascending: false })
@@ -1920,7 +1918,7 @@ function renderizarGlobal() {
         if (p.usuarioId) {
             if (!cache[p.usuarioId]) {
                 try {
-                    const { data, error } = await supabaseClient
+                    const { data, error } = await supabase
                         .from('usuarios')
                         .select('username')
                         .eq('uid', p.usuarioId)
@@ -1965,12 +1963,12 @@ function renderizarGlobal() {
     })).then(res => { cont.innerHTML = res.join(''); });
 }
 
-// ================================================
+// ================================================================
 //  RANKING
-// ================================================
+// ================================================================
 async function cargarRanking() {
     try {
-        const { data: usuarios, error } = await supabaseClient
+        const { data: usuarios, error } = await supabase
             .from('usuarios')
             .select('*')
             .order('puntos', { ascending: false })
@@ -2020,12 +2018,12 @@ async function cargarRanking() {
     } catch(e) { console.error(e); }
 }
 
-// ================================================
+// ================================================================
 //  ANÁLISIS
-// ================================================
+// ================================================================
 async function cargarAnalisis() {
     try {
-        const { data: preds, error } = await supabaseClient
+        const { data: preds, error } = await supabase
             .from('predicciones')
             .select('*');
         if (error) throw error;
@@ -2070,9 +2068,9 @@ async function cargarAnalisis() {
     } catch(e) { console.error(e); }
 }
 
-// ================================================
+// ================================================================
 //  MODAL
-// ================================================
+// ================================================================
 function openModal(tipo) {
     const modal = document.getElementById('modal-auth');
     const loginForm = document.getElementById('login-form');
@@ -2098,9 +2096,9 @@ function cerrarModal() {
     document.getElementById('username').value = '';
 }
 
-// ================================================
+// ================================================================
 //  UTILIDADES
-// ================================================
+// ================================================================
 function switchTab(tab, event) {
     document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
     const tabEl = document.getElementById('tab-' + tab);
@@ -2135,9 +2133,9 @@ document.addEventListener('click', function(e) {
 });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') cerrarModal(); });
 
-// ================================================
-//  BOTS (Integración con Supabase)
-// ================================================
+// ================================================================
+//  BOTS (Integración con Supabase) - Versión simplificada
+// ================================================================
 function selectRandomPersonality() {
     const weights = { aggressive:0.15, balanced:0.30, conservative:0.20, random:0.10, whale:0.10, newbie:0.15 };
     const total = Object.values(weights).reduce((a,b)=>a+b,0);
@@ -2170,10 +2168,9 @@ async function createBotFirebase(config) {
         creado: new Date().toISOString(), lastActive: new Date().toISOString(),
         createdBy: usuarioActual.uid, createdByName: usuarioActual.username
     };
-    // Insertar en ambas tablas
-    const { error: err1 } = await supabaseClient.from('usuarios').insert([botData]);
+    const { error: err1 } = await supabase.from('usuarios').insert([botData]);
     if (err1) throw err1;
-    const { error: err2 } = await supabaseClient.from('bots').insert([{ uid, username, personality, isActive: true, puntos: 0, creado: new Date().toISOString(), createdBy: usuarioActual.uid }]);
+    const { error: err2 } = await supabase.from('bots').insert([{ uid, username, personality, isActive: true, puntos: 0, creado: new Date().toISOString(), createdBy: usuarioActual.uid }]);
     if (err2) throw err2;
     return { success: true, bot: botData };
 }
@@ -2184,7 +2181,7 @@ async function getBotsCached(forceRefresh = false) {
     if (botManagerState.isLoading) return botManagerState.bots;
     botManagerState.isLoading = true;
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('usuarios')
             .select('*')
             .eq('esBot', true)
@@ -2240,8 +2237,8 @@ async function startAllBots() {
     logBot('Activando ' + bots.length + ' bots...', 'info');
     const now = new Date().toISOString();
     for (const bot of bots) {
-        await supabaseClient.from('usuarios').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
-        await supabaseClient.from('bots').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
+        await supabase.from('usuarios').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
+        await supabase.from('bots').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
         bot.isActive = true;
     }
     renderizarBotList(botManagerState.bots);
@@ -2254,8 +2251,8 @@ async function stopAllBots() {
     if (bots.length === 0) { mostrarToast('Todos los bots ya están inactivos', 'info'); return; }
     const now = new Date().toISOString();
     for (const bot of bots) {
-        await supabaseClient.from('usuarios').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
-        await supabaseClient.from('bots').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
+        await supabase.from('usuarios').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
+        await supabase.from('bots').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
         bot.isActive = false;
     }
     renderizarBotList(botManagerState.bots);
@@ -2267,8 +2264,8 @@ async function clearAllBots() {
     if (!confirm('¿Eliminar TODOS los bots permanentemente?')) return;
     logBot('Eliminando bots...', 'error');
     for (const bot of botManagerState.bots) {
-        await supabaseClient.from('usuarios').delete().eq('uid', bot.uid);
-        await supabaseClient.from('bots').delete().eq('uid', bot.uid);
+        await supabase.from('usuarios').delete().eq('uid', bot.uid);
+        await supabase.from('bots').delete().eq('uid', bot.uid);
     }
     botManagerState.bots = [];
     renderizarBotList([]);
@@ -2282,8 +2279,8 @@ async function toggleBot(uid) {
     if (!bot) return;
     const newState = !bot.isActive;
     const now = new Date().toISOString();
-    await supabaseClient.from('usuarios').update({ isActive: newState, lastActive: now }).eq('uid', uid);
-    await supabaseClient.from('bots').update({ isActive: newState, lastActive: now }).eq('uid', uid);
+    await supabase.from('usuarios').update({ isActive: newState, lastActive: now }).eq('uid', uid);
+    await supabase.from('bots').update({ isActive: newState, lastActive: now }).eq('uid', uid);
     bot.isActive = newState;
     renderizarBotList(botManagerState.bots);
     logBot(bot.username + ' ' + (newState ? 'activado' : 'pausado'), 'success');
@@ -2356,9 +2353,8 @@ function stopBotAutoRefresh() {
 // Inicializar escucha global si hay usuario
 setTimeout(() => {
     if (usuarioActual) iniciarEscuchaGlobal();
+    console.log('🚀 BCPredict con Supabase - Autenticación corregida!');
 }, 2000);
-
-console.log('🚀 BCPredict con Supabase - Migración completa!');
 </script>
 </body>
 </html>
