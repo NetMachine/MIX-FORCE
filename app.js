@@ -1942,4 +1942,312 @@ document.addEventListener('click', (e) => {
 // Iniciar aplicacion cuando el DOM este listo
 document.addEventListener('DOMContentLoaded', initApp);
 
+-- ============================================================
+-- BCPREDICT - SUPABASE SETUP
+-- Configuracion completa de base de datos para migracion desde Firebase
+-- Ejecutar en el SQL Editor de Supabase
+-- ============================================================
+
+-- ============================================================
+-- 1. TABLAS PRINCIPALES
+-- ============================================================
+
+-- Tabla de perfiles de usuario (se vincula con auth.users de Supabase)
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    username TEXT NOT NULL,
+    email TEXT NOT NULL,
+    puntos INTEGER DEFAULT 0,
+    aciertos INTEGER DEFAULT 0,
+    total_votos INTEGER DEFAULT 0,
+    racha INTEGER DEFAULT 0,
+    mejor_racha INTEGER DEFAULT 0,
+    logros JSONB DEFAULT '[]'::jsonb,
+    es_bot BOOLEAN DEFAULT FALSE,
+    personality TEXT DEFAULT 'balanced',
+    skill NUMERIC(3,2) DEFAULT 0.50,
+    activity_level NUMERIC(3,2) DEFAULT 0.70,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    last_active TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID REFERENCES auth.users(id),
+    avatar_url TEXT
+);
+
+-- Tabla de predicciones
+CREATE TABLE IF NOT EXISTS public.predictions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    periodo TEXT NOT NULL,
+    voto TEXT NOT NULL CHECK (voto IN ('sube', 'baja')),
+    precio_inicial NUMERIC(18,2) NOT NULL,
+    precio_final NUMERIC(18,2),
+    cierre TIMESTAMPTZ NOT NULL,
+    estado TEXT DEFAULT 'activo' CHECK (estado IN ('activo', 'cerrado')),
+    resultado TEXT CHECK (resultado IN ('acierto', 'fallo')),
+    puntos_ganados INTEGER DEFAULT 0,
+    es_bot BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    cerrado_at TIMESTAMPTZ
+);
+
+-- Tabla de logros desbloqueados
+CREATE TABLE IF NOT EXISTS public.user_achievements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    achievement_id TEXT NOT NULL,
+    unlocked_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, achievement_id)
+);
+
+-- Tabla de notificaciones
+CREATE TABLE IF NOT EXISTS public.notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    tipo TEXT DEFAULT 'info' CHECK (tipo IN ('info', 'success', 'error', 'warning')),
+    read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Tabla de actividad de bots (log)
+CREATE TABLE IF NOT EXISTS public.bot_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    bot_id UUID REFERENCES public.profiles(id),
+    action TEXT NOT NULL,
+    details JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================
+-- 2. INDICES PARA RENDIMIENTO
+-- ============================================================
+
+CREATE INDEX IF NOT EXISTS idx_predictions_user_id ON public.predictions(user_id);
+CREATE INDEX IF NOT EXISTS idx_predictions_estado ON public.predictions(estado);
+CREATE INDEX IF NOT EXISTS idx_predictions_user_estado ON public.predictions(user_id, estado);
+CREATE INDEX IF NOT EXISTS idx_predictions_creado ON public.predictions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_profiles_puntos ON public.profiles(puntos DESC);
+CREATE INDEX IF NOT EXISTS idx_profiles_es_bot ON public.profiles(es_bot);
+CREATE INDEX IF NOT EXISTS idx_profiles_is_active ON public.profiles(is_active);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON public.notifications(user_id, read);
+CREATE INDEX IF NOT EXISTS idx_bot_logs_bot ON public.bot_logs(bot_id);
+
+-- ============================================================
+-- 3. ROW LEVEL SECURITY (RLS)
+-- ============================================================
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.predictions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bot_logs ENABLE ROW LEVEL SECURITY;
+
+-- Politicas para profiles
+CREATE POLICY "Profiles visibles para todos" ON public.profiles
+    FOR SELECT USING (true);
+
+CREATE POLICY "Usuarios pueden editar su propio perfil" ON public.profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Sistema puede insertar perfiles" ON public.profiles
+    FOR INSERT WITH CHECK (true);
+
+-- Politicas para predictions
+CREATE POLICY "Predicciones visibles para todos" ON public.predictions
+    FOR SELECT USING (true);
+
+CREATE POLICY "Usuarios pueden crear sus predicciones" ON public.predictions
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Sistema puede actualizar predicciones" ON public.predictions
+    FOR UPDATE USING (true);
+
+-- Politicas para user_achievements
+CREATE POLICY "Logros visibles para todos" ON public.user_achievements
+    FOR SELECT USING (true);
+
+CREATE POLICY "Sistema puede gestionar logros" ON public.user_achievements
+    FOR ALL USING (true);
+
+-- Politicas para notifications
+CREATE POLICY "Usuarios ven sus notificaciones" ON public.notifications
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Sistema puede crear notificaciones" ON public.notifications
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Usuarios pueden marcar como leidas" ON public.notifications
+    FOR UPDATE USING (auth.uid() = user_id);
+
+-- Politicas para bot_logs
+CREATE POLICY "Logs visibles para todos" ON public.bot_logs
+    FOR SELECT USING (true);
+
+CREATE POLICY "Sistema puede crear logs" ON public.bot_logs
+    FOR INSERT WITH CHECK (true);
+
+-- ============================================================
+-- 4. FUNCIONES Y TRIGGERS
+-- ============================================================
+
+-- Funcion para actualizar updated_at automaticamente
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para profiles
+CREATE TRIGGER update_profiles_updated_at
+    BEFORE UPDATE ON public.profiles
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+-- Trigger para predictions
+CREATE TRIGGER update_predictions_updated_at
+    BEFORE UPDATE ON public.predictions
+    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+-- Funcion para crear perfil automaticamente al registrarse
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.profiles (id, username, email, puntos, aciertos, total_votos, racha, mejor_racha, logros, es_bot, is_active)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+        NEW.email,
+        0, 0, 0, 0, 0, '[]'::jsonb, FALSE, TRUE
+    )
+    ON CONFLICT (id) DO NOTHING;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger para crear perfil al registrar usuario
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================================
+-- 5. FUNCIONES PARA EL MOTOR DE BOTS (Edge Functions)
+-- ============================================================
+
+-- Funcion para verificar y cerrar predicciones vencidas
+CREATE OR REPLACE FUNCTION public.check_expired_predictions()
+RETURNS TABLE (
+    prediction_id UUID,
+    user_id UUID,
+    acierto BOOLEAN,
+    puntos INTEGER
+) AS $$
+DECLARE
+    current_price NUMERIC(18,2);
+    pred RECORD;
+    subio BOOLEAN;
+    es_acierto BOOLEAN;
+    pts INTEGER;
+    base_pts INTEGER;
+    mult NUMERIC(3,1);
+    streak_mult NUMERIC(3,1);
+    user_streak INTEGER;
+BEGIN
+    -- Obtener precio actual de Bitcoin (simulado, en produccion se obtiene de API)
+    current_price := 65000;
+    
+    FOR pred IN 
+        SELECT * FROM public.predictions 
+        WHERE estado = 'activo' AND cierre <= NOW()
+    LOOP
+        subio := current_price > pred.precio_inicial;
+        es_acierto := (pred.voto = 'sube' AND subio) OR (pred.voto = 'baja' AND NOT subio);
+        
+        -- Calcular puntos
+        base_pts := CASE pred.periodo
+            WHEN '5m' THEN 1 WHEN '15m' THEN 2 WHEN '30m' THEN 3
+            WHEN '1h' THEN 4 WHEN '4h' THEN 5 WHEN '24h' THEN 8
+            WHEN '1sem' THEN 15 WHEN '1mes' THEN 30 ELSE 1
+        END;
+        
+        mult := CASE pred.periodo
+            WHEN '5m' THEN 1.0 WHEN '15m' THEN 1.2 WHEN '30m' THEN 1.5
+            WHEN '1h' THEN 2.0 WHEN '4h' THEN 2.5 WHEN '24h' THEN 3.0
+            WHEN '1sem' THEN 4.0 WHEN '1mes' THEN 5.0 ELSE 1.0
+        END;
+        
+        -- Obtener racha actual del usuario
+        SELECT racha INTO user_streak FROM public.profiles WHERE id = pred.user_id;
+        streak_mult := CASE 
+            WHEN user_streak >= 10 THEN 3.0
+            WHEN user_streak >= 5 THEN 2.0
+            WHEN user_streak >= 3 THEN 1.5
+            ELSE 1.0
+        END;
+        
+        pts := CASE WHEN es_acierto THEN ROUND(base_pts * mult * streak_mult)::INTEGER ELSE 0 END;
+        
+        -- Actualizar prediccion
+        UPDATE public.predictions SET
+            estado = 'cerrado',
+            resultado = CASE WHEN es_acierto THEN 'acierto' ELSE 'fallo' END,
+            puntos_ganados = pts,
+            precio_final = current_price,
+            cerrado_at = NOW()
+        WHERE id = pred.id;
+        
+        -- Actualizar perfil del usuario
+        IF es_acierto THEN
+            UPDATE public.profiles SET
+                puntos = puntos + pts,
+                aciertos = aciertos + 1,
+                total_votos = total_votos + 1,
+                racha = racha + 1,
+                mejor_racha = GREATEST(mejor_racha, racha + 1),
+                updated_at = NOW()
+            WHERE id = pred.user_id;
+        ELSE
+            UPDATE public.profiles SET
+                total_votos = total_votos + 1,
+                racha = 0,
+                updated_at = NOW()
+            WHERE id = pred.user_id;
+        END IF;
+        
+        prediction_id := pred.id;
+        user_id := pred.user_id;
+        acierto := es_acierto;
+        puntos := pts;
+        RETURN NEXT;
+    END LOOP;
+    
+    RETURN;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================
+-- 6. DATOS INICIALES
+-- ============================================================
+
+-- Insertar algunos logros de ejemplo si la tabla esta vacia
+-- (Los logros se manejan principalmente en el frontend)
+
+-- ============================================================
+-- 7. CONFIGURACION DE STORAGE (opcional)
+-- ============================================================
+
+-- Crear bucket para avatares si se necesita
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
+
+-- ============================================================
+-- INSTRUCCIONES POST-INSTALACION
+-- ============================================================
+-- 1. Ve a Authentication > Providers y habilita Email provider
+-- 2. Ve a Settings > API y copia la URL y anon key para el frontend
+-- 3. Configura las Edge Functions para el motor de bots
+-- 4. Configura un cron job para ejecutar check_expired_predictions cada minuto
+-- ============================================================
 
