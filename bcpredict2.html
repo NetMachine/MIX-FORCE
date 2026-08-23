@@ -188,7 +188,7 @@
 <!-- ===== TAB: PREDECIR ===== -->
 <section id="tab-predict" class="max-w-6xl mx-auto px-4 py-6 relative z-10">
     <div class="hero-display glass-card rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
-        <div class="heartbeat-line mb-5"></div>
+        <div class="heartbeat-line" style="height:2px; background:linear-gradient(90deg, transparent, rgba(247,147,26,0.4), rgba(247,147,26,0.8), rgba(247,147,26,0.4), transparent); opacity:0.5; margin-bottom:20px;"></div>
         <div class="flex items-center justify-center gap-2 mb-2">
             <div class="live-dot"></div>
             <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC / USD</span>
@@ -209,7 +209,7 @@
             <polygon id="sparkline-area" fill="url(#sparklineGrad)" points=""/>
             <polyline id="sparkline-path" fill="none" stroke="#f7931a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points=""/>
         </svg>
-        <div class="heartbeat-line mt-5"></div>
+        <div class="heartbeat-line" style="height:2px; background:linear-gradient(90deg, transparent, rgba(247,147,26,0.4), rgba(247,147,26,0.8), rgba(247,147,26,0.4), transparent); opacity:0.5; margin-top:20px;"></div>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -554,7 +554,7 @@
 const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { autoRefreshToken: true, persistSession: true }
 });
 
@@ -632,27 +632,60 @@ const PERSONALITIES = {
 // ================================================================
 //  INICIO
 // ================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    initParticles();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Iniciando BCPredict...');
+    
+    // Inicializar partículas (con manejo de errores)
+    try {
+        initParticles();
+    } catch(e) {
+        console.log('Particles init error (ignorado):', e.message);
+    }
+    
+    // Cargar datos
     cargarPrecioBTC();
     cargarDatosMercado();
     cargarTopCryptos();
     iniciarWebSocketPrecio();
+    
+    // Intervalos
     setInterval(cargarDatosMercado, 60000);
     setInterval(cargarTopCryptos, 60000);
     setInterval(actualizarFearGreed, 60000);
+    
+    // Autenticación
     verificarSesionSupabase();
     actualizarFearGreed();
     renderizarAchievements();
-    console.log('🚀 BCPredict con Supabase - Iniciado!');
+    
+    console.log('✅ BCPredict listo!');
 });
 
 // ================================================================
-//  PARTICLES (Three.js)
+//  PARTICLES (Three.js) - CON MANEJO DE ERRORES
 // ================================================================
 function initParticles() {
-    const canvas = document.getElementById('particles-canvas');
-    if (!canvas || !window.THREE) return;
+    // Buscar o crear canvas para partículas
+    let canvas = document.getElementById('particles-canvas');
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'particles-canvas';
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '-1';
+        canvas.style.opacity = '0.4';
+        document.body.prepend(canvas);
+    }
+    
+    if (!window.THREE) {
+        console.log('Three.js no disponible, omitiendo partículas');
+        return;
+    }
+    
     try {
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -660,11 +693,10 @@ function initParticles() {
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
-        const particleCount = 80;
+        const particleCount = 60;
         const geometry = new THREE.BufferGeometry();
         const positions = new Float32Array(particleCount * 3);
         const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
 
         for (let i = 0; i < particleCount; i++) {
             positions[i*3] = (Math.random() - 0.5) * 20;
@@ -674,19 +706,27 @@ function initParticles() {
             if (c < 0.5) { colors[i*3]=0.97; colors[i*3+1]=0.58; colors[i*3+2]=0.10; }
             else if (c < 0.8) { colors[i*3]=0.13; colors[i*3+1]=0.77; colors[i*3+2]=0.37; }
             else { colors[i*3]=0.94; colors[i*3+1]=0.27; colors[i*3+2]=0.27; }
-            sizes[i] = Math.random() * 2 + 0.5;
         }
         geometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors,3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes,1));
 
-        const material = new THREE.PointsMaterial({ size:0.05, vertexColors:true, transparent:true, opacity:0.6, blending:THREE.AdditiveBlending, sizeAttenuation:true });
+        const material = new THREE.PointsMaterial({ 
+            size: 0.05, 
+            vertexColors: true, 
+            transparent: true, 
+            opacity: 0.5,
+            blending: THREE.AdditiveBlending,
+            sizeAttenuation: true 
+        });
         const particles = new THREE.Points(geometry, material);
         scene.add(particles);
         camera.position.z = 5;
 
         let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', (e) => { mouseX = (e.clientX/window.innerWidth - 0.5)*2; mouseY = (e.clientY/window.innerHeight - 0.5)*2; });
+        document.addEventListener('mousemove', (e) => { 
+            mouseX = (e.clientX/window.innerWidth - 0.5)*2; 
+            mouseY = (e.clientY/window.innerHeight - 0.5)*2; 
+        });
 
         function animate() {
             requestAnimationFrame(animate);
@@ -698,38 +738,60 @@ function initParticles() {
             }
             geometry.attributes.position.needsUpdate = true;
             particles.rotation.y += 0.0003;
-            particles.rotation.x = mouseY * 0.1;
+            particles.rotation.x = mouseY * 0.05;
             renderer.render(scene, camera);
         }
         animate();
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
-    } catch(e) { console.log('Particles init error:', e); }
+        
+        window.addEventListener('resize', () => { 
+            camera.aspect = window.innerWidth/window.innerHeight; 
+            camera.updateProjectionMatrix(); 
+            renderer.setSize(window.innerWidth, window.innerHeight); 
+        });
+    } catch(e) {
+        console.log('Error en partículas:', e.message);
+    }
 }
 
 // ================================================================
 //  WEBSOCKET PRECIO
 // ================================================================
 function iniciarWebSocketPrecio() {
-    if (wsPrice) { wsPrice.close(); wsPrice = null; }
-    wsPrice = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
-    wsPrice.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        const price = parseFloat(msg.p);
-        precioAnterior = precioBTC;
-        precioBTC = price;
-        priceHistory.push(price);
-        if (priceHistory.length > maxHistory) priceHistory.shift();
-        actualizarDisplayPrecio(price);
-        actualizarSparkline();
-        actualizarConversions(price);
-        actualizarOrderBookSim(price, parseFloat(msg.q));
-        actualizarDiferenciaPrediccion();
-        const simCurrent = document.getElementById('sim-current');
-        if (simCurrent && !simCurrent.value) simCurrent.value = Math.round(price);
-        actualizarTendencia();
-    };
-    wsPrice.onerror = (e) => console.log('WS Price Error:', e);
-    wsPrice.onclose = () => setTimeout(iniciarWebSocketPrecio, 3000);
+    if (wsPrice) { 
+        try { wsPrice.close(); } catch(e) {}
+        wsPrice = null; 
+    }
+    
+    try {
+        wsPrice = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
+        wsPrice.onmessage = function(event) {
+            try {
+                const msg = JSON.parse(event.data);
+                const price = parseFloat(msg.p);
+                if (!isNaN(price) && price > 0) {
+                    precioAnterior = precioBTC;
+                    precioBTC = price;
+                    priceHistory.push(price);
+                    if (priceHistory.length > maxHistory) priceHistory.shift();
+                    actualizarDisplayPrecio(price);
+                    actualizarSparkline();
+                    actualizarConversions(price);
+                    actualizarOrderBookSim(price, parseFloat(msg.q) || 0.1);
+                    actualizarDiferenciaPrediccion();
+                    const simCurrent = document.getElementById('sim-current');
+                    if (simCurrent && !simCurrent.value) simCurrent.value = Math.round(price);
+                    actualizarTendencia();
+                }
+            } catch(e) { /* ignorar errores de parseo */ }
+        };
+        wsPrice.onerror = function(e) { console.log('WS Price Error:', e); };
+        wsPrice.onclose = function() { 
+            setTimeout(iniciarWebSocketPrecio, 3000); 
+        };
+    } catch(e) {
+        console.log('Error creando WebSocket:', e);
+        setTimeout(iniciarWebSocketPrecio, 5000);
+    }
 }
 
 function actualizarDisplayPrecio(price) {
@@ -744,12 +806,6 @@ function actualizarDisplayPrecio(price) {
     if (heroPrice) {
         heroPrice.textContent = entero;
         if (heroDec) heroDec.textContent = decimal;
-        if (precioAnterior > 0) {
-            heroPrice.classList.remove('price-flash-up', 'price-flash-down');
-            void heroPrice.offsetWidth;
-            if (price > precioAnterior) heroPrice.classList.add('price-flash-up');
-            else if (price < precioAnterior) heroPrice.classList.add('price-flash-down');
-        }
     }
     const priceValue = document.getElementById('price-value');
     const priceValueMovil = document.getElementById('price-value-movil');
@@ -980,29 +1036,40 @@ function initCandlestickChart() {
     if (chartTV) return;
     const chartContainer = document.getElementById('candlestick-chart');
     if (!chartContainer) return;
-    chartTV = LightweightCharts.createChart(chartContainer, {
-        layout: { background: { color:'transparent' }, textColor:'#94a3b8', fontFamily:'Inter, sans-serif' },
-        grid: { vertLines:{color:'rgba(148,163,184,0.04)'}, horzLines:{color:'rgba(148,163,184,0.04)'} },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal, vertLine:{color:'rgba(247,147,26,0.3)',width:1}, horzLine:{color:'rgba(247,147,26,0.3)',width:1} },
-        rightPriceScale: { borderColor:'rgba(148,163,184,0.1)', scaleMargins:{top:0.1,bottom:0.1} },
-        timeScale: { borderColor:'rgba(148,163,184,0.1)', timeVisible:true, secondsVisible: currentTF==='1s' },
-        handleScroll: { vertTouchDrag: false },
-    });
-    candleSeries = chartTV.addCandlestickSeries({
-        upColor:'#22c55e', downColor:'#ef4444', borderUpColor:'#22c55e', borderDownColor:'#ef4444', wickUpColor:'#22c55e', wickDownColor:'#ef4444'
-    });
-    const volumeSeries = chartTV.addHistogramSeries({
-        color:'#22c55e', priceFormat:{type:'volume'}, priceScaleId:'', scaleMargins:{top:0.85,bottom:0}
-    });
-    chartTV.volumeSeries = volumeSeries;
-    if (typeof ResizeObserver !== 'undefined') {
-        new ResizeObserver(() => { chartTV.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight }); }).observe(chartContainer);
+    
+    if (typeof LightweightCharts === 'undefined') {
+        console.log('LightweightCharts no disponible');
+        return;
     }
-    loadCandleHistory(currentTF);
-    connectWebSocket();
+    
+    try {
+        chartTV = LightweightCharts.createChart(chartContainer, {
+            layout: { background: { color:'transparent' }, textColor:'#94a3b8', fontFamily:'Inter, sans-serif' },
+            grid: { vertLines:{color:'rgba(148,163,184,0.04)'}, horzLines:{color:'rgba(148,163,184,0.04)'} },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal, vertLine:{color:'rgba(247,147,26,0.3)',width:1}, horzLine:{color:'rgba(247,147,26,0.3)',width:1} },
+            rightPriceScale: { borderColor:'rgba(148,163,184,0.1)', scaleMargins:{top:0.1,bottom:0.1} },
+            timeScale: { borderColor:'rgba(148,163,184,0.1)', timeVisible:true, secondsVisible: currentTF==='1s' },
+            handleScroll: { vertTouchDrag: false },
+        });
+        candleSeries = chartTV.addCandlestickSeries({
+            upColor:'#22c55e', downColor:'#ef4444', borderUpColor:'#22c55e', borderDownColor:'#ef4444', wickUpColor:'#22c55e', wickDownColor:'#ef4444'
+        });
+        const volumeSeries = chartTV.addHistogramSeries({
+            color:'#22c55e', priceFormat:{type:'volume'}, priceScaleId:'', scaleMargins:{top:0.85,bottom:0}
+        });
+        chartTV.volumeSeries = volumeSeries;
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(() => { chartTV.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight }); }).observe(chartContainer);
+        }
+        loadCandleHistory(currentTF);
+        connectWebSocket();
+    } catch(e) {
+        console.log('Error iniciando gráfico:', e);
+    }
 }
 
 async function loadCandleHistory(tf) {
+    if (!candleSeries) return;
     try {
         const interval = tf === '1s' ? '1s' : tf;
         const limit = 500;
@@ -1018,32 +1085,42 @@ async function loadCandleHistory(tf) {
 }
 
 function connectWebSocket() {
-    if (wsBinance) { wsBinance.close(); wsBinance = null; }
+    if (wsBinance) { try { wsBinance.close(); } catch(e) {} wsBinance = null; }
     const stream = currentTF === '1s' ? 'btcusdt@aggTrade' : 'btcusdt@kline_' + currentTF;
-    wsBinance = new WebSocket('wss://stream.binance.com:9443/ws/' + stream);
-    wsBinance.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        if (currentTF === '1s') {
-            const price = parseFloat(msg.p);
-            const time = Math.floor(msg.T / 1000);
-            if (!lastCandle || time > lastCandle.time) {
-                if (lastCandle) { candleSeries.update(lastCandle); if (chartTV.volumeSeries) chartTV.volumeSeries.update({ time:lastCandle.time, value: msg.q * price, color: lastCandle.close >= lastCandle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }); }
-                lastCandle = { time, open: price, high: price, low: price, close: price };
-            } else {
-                lastCandle.high = Math.max(lastCandle.high, price);
-                lastCandle.low = Math.min(lastCandle.low, price);
-                lastCandle.close = price;
-                candleSeries.update(lastCandle);
-            }
-        } else {
-            const k = msg.k;
-            const candle = { time: k.t/1000, open: parseFloat(k.o), high: parseFloat(k.h), low: parseFloat(k.l), close: parseFloat(k.c) };
-            candleSeries.update(candle);
-            if (chartTV.volumeSeries) chartTV.volumeSeries.update({ time: k.t/1000, value: parseFloat(k.v), color: candle.close >= candle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' });
-        }
-    };
-    wsBinance.onerror = (e) => console.log('WS Error:', e);
-    wsBinance.onclose = () => setTimeout(connectWebSocket, 3000);
+    try {
+        wsBinance = new WebSocket('wss://stream.binance.com:9443/ws/' + stream);
+        wsBinance.onmessage = function(event) {
+            try {
+                const msg = JSON.parse(event.data);
+                if (currentTF === '1s') {
+                    const price = parseFloat(msg.p);
+                    const time = Math.floor(msg.T / 1000);
+                    if (!lastCandle || time > lastCandle.time) {
+                        if (lastCandle && candleSeries) { 
+                            candleSeries.update(lastCandle); 
+                            if (chartTV.volumeSeries) chartTV.volumeSeries.update({ time:lastCandle.time, value: msg.q * price, color: lastCandle.close >= lastCandle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' }); 
+                        }
+                        lastCandle = { time, open: price, high: price, low: price, close: price };
+                    } else {
+                        lastCandle.high = Math.max(lastCandle.high, price);
+                        lastCandle.low = Math.min(lastCandle.low, price);
+                        lastCandle.close = price;
+                        if (candleSeries) candleSeries.update(lastCandle);
+                    }
+                } else {
+                    const k = msg.k;
+                    const candle = { time: k.t/1000, open: parseFloat(k.o), high: parseFloat(k.h), low: parseFloat(k.l), close: parseFloat(k.c) };
+                    if (candleSeries) candleSeries.update(candle);
+                    if (chartTV.volumeSeries) chartTV.volumeSeries.update({ time: k.t/1000, value: parseFloat(k.v), color: candle.close >= candle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' });
+                }
+            } catch(e) { /* ignorar */ }
+        };
+        wsBinance.onerror = function(e) { console.log('WS Error:', e); };
+        wsBinance.onclose = function() { setTimeout(connectWebSocket, 3000); };
+    } catch(e) {
+        console.log('Error conectando WebSocket:', e);
+        setTimeout(connectWebSocket, 5000);
+    }
 }
 
 function cambiarTimeframe(tf) {
@@ -1161,41 +1238,45 @@ function fmtCompact(n) {
 //  AUTENTICACIÓN CON SUPABASE
 // ================================================================
 async function verificarSesionSupabase() {
-    const { data: { session } } = await supabase.auth.getSession();
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
 
-    if (session) {
-        await cargarUsuarioSupabase(session.user);
-    } else {
-        usuarioActual = null;
-        actualizarUI();
-        document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
-        document.getElementById('prediccion-activa').classList.add('hidden');
-        actualizarStatsUsuario();
-        document.getElementById('user-pred-stats').classList.add('hidden');
-        userAchievements = [];
-        renderizarAchievements();
-    }
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('Auth event:', event);
-        if (event === 'SIGNED_IN' && session) {
+        if (session) {
             await cargarUsuarioSupabase(session.user);
-        } else if (event === 'SIGNED_OUT') {
+        } else {
             usuarioActual = null;
             actualizarUI();
             document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
             document.getElementById('prediccion-activa').classList.add('hidden');
             actualizarStatsUsuario();
+            document.getElementById('user-pred-stats').classList.add('hidden');
             userAchievements = [];
             renderizarAchievements();
-            mostrarToast('Sesión cerrada');
         }
-    });
+
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth event:', event);
+            if (event === 'SIGNED_IN' && session) {
+                await cargarUsuarioSupabase(session.user);
+            } else if (event === 'SIGNED_OUT') {
+                usuarioActual = null;
+                actualizarUI();
+                document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+                document.getElementById('prediccion-activa').classList.add('hidden');
+                actualizarStatsUsuario();
+                userAchievements = [];
+                renderizarAchievements();
+                mostrarToast('Sesión cerrada');
+            }
+        });
+    } catch(e) {
+        console.log('Error verificando sesión:', e);
+    }
 }
 
 async function cargarUsuarioSupabase(user) {
     try {
-        const { data: userData, error } = await supabase
+        const { data: userData, error } = await supabaseClient
             .from('usuarios')
             .select('*')
             .eq('uid', user.id)
@@ -1215,7 +1296,7 @@ async function cargarUsuarioSupabase(user) {
                 logros: [],
                 creado: new Date().toISOString()
             };
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseClient
                 .from('usuarios')
                 .insert([newUser]);
             if (insertError) throw insertError;
@@ -1253,7 +1334,7 @@ async function register() {
     if (pass.length < 6) return mostrarToast('Contraseña mínimo 6 caracteres', 'error');
     if (username.length < 3) return mostrarToast('Usuario mínimo 3 caracteres', 'error');
     try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
             email, password: pass,
             options: { data: { username: username } }
         });
@@ -1271,7 +1352,7 @@ async function register() {
                 logros: [],
                 creado: new Date().toISOString()
             };
-            const { error: insertError } = await supabase
+            const { error: insertError } = await supabaseClient
                 .from('usuarios')
                 .insert([newUser]);
             if (insertError) throw insertError;
@@ -1286,7 +1367,7 @@ async function login() {
     const pass = document.getElementById('pass').value;
     if (!email || !pass) return mostrarToast('Completa todos los campos', 'error');
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: pass
         });
@@ -1297,8 +1378,8 @@ async function login() {
 }
 
 async function logout() {
-    if (wsPrice) { wsPrice.close(); wsPrice = null; }
-    await supabase.auth.signOut();
+    if (wsPrice) { try { wsPrice.close(); } catch(e) {} wsPrice = null; }
+    await supabaseClient.auth.signOut();
     usuarioActual = null;
     actualizarUI();
     document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
@@ -1383,7 +1464,7 @@ function getTier(puntos) {
 }
 
 // ================================================================
-//  ACHIEVEMENTS
+//  ACHIEVEMENTS (funciones simplificadas)
 // ================================================================
 function renderizarAchievements() {
     const container = document.getElementById('achievements-grid');
@@ -1438,7 +1519,7 @@ async function verificarLogros() {
         const nuevosIds = nuevos.map(a=>a.id);
         userAchievements = [...userAchievements, ...nuevosIds];
         const totalPts = nuevos.reduce((s,a)=>s+a.pts,0);
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('usuarios')
             .update({ logros: userAchievements, puntos: (usuarioActual.puntos || 0) + totalPts })
             .eq('uid', usuarioActual.uid);
@@ -1476,7 +1557,7 @@ function renderizarNotif() {
 async function buscarPrediccionActiva() {
     if (!usuarioActual) return;
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('predicciones')
             .select('*')
             .eq('usuarioId', usuarioActual.uid)
@@ -1563,7 +1644,7 @@ async function votar(direccion) {
     if (prediccionActivaId) return mostrarToast('Ya tienes una predicción activa', 'error');
     const cierre = new Date(Date.now() + DURACIONES[periodoSeleccionado]);
     try {
-        const { data: exist, error: existErr } = await supabase
+        const { data: exist, error: existErr } = await supabaseClient
             .from('predicciones')
             .select('id')
             .eq('usuarioId', usuarioActual.uid)
@@ -1573,7 +1654,7 @@ async function votar(direccion) {
         if (existErr) throw existErr;
         if (exist && exist.length > 0) return mostrarToast('Ya votaste en este periodo', 'error');
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('predicciones')
             .insert([{
                 usuarioId: usuarioActual.uid,
@@ -1598,7 +1679,7 @@ async function votar(direccion) {
 // ================================================================
 async function verificarResultadosPendientes() {
     try {
-        const { data: preds, error } = await supabase
+        const { data: preds, error } = await supabaseClient
             .from('predicciones')
             .select('*')
             .eq('estado', 'activo');
@@ -1620,12 +1701,12 @@ async function verificarResultadosPendientes() {
             const mult = MULTIPLICADORES[pred.periodo] || 1.0;
             const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : 0;
 
-            await supabase
+            await supabaseClient
                 .from('predicciones')
                 .update({ precioFinal, estado: 'cerrado', resultado: acierto ? 'acierto' : 'fallo', puntosGanados: pts, cerrado: new Date().toISOString() })
                 .eq('id', pred.id);
 
-            const { data: userData, error: userErr } = await supabase
+            const { data: userData, error: userErr } = await supabaseClient
                 .from('usuarios')
                 .select('*')
                 .eq('uid', pred.usuarioId)
@@ -1644,7 +1725,7 @@ async function verificarResultadosPendientes() {
                 updateData.total_votos = (userData.total_votos || 0) + 1;
                 updateData.racha = 0;
             }
-            await supabase.from('usuarios').update(updateData).eq('uid', pred.usuarioId);
+            await supabaseClient.from('usuarios').update(updateData).eq('uid', pred.usuarioId);
 
             if (usuarioActual && usuarioActual.uid === pred.usuarioId) {
                 if (acierto) {
@@ -1680,7 +1761,7 @@ async function verificarResultadosPendientes() {
 async function cargarMisPredicciones() {
     if (!usuarioActual) { document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>'; return; }
     try {
-        const { data: preds, error } = await supabase
+        const { data: preds, error } = await supabaseClient
             .from('predicciones')
             .select('*')
             .eq('usuarioId', usuarioActual.uid)
@@ -1734,16 +1815,16 @@ function filtrarMisPreds(filtro) {
 function iniciarEscuchaGlobal() {
     if (unsubscribeGlobal) { unsubscribeGlobal = null; }
     cargarGlobal();
-    const channel = supabase
+    const channel = supabaseClient
         .channel('global-predicciones')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'predicciones' }, () => { cargarGlobal(); })
         .subscribe();
-    unsubscribeGlobal = () => { supabase.removeChannel(channel); };
+    unsubscribeGlobal = () => { supabaseClient.removeChannel(channel); };
 }
 
 async function cargarGlobal() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('predicciones')
             .select('*')
             .order('creado', { ascending: false })
@@ -1784,7 +1865,7 @@ function renderizarGlobal() {
         if (p.usuarioId) {
             if (!cache[p.usuarioId]) {
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('usuarios')
                         .select('username')
                         .eq('uid', p.usuarioId)
@@ -1834,7 +1915,7 @@ function renderizarGlobal() {
 // ================================================================
 async function cargarRanking() {
     try {
-        const { data: usuarios, error } = await supabase
+        const { data: usuarios, error } = await supabaseClient
             .from('usuarios')
             .select('*')
             .order('puntos', { ascending: false })
@@ -1889,7 +1970,7 @@ async function cargarRanking() {
 // ================================================================
 async function cargarAnalisis() {
     try {
-        const { data: preds, error } = await supabase
+        const { data: preds, error } = await supabaseClient
             .from('predicciones')
             .select('*');
         if (error) throw error;
@@ -1995,7 +2076,7 @@ document.getElementById('modal-auth').addEventListener('click', function(e) { if
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') cerrarModal(); });
 
 // ================================================================
-//  BOTS (Funcionalidad simplificada)
+//  BOTS (funcionalidad básica)
 // ================================================================
 function selectRandomPersonality() {
     const weights = { aggressive:0.15, balanced:0.30, conservative:0.20, random:0.10, whale:0.10, newbie:0.15 };
@@ -2029,9 +2110,9 @@ async function createBotFirebase(config) {
         creado: new Date().toISOString(), lastActive: new Date().toISOString(),
         createdBy: usuarioActual.uid, createdByName: usuarioActual.username
     };
-    const { error: err1 } = await supabase.from('usuarios').insert([botData]);
+    const { error: err1 } = await supabaseClient.from('usuarios').insert([botData]);
     if (err1) throw err1;
-    const { error: err2 } = await supabase.from('bots').insert([{ uid, username, personality, isActive: true, puntos: 0, creado: new Date().toISOString(), createdBy: usuarioActual.uid }]);
+    const { error: err2 } = await supabaseClient.from('bots').insert([{ uid, username, personality, isActive: true, puntos: 0, creado: new Date().toISOString(), createdBy: usuarioActual.uid }]);
     if (err2) throw err2;
     return { success: true, bot: botData };
 }
@@ -2042,7 +2123,7 @@ async function getBotsCached(forceRefresh = false) {
     if (botManagerState.isLoading) return botManagerState.bots;
     botManagerState.isLoading = true;
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('usuarios')
             .select('*')
             .eq('esBot', true)
@@ -2098,8 +2179,8 @@ async function startAllBots() {
     logBot('Activando ' + bots.length + ' bots...', 'info');
     const now = new Date().toISOString();
     for (const bot of bots) {
-        await supabase.from('usuarios').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
-        await supabase.from('bots').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
+        await supabaseClient.from('usuarios').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
+        await supabaseClient.from('bots').update({ isActive: true, lastActive: now }).eq('uid', bot.uid);
         bot.isActive = true;
     }
     renderizarBotList(botManagerState.bots);
@@ -2112,8 +2193,8 @@ async function stopAllBots() {
     if (bots.length === 0) { mostrarToast('Todos los bots ya están inactivos', 'info'); return; }
     const now = new Date().toISOString();
     for (const bot of bots) {
-        await supabase.from('usuarios').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
-        await supabase.from('bots').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
+        await supabaseClient.from('usuarios').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
+        await supabaseClient.from('bots').update({ isActive: false, lastActive: now }).eq('uid', bot.uid);
         bot.isActive = false;
     }
     renderizarBotList(botManagerState.bots);
@@ -2125,8 +2206,8 @@ async function clearAllBots() {
     if (!confirm('¿Eliminar TODOS los bots permanentemente?')) return;
     logBot('Eliminando bots...', 'error');
     for (const bot of botManagerState.bots) {
-        await supabase.from('usuarios').delete().eq('uid', bot.uid);
-        await supabase.from('bots').delete().eq('uid', bot.uid);
+        await supabaseClient.from('usuarios').delete().eq('uid', bot.uid);
+        await supabaseClient.from('bots').delete().eq('uid', bot.uid);
     }
     botManagerState.bots = [];
     renderizarBotList([]);
@@ -2140,8 +2221,8 @@ async function toggleBot(uid) {
     if (!bot) return;
     const newState = !bot.isActive;
     const now = new Date().toISOString();
-    await supabase.from('usuarios').update({ isActive: newState, lastActive: now }).eq('uid', uid);
-    await supabase.from('bots').update({ isActive: newState, lastActive: now }).eq('uid', uid);
+    await supabaseClient.from('usuarios').update({ isActive: newState, lastActive: now }).eq('uid', uid);
+    await supabaseClient.from('bots').update({ isActive: newState, lastActive: now }).eq('uid', uid);
     bot.isActive = newState;
     renderizarBotList(botManagerState.bots);
     logBot(bot.username + ' ' + (newState ? 'activado' : 'pausado'), 'success');
@@ -2214,9 +2295,9 @@ function stopBotAutoRefresh() {
 // Inicializar escucha global
 setTimeout(() => {
     if (usuarioActual) iniciarEscuchaGlobal();
-    console.log('✅ BCPredict con Supabase - Listo!');
 }, 1000);
 
+console.log('✅ BCPredict con Supabase - Cargado correctamente!');
 </script>
 </body>
 </html>
