@@ -717,7 +717,7 @@ function cargarAnalisis() {
     const dbp = document.getElementById('dist-baja-pct'); if (dbp) dbp.textContent = Math.round(bajan/total*100)+'%';
     const periodosStats = {};
     for (const p of cerrados) { if (!periodosStats[p.periodo]) periodosStats[p.periodo] = {total:0, aciertos:0}; periodosStats[p.periodo].total++; if (p.resultado === 'acierto') periodosStats[p.periodo].aciertos++; }
-    const mejores = Object.entries(periodosStats).map(([periodo,stats]) => ({periodo, ...stats, winrate: stats.total>0?(stats.aciertos/stats.total*100):0})).sort((a,b) => b.winrate-a.winrate).slice(0,5);
+    //const mejores = Object.entries(periodosStats).map(([periodo,stats]) => ({periodo, ...stats, winrate: stats.total>0?(stats.aciertos/stats.total*100):0})).sort((a,b) => b.winrate-a.winrate).slice(0,5);
     const mp = document.getElementById('mejores-periodos');
     if (mp) mp.innerHTML = mejores.length ? mejores.map(m => '<div class="flex justify-between items-center p-2 rounded-lg bg-black/20"><span class="text-sm font-medium">'+(PERIODOS[m.periodo]?.nombre||m.periodo)+'</span><div class="text-right"><span class="text-xs font-bold '+(m.winrate>=50?'text-green-400':'text-red-400')+'">'+m.winrate.toFixed(1)+'%</span><span class="text-[10px] text-gray-600 ml-2">'+m.aciertos+'/'+m.total+'</span></div></div>').join('') : '<p class="text-gray-600 text-sm">Sin datos suficientes</p>';
     const ultimos = cerrados.slice(0,20);
