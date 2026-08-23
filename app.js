@@ -1,8 +1,9 @@
 // ==============================================
 // CONFIGURACIÓN DE SUPABASE (Renombrado a 'sb' para evitar errores)
 // ==============================================
-// const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
-// const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
+const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
 // const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 
@@ -22,8 +23,8 @@
 // IMPORTANTE: Reemplaza estos valores con los de tu proyecto Supabase
 // Ve a Settings > API en tu dashboard de Supabase
 
-const SUPABASE_URL = 'https://TU-PROJECT-URL.supabase.co';
-const SUPABASE_ANON_KEY = 'TU-ANON-KEY';
+//const SUPABASE_URL = 'https://TU-PROJECT-URL.supabase.co';
+//const SUPABASE_ANON_KEY = 'TU-ANON-KEY';
 
 // Inicializar cliente Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
