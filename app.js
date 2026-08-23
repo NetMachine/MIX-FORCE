@@ -1,19 +1,3 @@
-// ==============================================
-// CONFIGURACIÓN DE SUPABASE (Renombrado a 'sb' para evitar errores)
-// ==============================================
-const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
-
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
-// const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// 
-
-
-
-
-
-
-
 /* ============================================================
    BCPREDICT - APP.JS
    Logica completa migrada de Firebase a Supabase
@@ -24,8 +8,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // ============================================================
 // IMPORTANTE: Reemplaza estos valores con los de tu proyecto Supabase
 
-//const SUPABASE_URL = 'https://TU-PROJECT-URL.supabase.co';
-//const SUPABASE_ANON_KEY = 'TU-ANON-KEY';
+const SUPABASE_URL = 'https://TU-PROJECT-URL.supabase.co';
+const SUPABASE_ANON_KEY = 'TU-ANON-KEY';
 
 // Inicializar cliente Supabase (global para acceso desde cualquier funcion)
 let supabase;
@@ -178,11 +162,11 @@ function switchTab(tabId, event) {
     document.querySelectorAll('section[id^="tab-"]').forEach(s => s.classList.add('hidden'));
     const tabEl = document.getElementById('tab-' + tabId);
     if (tabEl) tabEl.classList.remove('hidden');
-    
+
     const buttons = event && event.target && event.target.parentElement ? event.target.parentElement.children : document.querySelectorAll('[onclick^="switchTab"]');
     Array.from(buttons).forEach(btn => { btn.classList.remove('tab-active'); btn.classList.add('text-gray-500'); });
     if (event && event.target) { event.target.classList.add('tab-active'); event.target.classList.remove('text-gray-500'); }
-    
+
     if (tabId === 'ranking') cargarRanking();
     if (tabId === 'global') cargarPrediccionesGlobal();
     if (tabId === 'analisis') cargarAnalisis();
@@ -221,11 +205,11 @@ async function register() {
     const email = document.getElementById('reg-email');
     const password = document.getElementById('reg-password');
     if (!username || !email || !password) return;
-    
+
     const uVal = username.value.trim(), eVal = email.value.trim(), pVal = password.value;
     if (!uVal || !eVal || !pVal) { showToast('Completa todos los campos', 'error'); return; }
     if (pVal.length < 6) { showToast('La contrasena debe tener al menos 6 caracteres', 'error'); return; }
-    
+
     try {
         const { data, error } = await supabase.auth.signUp({ email: eVal, password: pVal, options: { data: { username: uVal } } });
         if (error) throw error;
@@ -239,10 +223,10 @@ async function login() {
     const email = document.getElementById('login-email');
     const password = document.getElementById('login-password');
     if (!email || !password) return;
-    
+
     const eVal = email.value.trim(), pVal = password.value;
     if (!eVal || !pVal) { showToast('Completa todos los campos', 'error'); return; }
-    
+
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email: eVal, password: pVal });
         if (error) throw error;
@@ -285,7 +269,7 @@ function actualizarUIAuth() {
     const userName = document.getElementById('user-name');
     const userTier = document.getElementById('user-tier');
     const userStats = document.getElementById('user-pred-stats');
-    
+
     if (AppState.currentUser && AppState.userProfile) {
         if (authButtons) authButtons.classList.add('hidden');
         if (userMenu) { userMenu.classList.remove('hidden'); userMenu.classList.add('flex'); }
@@ -353,7 +337,7 @@ function renderizarNotificaciones() {
     const container = document.getElementById('notif-list');
     if (!container) return;
     if (!AppState.notificaciones.length) { container.innerHTML = '<p class="text-gray-600 text-sm text-center py-4">Sin notificaciones</p>'; return; }
-    container.innerHTML = AppState.notificaciones.map(n => '<div class="notif-item '+(n.read?'':'unread')+' cursor-pointer" onclick="marcarNotifLeida(\''+n.id+'\')">'+
+    container.innerHTML = AppState.notificaciones.map(n => '<div class="notif-item '+(n.read?'':'unread')+' cursor-pointer" onclick="marcarNotifLeida(''+n.id+'')">'+
         '<p class="text-xs text-gray-300">'+n.message+'</p><span class="text-[10px] text-gray-600">'+timeAgo(n.created_at)+'</span></div>').join('');
 }
 
@@ -393,7 +377,7 @@ function actualizarPrecioUI(data) {
     const price = data.usd; const change = data.usd_24h_change || 0; const isUp = change >= 0;
     const priceStr = price.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     const [whole, dec] = priceStr.split('.');
-    
+
     const pv = document.getElementById('price-value'); if (pv) pv.textContent = '$'+priceStr;
     const pc = document.getElementById('price-change');
     if (pc) { pc.textContent = (isUp?'+':'')+change.toFixed(2)+'%'; pc.className = 'text-xs px-2.5 py-1 rounded-lg font-bold '+(isUp?'bg-green-500/10 text-green-400':'bg-red-500/10 text-red-400'); }
@@ -482,11 +466,6 @@ function actualizarConversiones() {
     const ce = document.getElementById('calc-entry'); if (ce) ce.placeholder = price.toFixed(0);
     const sc = document.getElementById('sim-current'); if (sc) sc.placeholder = price.toFixed(0);
 }
-
-
-
-
-
 
 // ============================================================
 // SECCION 8: PREDICCIONES
@@ -774,11 +753,6 @@ function simularPrediccion() {
     if (sa) { if (Math.abs(change)<1) { sa.textContent = 'El cambio es muy pequeno. Considera un periodo mas corto.'; sa.className = 'text-xs text-yellow-400'; } else if (Math.abs(change)>20) { sa.textContent = 'El cambio es muy grande. Considera un periodo mas largo.'; sa.className = 'text-xs text-amber-400'; } else { sa.textContent = 'El cambio parece razonable. Buena suerte!'; sa.className = 'text-xs text-green-400'; } }
 }
 
-
-
-
-
-
 // ============================================================
 // SECCION 14: ORDER BOOK
 // ============================================================
@@ -1041,7 +1015,7 @@ async function renderizarBots() {
     const tbody = document.getElementById('bots-table');
     if (!tbody) return;
     if (!BotState.bots.length) { tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-gray-600 text-sm">No hay bots activos</td></tr>'; return; }
-    tbody.innerHTML = BotState.bots.map(b => { const persona = BOT_PERSONALITIES[b.personality] || BOT_PERSONALITIES.random; return '<tr><td class="py-3 px-4"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px]">🤖</div><span class="font-medium text-sm">'+b.username+'</span></div></td><td class="py-3 px-4 text-center text-xs">'+persona.desc+'</td><td class="py-3 px-4 text-center font-mono text-xs">'+(b.skill*100).toFixed(0)+'%</td><td class="py-3 px-4 text-center font-mono text-xs">-</td><td class="py-3 px-4 text-center font-mono text-xs">-</td><td class="py-3 px-4 text-center font-mono text-xs">-</td><td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold '+(b.is_active?'bg-green-500/20 text-green-400':'bg-gray-500/20 text-gray-400')+'">'+(b.is_active?'ACTIVO':'DETENIDO')+'</span></td><td class="py-3 px-4 text-center"><button onclick="toggleBot(\''+b.id+'\')" class="text-xs text-amber-400 hover:text-amber-300">Toggle</button></td></tr>'; }).join('');
+    tbody.innerHTML = BotState.bots.map(b => { const persona = BOT_PERSONALITIES[b.personality] || BOT_PERSONALITIES.random; return '<tr><td class="py-3 px-4"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-[10px]">🤖</div><span class="font-medium text-sm">'+b.username+'</span></div></td><td class="py-3 px-4 text-center text-xs">'+persona.desc+'</td><td class="py-3 px-4 text-center font-mono text-xs">'+(b.skill*100).toFixed(0)+'%</td><td class="py-3 px-4 text-center font-mono text-xs">-</td><td class="py-3 px-4 text-center font-mono text-xs">-</td><td class="py-3 px-4 text-center font-mono text-xs">-</td><td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold '+(b.is_active?'bg-green-500/20 text-green-400':'bg-gray-500/20 text-gray-400')+'">'+(b.is_active?'ACTIVO':'DETENIDO')+'</span></td><td class="py-3 px-4 text-center"><button onclick="toggleBot(''+b.id+'')" class="text-xs text-amber-400 hover:text-amber-300">Toggle</button></td></tr>'; }).join('');
 }
 
 function toggleBot(botId) {
@@ -1079,6 +1053,3 @@ document.addEventListener('click', (e) => {
     if (!notifBtn && !e.target.closest('#notif-panel') && AppState.notifOpen) { AppState.notifOpen = false; if (notifPanel) notifPanel.classList.add('hidden'); }
 });
 document.addEventListener('DOMContentLoaded', initApp);
-
-
-
