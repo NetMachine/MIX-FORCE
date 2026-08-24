@@ -3184,29 +3184,37 @@ function generateBotName(index, personality) {
 // ==============================================
 // BOTS
 // ==============================================
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 async function createBotSupabase(config) {
     if (!usuarioActual) throw new Error('Inicia sesion primero');
     const personality = config.personality || selectRandomPersonality();
     const personalityConfig = PERSONALITIES[personality];
     const skill = config.skill !== undefined ? config.skill : (personalityConfig.skillRange[0] + Math.random() * (personalityConfig.skillRange[1] - personalityConfig.skillRange[0]));
-    const uid = 'bot_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    const uid = generateUUID();
     const username = config.username || generateBotName(botManagerState.bots.length, personality);
     const now = new Date().toISOString();
     
-    // ⭐ SOLO las columnas que existen en la tabla 'bots'
     const botData = {
-        uid, 
-        username, 
-        personality, 
+        uid,
+        username,
+        personality,
         skill: Math.round(skill * 100) / 100,
-        is_active: true, 
-        puntos: 0, 
-        aciertos: 0, 
-        total_votos: 0, 
-        racha: 0, 
-        mejor_racha: 0, 
-        creado: now, 
-        last_active: now, 
+        is_active: true,
+        puntos: 0,
+        aciertos: 0,
+        total_votos: 0,
+        racha: 0,
+        mejor_racha: 0,
+        creado: now,
+        last_active: now,
         created_by: usuarioActual.uid
     };
     
