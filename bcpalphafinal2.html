@@ -2542,6 +2542,9 @@ async function verificarResultadosPendientes() {
 // ==============================================
 // MIS PREDICCIONES - con cuenta regresiva
 // ==============================================
+// ==============================================
+// MIS PREDICCIONES - con precio inicial
+// ==============================================
 async function cargarMisPredicciones() {
     if (!usuarioActual) {
         document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
@@ -2571,11 +2574,13 @@ async function cargarMisPredicciones() {
             return;
         }
         
-        // ⭐ IMPORTANTE: Agregar data-cierre para la cuenta regresiva
+        // ⭐ IMPORTANTE: Agregar precio inicial y data-cierre
         cont.innerHTML = docs.map(p => {
             const activo = p.estado === 'activo';
             const cierreStr = p.cierre || '';
             const tiempoRestante = calcTiempoRestante(new Date(cierreStr));
+            const precioInicial = p.precio_inicial || 0;
+            const precioInicialFormateado = '$' + Math.round(precioInicial).toLocaleString();
             
             let estadoCls, estadoTxt;
             if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
@@ -2593,9 +2598,13 @@ async function cargarMisPredicciones() {
             const fecha = new Date(p.creado);
             const fechaStr = fecha.toLocaleDateString('es-ES', {day:'2-digit',month:'short'}) + ' ' + fecha.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
             
-            // ⭐ Agregar data-cierre y clase countdown-tiempo
+            // ⭐ Agregar precio inicial en la parte izquierda
             return '<div class="prediction-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in" ' + (activo && cierreStr ? 'data-cierre="' + cierreStr + '"' : '') + '>' +
-                '<div><span class="font-bold text-sm">' + p.periodo + '</span><span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span></div>' +
+                '<div>' +
+                    '<span class="font-bold text-sm">' + p.periodo + '</span>' +
+                    '<span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span>' +
+                    '<div class="text-[10px] text-gray-500 font-mono mt-0.5">' + precioInicialFormateado + ' ⬅️ Inicio</div>' +
+                '</div>' +
                 '<div class="text-right">' +
                     '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
                     (activo ? '<div class="text-xs text-amber-400 font-mono countdown-tiempo" ' + (cierreStr ? 'data-cierre="' + cierreStr + '"' : '') + '>' + tiempoRestante + '</div>' : '') +
@@ -2605,7 +2614,7 @@ async function cargarMisPredicciones() {
                 '</div>';
         }).join('');
         
-        // ⭐ Iniciar el contador para las predicciones del usuario
+        // Iniciar el contador para las predicciones del usuario
         iniciarContadorMisPredicciones();
         
     } catch (e) { console.error('Error cargando mis predicciones:', e); }
@@ -2702,6 +2711,9 @@ async function cargarPrediccionesGlobal() {
     } catch (e) { console.error('Error cargando predicciones global:', e); }
 }
 
+// ==============================================
+// GLOBAL EN VIVO - con precio inicial
+// ==============================================
 async function renderizarGlobal() {
     const cont = document.getElementById('global-predicciones');
     let filtradas = todasPrediccionesGlobal;
@@ -2736,6 +2748,8 @@ async function renderizarGlobal() {
         const esMio = usuarioActual && p.usuario_id === usuarioActual.uid;
         const cierreStr = p.cierre || '';
         const tiempoRestante = calcTiempoRestante(new Date(cierreStr));
+        const precioInicial = p.precio_inicial || 0;
+        const precioInicialFormateado = '$' + Math.round(precioInicial).toLocaleString();
         
         let estadoCls, estadoTxt;
         if (activo) { 
@@ -2761,11 +2775,13 @@ async function renderizarGlobal() {
             resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precio_final).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
         }
         
+        // ⭐ Agregar precio inicial en la parte izquierda
         return '<div class="prediction-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in" ' + (activo && cierreStr ? 'data-cierre="' + cierreStr + '"' : '') + '>' +
             '<div>' +
                 '<span class="font-bold text-sm">' + p.periodo + '</span>' +
                 '<span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span>' +
                 '<div class="text-xs text-gray-500 mt-0.5">' + username + (esMio ? ' <span class="text-amber-400">(tu)</span>' : '') + '</div>' +
+                '<div class="text-[10px] text-gray-500 font-mono">' + precioInicialFormateado + ' ⬅️ Inicio</div>' +
             '</div>' +
             '<div class="text-right">' +
                 '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
