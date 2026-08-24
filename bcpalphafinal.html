@@ -2092,7 +2092,7 @@ async function register() {
             email: email,
             password: pass,
             options: {
-                data: { username: username }  // ← esto se guarda en raw_user_meta_data
+                data: { name: username, username: username }  // ← esto se guarda en raw_user_meta_data
             }
         });
         if (error) throw error;
