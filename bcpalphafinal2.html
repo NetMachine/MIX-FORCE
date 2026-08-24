@@ -728,7 +728,7 @@
                 <p class="text-xs text-gray-600 mt-0.5">Actualizacion en tiempo real via WebSocket</p>
             </div>
             <div class="flex gap-1">
-                <button onclick="cambiarTimeframe('5s')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select" id="tf-1s">5s</button>
+                <button onclick="cambiarTimeframe('5s')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select" id="tf-5s">5s</button>
                 <button onclick="cambiarTimeframe('1m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-1m">1m</button>
                 <button onclick="cambiarTimeframe('5m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-5m">5m</button>
                 <button onclick="cambiarTimeframe('15m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-15m">15m</button>
@@ -1766,15 +1766,15 @@ function initCandlestickChart() {
 
 async function loadCandleHistory(tf) {
     try {
-        // ⭐ Cambiar para que use '5s' correctamente
-        const interval = tf === '5s' ? '1s' : TF_MAP[tf] || '1m';  // ⭐ Nota: Binance no tiene 5s, usamos 1s y acumulamos
+        // ⭐ Para 5s, usamos el intervalo de 1s y agrupamos
+        const interval = tf === '5s' ? '1s' : TF_MAP[tf] || '1m';
         const limit = 500;
         const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=' + interval + '&limit=' + limit);
         const data = await res.json();
         
-        // Si es 5s, necesitamos agrupar velas de 1s en velas de 5s
         let candles;
         if (tf === '5s') {
+            // Agrupar velas de 1s en velas de 5s
             candles = agruparVelas5Segundos(data);
         } else {
             candles = data.map(d => ({
@@ -1782,15 +1782,18 @@ async function loadCandleHistory(tf) {
                 open: parseFloat(d[1]), 
                 high: parseFloat(d[2]), 
                 low: parseFloat(d[3]), 
-                close: parseFloat(d[4])
+                close: parseFloat(d[4]),
+                volume: parseFloat(d[5])
             }));
         }
         
-        const volumes = data.map(d => ({
-            time: d[0] / 1000,
-            value: parseFloat(d[5]),
-            color: parseFloat(d[4]) >= parseFloat(d[1]) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+        // ⭐ Corregir: usar candles en lugar de data para los volúmenes
+        const volumes = candles.map(c => ({
+            time: c.time,
+            value: c.volume || 0,
+            color: c.close >= c.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
         }));
+        
         candleSeries.setData(candles);
         if (chartTV.volumeSeries) chartTV.volumeSeries.setData(volumes);
         lastCandle = candles[candles.length - 1];
@@ -1802,21 +1805,32 @@ async function loadCandleHistory(tf) {
 function agruparVelas5Segundos(data) {
     const velas5s = [];
     let grupo = [];
+    let currentTime = -1;
     
     for (const d of data) {
         const time = Math.floor(d[0] / 5000) * 5000; // Agrupar cada 5 segundos
-        if (grupo.length > 0 && grupo[0][0] !== time) {
+        
+        if (currentTime === -1) {
+            currentTime = time;
+        }
+        
+        if (time !== currentTime && grupo.length > 0) {
             // Cerrar grupo anterior
             const primera = grupo[0];
             const ultima = grupo[grupo.length - 1];
+            const volume = grupo.reduce((sum, g) => sum + parseFloat(g[5]), 0);
+            
             velas5s.push({
-                time: time / 1000,
+                time: currentTime / 1000,
                 open: parseFloat(primera[1]),
                 high: Math.max(...grupo.map(g => parseFloat(g[2]))),
                 low: Math.min(...grupo.map(g => parseFloat(g[3]))),
-                close: parseFloat(ultima[4])
+                close: parseFloat(ultima[4]),
+                volume: volume
             });
+            
             grupo = [];
+            currentTime = time;
         }
         grupo.push(d);
     }
@@ -1825,12 +1839,15 @@ function agruparVelas5Segundos(data) {
     if (grupo.length > 0) {
         const primera = grupo[0];
         const ultima = grupo[grupo.length - 1];
+        const volume = grupo.reduce((sum, g) => sum + parseFloat(g[5]), 0);
+        
         velas5s.push({
-            time: Math.floor(grupo[0][0] / 5000) * 5000 / 1000,
+            time: currentTime / 1000,
             open: parseFloat(primera[1]),
             high: Math.max(...grupo.map(g => parseFloat(g[2]))),
             low: Math.min(...grupo.map(g => parseFloat(g[3]))),
-            close: parseFloat(ultima[4])
+            close: parseFloat(ultima[4]),
+            volume: volume
         });
     }
     
@@ -1839,49 +1856,103 @@ function agruparVelas5Segundos(data) {
 
 function connectWebSocket() {
     if (wsBinance) { wsBinance.close(); wsBinance = null; }
-    const stream = currentTF === '1s' ? 'btcusdt@aggTrade' : 'btcusdt@kline_' + (TF_MAP[currentTF] || '1m');
+    
+    // ⭐ CORREGIDO: Usar '5s' en lugar de '1s'
+    const stream = currentTF === '5s' ? 'btcusdt@aggTrade' : 'btcusdt@kline_' + (TF_MAP[currentTF] || '1m');
     wsBinance = new WebSocket('wss://stream.binance.com:9443/ws/' + stream);
+    
     wsBinance.onmessage = (event) => {
         const msg = JSON.parse(event.data);
+        
+        // ⭐ CORREGIDO: Usar '5s' en lugar de '1s'
         if (currentTF === '5s') {
+            // Para 5 segundos, usamos trades individuales
             const price = parseFloat(msg.p);
             const time = Math.floor(msg.T / 1000);
-            if (!lastCandle || time > lastCandle.time) {
+            
+            // Agrupar en velas de 5 segundos
+            const groupTime = Math.floor(time / 5) * 5;
+            
+            if (!lastCandle || groupTime > lastCandle.time) {
+                // Nueva vela
                 if (lastCandle) {
                     candleSeries.update(lastCandle);
                     if (chartTV.volumeSeries) {
-                        chartTV.volumeSeries.update({ time: lastCandle.time, value: msg.q * price, color: lastCandle.close >= lastCandle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' });
+                        chartTV.volumeSeries.update({ 
+                            time: lastCandle.time, 
+                            value: lastCandle.volume || 0,
+                            color: lastCandle.close >= lastCandle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' 
+                        });
                     }
                 }
-                lastCandle = { time: time, open: price, high: price, low: price, close: price };
+                lastCandle = { 
+                    time: groupTime, 
+                    open: price, 
+                    high: price, 
+                    low: price, 
+                    close: price,
+                    volume: parseFloat(msg.q) || 0
+                };
             } else {
+                // Actualizar vela existente
                 lastCandle.high = Math.max(lastCandle.high, price);
                 lastCandle.low = Math.min(lastCandle.low, price);
                 lastCandle.close = price;
+                lastCandle.volume = (lastCandle.volume || 0) + (parseFloat(msg.q) || 0);
                 candleSeries.update(lastCandle);
             }
         } else {
+            // Para otros timeframes (1m, 5m, 15m, 1h, 4h)
             const k = msg.k;
-            const candle = { time: k.t / 1000, open: parseFloat(k.o), high: parseFloat(k.h), low: parseFloat(k.l), close: parseFloat(k.c) };
+            const candle = { 
+                time: k.t / 1000, 
+                open: parseFloat(k.o), 
+                high: parseFloat(k.h), 
+                low: parseFloat(k.l), 
+                close: parseFloat(k.c),
+                volume: parseFloat(k.v)
+            };
             candleSeries.update(candle);
             if (chartTV.volumeSeries) {
-                chartTV.volumeSeries.update({ time: k.t / 1000, value: parseFloat(k.v), color: candle.close >= candle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' });
+                chartTV.volumeSeries.update({ 
+                    time: k.t / 1000, 
+                    value: parseFloat(k.v), 
+                    color: candle.close >= candle.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)' 
+                });
             }
+            lastCandle = candle;
         }
     };
+    
     wsBinance.onerror = (e) => console.log('WS Error:', e);
     wsBinance.onclose = () => setTimeout(connectWebSocket, 3000);
 }
 
 function cambiarTimeframe(tf) {
     currentTF = tf;
-    ['5s','1m','5m','15m','1h','4h'].forEach(t => {
+    
+    // ⭐ Actualizar botones
+    const timeframes = ['5s', '1m', '5m', '15m', '1h', '4h'];
+    timeframes.forEach(t => {
         const btn = document.getElementById('tf-' + t);
         if (btn) {
-            btn.className = t === tf ? 'px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select' : 'px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select';
+            btn.className = t === tf 
+                ? 'px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select' 
+                : 'px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select';
         }
     });
-    if (chartTV) chartTV.applyOptions({ timeScale: { secondsVisible: tf === '5s', timeVisible: true } });
+    
+    // ⭐ Actualizar opciones del gráfico
+    if (chartTV) {
+        chartTV.applyOptions({ 
+            timeScale: { 
+                secondsVisible: tf === '5s', 
+                timeVisible: true 
+            } 
+        });
+    }
+    
+    // ⭐ Cargar historial y conectar WebSocket
     loadCandleHistory(tf);
     connectWebSocket();
 }
