@@ -2098,8 +2098,9 @@ async function register() {
         
         if (data?.user) {
         await sb.auth.updateUser({
-            data: { name: username 
-            }
+            data: { name: username }
+        });
+    }
         if (error) throw error;
         
         mostrarToast('Cuenta creada exitosamente');
