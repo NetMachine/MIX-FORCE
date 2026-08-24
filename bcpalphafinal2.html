@@ -3184,28 +3184,50 @@ function generateBotName(index, personality) {
 // ==============================================
 // BOTS
 // ==============================================
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
 async function createBotSupabase(config) {
     if (!usuarioActual) throw new Error('Inicia sesion primero');
     const personality = config.personality || selectRandomPersonality();
     const personalityConfig = PERSONALITIES[personality];
     const skill = config.skill !== undefined ? config.skill : (personalityConfig.skillRange[0] + Math.random() * (personalityConfig.skillRange[1] - personalityConfig.skillRange[0]));
     
+    // Generar UUID válido
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+    
     const uid = generateUUID();
     const username = config.username || generateBotName(botManagerState.bots.length, personality);
     const now = new Date().toISOString();
     
+    // ⭐ PASO 1: Insertar en tabla 'usuarios' (para que la FK funcione)
+    const userData = {
+        uid: uid,
+        email: 'bot_' + uid.substr(0,8) + '@bot.local',
+        username: username,
+        puntos: 0,
+        aciertos: 0,
+        total_votos: 0,
+        racha: 0,
+        mejor_racha: 0,
+        logros: [],
+        creado: now
+    };
+    
+    const { error: userError } = await sb.from('usuarios').insert(userData);
+    if (userError) {
+        console.error('Error insertando usuario bot:', userError);
+        throw new Error('Error al crear usuario bot: ' + userError.message);
+    }
+    
+    // ⭐ PASO 2: Insertar en tabla 'bots'
     const botData = {
-        uid,
-        username,
-        personality,
+        uid: uid,
+        username: username,
+        personality: personality,
         skill: Math.round(skill * 100) / 100,
         is_active: true,
         puntos: 0,
@@ -3218,10 +3240,12 @@ async function createBotSupabase(config) {
         created_by: usuarioActual.uid
     };
     
-    const { error } = await sb.from('bots').insert(botData);
-    if (error) {
-        console.error('Error al crear bot:', error);
-        throw error;
+    const { error: botError } = await sb.from('bots').insert(botData);
+    if (botError) {
+        console.error('Error insertando bot:', botError);
+        // Intentar eliminar el usuario creado para no dejar registros huérfanos
+        await sb.from('usuarios').delete().eq('uid', uid);
+        throw new Error('Error al crear bot: ' + botError.message);
     }
     
     botManagerState.lastFetch = 0;
@@ -3317,7 +3341,9 @@ async function clearAllBots() {
     if (!confirm('Eliminar TODOS los bots permanentemente?')) return;
     logBot('Eliminando bots...', 'error');
     for (const bot of botManagerState.bots) {
+        // ⭐ Eliminar de ambas tablas
         await sb.from('bots').delete().eq('uid', bot.uid);
+        await sb.from('usuarios').delete().eq('uid', bot.uid);
     }
     botManagerState.bots = [];
     renderizarBotList([]);
