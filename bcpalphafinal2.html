@@ -1363,7 +1363,7 @@ const TIERS = [
 ];
 
 const TF_MAP = {
-    '1s': '1s', '1m': '1m', '5m': '5m', '15m': '15m', '1h': '1h', '4h': '4h'
+    '5s': '5s', '1m': '1m', '5m': '5m', '15m': '15m', '1h': '1h', '4h': '4h'
 };
 
 const ACHIEVEMENTS = [
@@ -1747,7 +1747,7 @@ function initCandlestickChart() {
         grid: { vertLines: { color: 'rgba(148,163,184,0.04)' }, horzLines: { color: 'rgba(148,163,184,0.04)' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal, vertLine: { color: 'rgba(247,147,26,0.3)', width: 1 }, horzLine: { color: 'rgba(247,147,26,0.3)', width: 1 } },
         rightPriceScale: { borderColor: 'rgba(148,163,184,0.1)', scaleMargins: { top: 0.1, bottom: 0.1 } },
-        timeScale: { borderColor: 'rgba(148,163,184,0.1)', timeVisible: true, secondsVisible: currentTF === '1s' },
+        timeScale: { borderColor: 'rgba(148,163,184,0.1)', timeVisible: true, secondsVisible: currentTF === '5s' },
         handleScroll: { vertTouchDrag: false },
     });
     candleSeries = chartTV.addCandlestickSeries({
@@ -1766,16 +1766,28 @@ function initCandlestickChart() {
 
 async function loadCandleHistory(tf) {
     try {
-        const interval = tf === '1s' ? '1s' : TF_MAP[tf] || '1m';
+        // ⭐ Cambiar para que use '5s' correctamente
+        const interval = tf === '5s' ? '1s' : TF_MAP[tf] || '1m';  // ⭐ Nota: Binance no tiene 5s, usamos 1s y acumulamos
         const limit = 500;
         const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=' + interval + '&limit=' + limit);
         const data = await res.json();
-        const candles = data.map(d => ({
-            time: tf === '1s' ? d[0] / 1000 : d[0] / 1000,
-            open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4])
-        }));
+        
+        // Si es 5s, necesitamos agrupar velas de 1s en velas de 5s
+        let candles;
+        if (tf === '5s') {
+            candles = agruparVelas5Segundos(data);
+        } else {
+            candles = data.map(d => ({
+                time: d[0] / 1000,
+                open: parseFloat(d[1]), 
+                high: parseFloat(d[2]), 
+                low: parseFloat(d[3]), 
+                close: parseFloat(d[4])
+            }));
+        }
+        
         const volumes = data.map(d => ({
-            time: tf === '1s' ? d[0] / 1000 : d[0] / 1000,
+            time: d[0] / 1000,
             value: parseFloat(d[5]),
             color: parseFloat(d[4]) >= parseFloat(d[1]) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
         }));
@@ -1786,13 +1798,52 @@ async function loadCandleHistory(tf) {
     } catch (e) { console.error('Error cargando velas:', e); }
 }
 
+// ⭐ NUEVA FUNCIÓN: Agrupar velas de 1s en velas de 5s
+function agruparVelas5Segundos(data) {
+    const velas5s = [];
+    let grupo = [];
+    
+    for (const d of data) {
+        const time = Math.floor(d[0] / 5000) * 5000; // Agrupar cada 5 segundos
+        if (grupo.length > 0 && grupo[0][0] !== time) {
+            // Cerrar grupo anterior
+            const primera = grupo[0];
+            const ultima = grupo[grupo.length - 1];
+            velas5s.push({
+                time: time / 1000,
+                open: parseFloat(primera[1]),
+                high: Math.max(...grupo.map(g => parseFloat(g[2]))),
+                low: Math.min(...grupo.map(g => parseFloat(g[3]))),
+                close: parseFloat(ultima[4])
+            });
+            grupo = [];
+        }
+        grupo.push(d);
+    }
+    
+    // Procesar último grupo
+    if (grupo.length > 0) {
+        const primera = grupo[0];
+        const ultima = grupo[grupo.length - 1];
+        velas5s.push({
+            time: Math.floor(grupo[0][0] / 5000) * 5000 / 1000,
+            open: parseFloat(primera[1]),
+            high: Math.max(...grupo.map(g => parseFloat(g[2]))),
+            low: Math.min(...grupo.map(g => parseFloat(g[3]))),
+            close: parseFloat(ultima[4])
+        });
+    }
+    
+    return velas5s;
+}
+
 function connectWebSocket() {
     if (wsBinance) { wsBinance.close(); wsBinance = null; }
     const stream = currentTF === '1s' ? 'btcusdt@aggTrade' : 'btcusdt@kline_' + (TF_MAP[currentTF] || '1m');
     wsBinance = new WebSocket('wss://stream.binance.com:9443/ws/' + stream);
     wsBinance.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-        if (currentTF === '1s') {
+        if (currentTF === '5s') {
             const price = parseFloat(msg.p);
             const time = Math.floor(msg.T / 1000);
             if (!lastCandle || time > lastCandle.time) {
