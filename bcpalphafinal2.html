@@ -3058,7 +3058,7 @@ async function cargarRanking() {
             return '<tr class="rank-glow ' + (esYo ? 'bg-amber-500/5' : '') + ' border-t border-white/5 transition">' +
                 '<td class="py-3 px-4 font-bold text-xs ' + (i < 3 ? 'text-amber-400' : 'text-gray-500') + '">' + rank + '</td>' +
                 '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + 
-                (esBot ? ' <span class="text-xs text-blue-400">🤖</span>' : '') +
+                (esBot ? ' <span class="text-xs text-blue-400"></span>' : '') +
                 (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
                 '<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ' + tier.clase + '">' + tier.nombre.toUpperCase() + '</span></td>' +
                 '<td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">' + (u.puntos || 0) + '</td>' +
