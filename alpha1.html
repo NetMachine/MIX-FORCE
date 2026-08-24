@@ -1446,6 +1446,7 @@ BAJA
 <span id="toast-text"></span>
 </div>
 <script>
+
 // ==============================================
 // VARIABLES GLOBALES
 // ==============================================
@@ -2342,6 +2343,8 @@ userMenu.classList.remove('flex');
 document.getElementById('user-pred-stats').classList.add('hidden');
 }
 }
+
+
 function actualizarStatsUsuario() {
 if (!usuarioActual) {
 ['stats-puntos','stats-aciertos','stats-fallos','stats-winrate','user-total-preds','user-win-preds','user-winrate-preds'].forEach(id => {
@@ -2361,6 +2364,8 @@ document.getElementById('stats-winrate').textContent = wr + '%';
 document.getElementById('user-total-preds').textContent = tot;
 document.getElementById('user-win-preds').textContent = ac;
 document.getElementById('user-winrate-preds').textContent = wr + '%';
+
+// Update achievements preview
 const preview = document.getElementById('user-achievements-preview');
 if (preview && userAchievements.length > 0) {
 const recent = userAchievements.slice(-3);
@@ -2372,12 +2377,16 @@ return '<span class="achievement text-[10px]" style="border-color:rgba(247,147,2
 } else if (preview) {
 preview.innerHTML = '';
 }
+
+// Update achievements tab
 const achUnlocked = document.getElementById('ach-unlocked');
 if (achUnlocked) achUnlocked.textContent = (userAchievements.length || 0) + '/' + ACHIEVEMENTS.length;
 const achBest = document.getElementById('ach-best-streak');
 if (achBest) achBest.textContent = usuarioActual.mejor_racha || 0;
 const achCurrent = document.getElementById('ach-current-streak');
 if (achCurrent) achCurrent.textContent = usuarioActual.racha || 0;
+
+// Multiplier based on streak
 const racha = usuarioActual.racha || 0;
 streakMultiplier = racha >= 10 ? 3.0 : racha >= 5 ? 2.0 : racha >= 3 ? 1.5 : 1.0;
 const achMult = document.getElementById('ach-multiplier');
@@ -2386,6 +2395,7 @@ achMult.textContent = 'x' + streakMultiplier.toFixed(1);
 achMult.className = 'text-2xl font-bold font-mono ' + (streakMultiplier > 1 ? 'text-purple-400' : 'text-gray-500');
 }
 }
+
 
 
 
