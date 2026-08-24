@@ -2218,45 +2218,68 @@ async function cargarUsuario(user) {
 
 
 async function register() {
-const email = document.getElementById('email-reg').value.trim();
-const pass = document.getElementById('pass-reg').value;
-const username = document.getElementById('username').value.trim();
-if (!email || !pass || !username) return mostrarToast('Completa todos los campos', 'error');
-if (pass.length < 6) return mostrarToast('Contrasena minimo 6 caracteres', 'error');
-if (username.length < 3) return mostrarToast('Usuario minimo 3 caracteres', 'error');
-try {
-const { data, error } = await supabaseClient.auth.signUp({
-email: email,
-password: pass,
-options: {
-data: {
-username: username
+  const email = document.getElementById('email-reg').value.trim();
+  const pass = document.getElementById('pass-reg').value;
+  const username = document.getElementById('username').value.trim();
+  
+  if (!email || !pass || !username) return mostrarToast('Completa todos los campos', 'error');
+  if (pass.length < 6) return mostrarToast('Contrasena minimo 6 caracteres', 'error');
+  if (username.length < 3) return mostrarToast('Usuario minimo 3 caracteres', 'error');
+  
+  try {
+    console.log('Registrando usuario...', { email, username });
+    
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: email,
+      password: pass,
+      options: {
+        data: {
+          username: username
+        }
+      }
+    });
+    
+    if (error) {
+      console.error('Error en signUp:', error);
+      throw error;
+    }
+    
+    console.log('Respuesta de signUp:', data);
+    
+    // Verificar si requiere confirmación de email
+    if (data.user && !data.session) {
+      // El usuario fue creado pero necesita confirmar email
+      mostrarToast('Cuenta creada. Revisa tu email para confirmar.', 'warn');
+      cerrarModal();
+      return;
+    }
+    
+    // Si hay sesión, el usuario ya está logueado
+    if (data.session && data.user) {
+      console.log('Sesión iniciada automáticamente');
+      mostrarToast('¡Cuenta creada y sesión iniciada!', 'success');
+      cerrarModal();
+      return;
+    }
+    
+    // Fallback
+    mostrarToast('Cuenta creada exitosamente', 'success');
+    cerrarModal();
+    
+  } catch (e) {
+    console.error('Error completo en register:', e);
+    mostrarToast('Error: ' + e.message, 'error');
+  }
 }
-}
-});
-if (error) throw error;
-if (data.session) {
-mostrarToast('Cuenta creada y sesion iniciada!', 'success');
-cerrarModal();
-} else if (data.user) {
-const { error: loginError } = await supabaseClient.auth.signInWithPassword({
-email: email,
-password: pass
-});
-if (loginError) {
-mostrarToast('Cuenta creada. Revisa tu email.', 'warn');
-} else {
-mostrarToast('Cuenta creada y sesion iniciada!', 'success');
-}
-cerrarModal();
-} else {
-mostrarToast('Cuenta creada exitosamente', 'success');
-cerrarModal();
-}
-} catch (e) {
-mostrarToast('Error: ' + e.message, 'error');
-}
-}
+
+
+
+
+
+
+
+
+
 
 
 
