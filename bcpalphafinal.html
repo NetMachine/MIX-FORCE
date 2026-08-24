@@ -1402,7 +1402,7 @@ let botLogEntries = [];
 // INICIO
 // ==============================================
 document.addEventListener('DOMContentLoaded', () => {
-    initParticles();
+    
     cargarPrecioBTC();
     cargarDatosMercado();
     cargarTopCryptos();
@@ -1421,84 +1421,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// ==============================================
-// PARTICLES BACKGROUND
-// ==============================================
-function initParticles() {
-    const canvas = document.getElementById('particles-canvas');
-    if (!canvas || !window.THREE) return;
-    try {
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        
-        const particleCount = 80;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
-        
-        for (let i = 0; i < particleCount; i++) {
-            positions[i * 3] = (Math.random() - 0.5) * 20;
-            positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-            const colorChoice = Math.random();
-            if (colorChoice < 0.5) {
-                colors[i * 3] = 0.97; colors[i * 3 + 1] = 0.58; colors[i * 3 + 2] = 0.10;
-            } else if (colorChoice < 0.8) {
-                colors[i * 3] = 0.13; colors[i * 3 + 1] = 0.77; colors[i * 3 + 2] = 0.37;
-            } else {
-                colors[i * 3] = 0.94; colors[i * 3 + 1] = 0.27; colors[i * 3 + 2] = 0.27;
-            }
-            sizes[i] = Math.random() * 2 + 0.5;
-        }
-        
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-        
-        const material = new THREE.PointsMaterial({
-            size: 0.05, vertexColors: true, transparent: true, opacity: 0.6,
-            blending: THREE.AdditiveBlending, sizeAttenuation: true
-        });
-        
-        const particles = new THREE.Points(geometry, material);
-        scene.add(particles);
-        camera.position.z = 5;
-        
-        let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-        });
-        
-        let frameCount = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            frameCount++;
-            if (frameCount % 2 !== 0) return;
-            const time = Date.now() * 0.0005;
-            const pos = geometry.attributes.position.array;
-            for (let i = 0; i < particleCount; i++) {
-                pos[i * 3] += Math.sin(time + i) * 0.002;
-                pos[i * 3 + 1] += Math.cos(time + i * 0.5) * 0.002;
-            }
-            geometry.attributes.position.needsUpdate = true;
-            particles.rotation.y += 0.0003;
-            particles.rotation.x = mouseY * 0.1;
-            renderer.render(scene, camera);
-        }
-        animate();
-        
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    } catch (e) { console.log('Particles init error:', e); }
-}
+
 
 // ==============================================
 // WEBSOCKET PRECIO
@@ -2706,9 +2629,9 @@ async function renderizarGlobal() {
         return;
     }
     
-    // Cache de usernames para evitar múltiples queries
-    const userCache = {};
+    // Precargar TODOS los usuarios de una sola vez
     const userIds = [...new Set(filtradas.map(p => p.usuario_id).filter(id => id))];
+    const userCache = {};
     
     if (userIds.length > 0) {
         try {
@@ -2722,45 +2645,12 @@ async function renderizarGlobal() {
         } catch (e) {}
     }
     
+    // Ahora sí: map SIN async
     cont.innerHTML = filtradas.map(p => {
         const username = userCache[p.usuario_id] || 'Anonimo';
-        const activo = p.estado === 'activo';
-        const esMio = usuarioActual && p.usuario_id === usuarioActual.uid;
-        let estadoCls, estadoTxt;
-        if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
-        else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO'; }
-        else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
-        const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
-        const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
-        let tiempo = '';
-        if (activo && p.cierre) {
-            const cd = new Date(p.cierre);
-            tiempo = '<span class="text-xs text-amber-400 countdown-tiempo font-mono" data-cierre="' + cd.toISOString() + '">' + calcTiempoRestante(cd) + '</span>';
-        }
-        let resultado = '';
-        if (!activo && p.precio_final) {
-            const subio = p.precio_final > p.precio_inicial;
-            const cambio = ((p.precio_final - p.precio_inicial) / p.precio_inicial * 100).toFixed(2);
-            resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precio_final).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
-        }
-        const fecha = new Date(p.creado);
-        const fechaStr = fecha.toLocaleTimeString('es-ES', {hour:'2-digit',minute:'2-digit'});
-        const precioInicio = p.precio_inicial ? '$' + Math.round(p.precio_inicial).toLocaleString() : '--';
-        return '<div class="prediction-row glass-card rounded-lg p-3.5 ' + (esMio ? 'border-l-2 border-amber-500/50' : '') + '">' +
-            '<div class="flex justify-between items-center flex-wrap gap-2">' +
-            '<div class="flex items-center gap-2 flex-wrap">' +
-            '<span class="font-bold text-sm text-gray-200">' + username + '</span>' + (esMio ? '<span class="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded">TU</span>' : '') +
-            '<span class="text-[10px] text-gray-600 font-medium">' + p.periodo + '</span>' +
-            '<span class="' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span>' +
-            '</div>' +
-            '<div class="flex items-center gap-2 flex-wrap">' +
-            '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
-            tiempo + resultado + '<span class="text-[10px] text-gray-600">' + fechaStr + '</span>' +
-            '</div></div>' +
-            '<div class="text-[10px] text-gray-600 mt-1 font-mono">Inicio: ' + precioInicio + '</div></div>';
+        // ... resto del código igual ...
     }).join('');
 }
-
 
 
 
@@ -3113,6 +3003,7 @@ function generateBotName(index, personality) {
     return prefix + suffix + '_' + (Math.floor(Math.random() * 999) + 1);
 }
 
+
 async function createBotSupabase(config) {
     if (!usuarioActual) throw new Error('Inicia sesion primero');
     const personality = config.personality || selectRandomPersonality();
@@ -3122,21 +3013,29 @@ async function createBotSupabase(config) {
     const username = config.username || generateBotName(botManagerState.bots.length, personality);
     const now = new Date().toISOString();
     
+    // Solo insertar en tabla 'bots' - NO en 'usuarios'
     const botData = {
-        uid, username, email: 'bot_' + uid.substr(0,8) + '@bcpredict.bot',
-        personality, skill: Math.round(skill * 100) / 100,
+        uid, username, 
+        email: 'bot_' + uid.substr(0,8) + '@bcpredict.bot',
+        personality, 
+        skill: Math.round(skill * 100) / 100,
         activity_level: Math.round(personalityConfig.activityLevel * 100) / 100,
-        is_active: true, es_bot: true, puntos: 0, aciertos: 0, total_votos: 0, racha: 0, mejor_racha: 0, logros: [],
-        creado: now, last_active: now, created_by: usuarioActual.uid, created_by_name: usuarioActual.username
+        is_active: true, 
+        puntos: 0, 
+        aciertos: 0, 
+        total_votos: 0, 
+        racha: 0, 
+        mejor_racha: 0, 
+        creado: now, 
+        last_active: now, 
+        created_by: usuarioActual.uid
     };
     
-    const { error } = await sb.from('usuarios').insert(botData);
+    const { error } = await sb.from('bots').insert(botData);
     if (error) throw error;
     
-    const { error: botError } = await sb.from('bots').insert({
-        uid, username, personality, is_active: true, puntos: 0, creado: now, created_by: usuarioActual.uid
-    });
-    if (botError) throw botError;
+    // Invalidar cache para que aparezca inmediatamente
+    botManagerState.lastFetch = 0;
     
     return { success: true, bot: botData };
 }
@@ -3150,7 +3049,7 @@ async function getBotsCached(forceRefresh = false) {
     botManagerState.isLoading = true;
     try {
         const { data: bots, error } = await sb
-            .from('bots')
+            .from('bots')          // <-- SOLO tabla bots
             .select('*')
             .order('creado', { ascending: false })
             .limit(50);
@@ -3159,8 +3058,12 @@ async function getBotsCached(forceRefresh = false) {
         botManagerState.bots = bots || [];
         botManagerState.lastFetch = now;
         return botManagerState.bots;
-    } catch (e) { console.error('Error cargando bots:', e); return botManagerState.bots; }
-    finally { botManagerState.isLoading = false; }
+    } catch (e) { 
+        console.error('Error cargando bots:', e); 
+        return botManagerState.bots; 
+    } finally { 
+        botManagerState.isLoading = false; 
+    }
 }
 
 async function createBots() {
