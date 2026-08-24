@@ -14,7 +14,7 @@
     <script>
         const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 
     <style>
@@ -2027,7 +2027,7 @@ function fmtCompact(n) {
 // ==============================================
 async function verificarSesion() {
     try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await sb.auth.getSession();
         if (error) throw error;
         if (session?.user) {
             await cargarUsuario(session.user);
@@ -2046,7 +2046,7 @@ async function verificarSesion() {
         }
         
         // Listener de cambios de auth
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        sb.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session?.user) {
                 await cargarUsuario(session.user);
                 iniciarEscuchaGlobal();
@@ -2074,7 +2074,7 @@ async function verificarSesion() {
 async function cargarUsuario(user) {
     try {
         // Buscar o crear usuario en tabla usuarios
-        let { data: userData, error } = await supabase
+        let { data: userData, error } = await sb
             .from('usuarios')
             .select('*')
             .eq('uid', user.id)
@@ -2083,7 +2083,7 @@ async function cargarUsuario(user) {
         if (error && error.code === 'PGRST116') {
             // Usuario no existe, crearlo
             const username = user.user_metadata?.username || user.email.split('@')[0];
-            const { data: newUser, error: insertError } = await supabase
+            const { data: newUser, error: insertError } = await sb
                 .from('usuarios')
                 .insert({
                     uid: user.id,
@@ -2130,7 +2130,7 @@ async function cargarUsuario(user) {
         
         // Suscribirse a cambios del usuario en tiempo real
         if (userSub) userSub.unsubscribe();
-        userSub = supabase
+        userSub = sb
             .channel('user-changes-' + user.id)
             .on('postgres_changes', {
                 event: 'UPDATE',
@@ -2164,7 +2164,7 @@ async function register() {
     if (pass.length < 6) return mostrarToast('Contrasena minimo 6 caracteres', 'error');
     if (username.length < 3) return mostrarToast('Usuario minimo 3 caracteres', 'error');
     try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await sb.auth.signUp({
             email: email,
             password: pass,
             options: {
@@ -2182,7 +2182,7 @@ async function login() {
     const pass = document.getElementById('pass').value;
     if (!email || !pass) return mostrarToast('Completa todos los campos', 'error');
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await sb.auth.signInWithPassword({
             email: email,
             password: pass
         });
@@ -2200,7 +2200,7 @@ async function logout() {
     intervalosGlobales.forEach(id => clearInterval(id));
     intervalosGlobales = [];
     
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     usuarioActual = null;
     actualizarUI();
     document.getElementById('mis-predicciones').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
@@ -2298,7 +2298,7 @@ function getTier(puntos) {
 async function buscarPrediccionActiva() {
     if (!usuarioActual) return;
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('predicciones')
             .select('*')
             .eq('usuario_id', usuarioActual.uid)
@@ -2389,7 +2389,7 @@ async function votar(direccion) {
     
     try {
         // Verificar si ya existe prediccion activa en este periodo
-        const { data: existing, error: checkError } = await supabase
+        const { data: existing, error: checkError } = await sb
             .from('predicciones')
             .select('id')
             .eq('usuario_id', usuarioActual.uid)
@@ -2400,7 +2400,7 @@ async function votar(direccion) {
         if (existing && existing.length > 0) return mostrarToast('Ya votaste en este periodo', 'error');
         
         // Crear prediccion
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('predicciones')
             .insert({
                 usuario_id: usuarioActual.uid,
@@ -2429,7 +2429,7 @@ async function votar(direccion) {
 // ==============================================
 async function verificarResultadosPendientes() {
     try {
-        const { data: preds, error } = await supabase
+        const { data: preds, error } = await sb
             .from('predicciones')
             .select('*')
             .eq('estado', 'activo');
@@ -2461,7 +2461,7 @@ async function verificarResultadosPendientes() {
             const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : 0;
             
             // Actualizar prediccion
-            await supabase
+            await sb
                 .from('predicciones')
                 .update({
                     precio_final: precioFinal,
@@ -2473,7 +2473,7 @@ async function verificarResultadosPendientes() {
                 .eq('id', pred.id);
             
             // Obtener datos actuales del usuario
-            const { data: userData } = await supabase
+            const { data: userData } = await sb
                 .from('usuarios')
                 .select('*')
                 .eq('uid', pred.usuario_id)
@@ -2485,7 +2485,7 @@ async function verificarResultadosPendientes() {
                 const nr = (userData.racha || 0) + 1;
                 const nmr = Math.max(nr, userData.mejor_racha || 0);
                 
-                await supabase
+                await sb
                     .from('usuarios')
                     .update({
                         puntos: (userData.puntos || 0) + pts,
@@ -2511,7 +2511,7 @@ async function verificarResultadosPendientes() {
                     }
                 }
             } else {
-                await supabase
+                await sb
                     .from('usuarios')
                     .update({
                         total_votos: (userData.total_votos || 0) + 1,
@@ -2555,7 +2555,7 @@ async function cargarMisPredicciones() {
         return;
     }
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('predicciones')
             .select('*')
             .eq('usuario_id', usuarioActual.uid)
@@ -2625,7 +2625,7 @@ function iniciarEscuchaGlobal() {
     cargarPrediccionesGlobal();
     
     // Suscribirse a cambios en tiempo real de predicciones
-    globalSub = supabase
+    globalSub = sb
         .channel('predicciones-global')
         .on('postgres_changes', {
             event: '*',
@@ -2644,7 +2644,7 @@ function iniciarEscuchaGlobal() {
 
 async function cargarPrediccionesGlobal() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('predicciones')
             .select('*')
             .order('creado', { ascending: false })
@@ -2712,7 +2712,7 @@ async function renderizarGlobal() {
     
     if (userIds.length > 0) {
         try {
-            const { data: users } = await supabase
+            const { data: users } = await sb
                 .from('usuarios')
                 .select('uid, username')
                 .in('uid', userIds);
@@ -2769,7 +2769,7 @@ async function renderizarGlobal() {
 // ==============================================
 async function cargarRanking() {
     try {
-        const { data: usuarios, error } = await supabase
+        const { data: usuarios, error } = await sb
             .from('usuarios')
             .select('*')
             .order('puntos', { ascending: false })
@@ -2834,7 +2834,7 @@ async function cargarRanking() {
 // ==============================================
 async function cargarAnalisis() {
     try {
-        const { data: preds, error } = await supabase
+        const { data: preds, error } = await sb
             .from('predicciones')
             .select('*');
         
@@ -2957,7 +2957,7 @@ async function verificarLogros() {
         userAchievements = [...userAchievements, ...nuevosIds];
         const ptsExtra = nuevos.reduce((s, a) => s + a.pts, 0);
         
-        await supabase
+        await sb
             .from('usuarios')
             .update({
                 logros: userAchievements,
@@ -3130,10 +3130,10 @@ async function createBotSupabase(config) {
         creado: now, last_active: now, created_by: usuarioActual.uid, created_by_name: usuarioActual.username
     };
     
-    const { error } = await supabase.from('usuarios').insert(botData);
+    const { error } = await sb.from('usuarios').insert(botData);
     if (error) throw error;
     
-    const { error: botError } = await supabase.from('bots').insert({
+    const { error: botError } = await sb.from('bots').insert({
         uid, username, personality, is_active: true, puntos: 0, creado: now, created_by: usuarioActual.uid
     });
     if (botError) throw botError;
@@ -3149,7 +3149,7 @@ async function getBotsCached(forceRefresh = false) {
     if (botManagerState.isLoading) return botManagerState.bots;
     botManagerState.isLoading = true;
     try {
-        const { data: bots, error } = await supabase
+        const { data: bots, error } = await sb
             .from('bots')
             .select('*')
             .order('creado', { ascending: false })
@@ -3198,8 +3198,8 @@ async function startAllBots() {
     logBot('Activando ' + bots.length + ' bots...', 'info');
     const now = new Date().toISOString();
     for (const bot of bots) {
-        await supabase.from('usuarios').update({ is_active: true, last_active: now }).eq('uid', bot.uid);
-        await supabase.from('bots').update({ is_active: true, last_active: now }).eq('uid', bot.uid);
+        await sb.from('usuarios').update({ is_active: true, last_active: now }).eq('uid', bot.uid);
+        await sb.from('bots').update({ is_active: true, last_active: now }).eq('uid', bot.uid);
         bot.is_active = true;
     }
     renderizarBotList(botManagerState.bots);
@@ -3212,8 +3212,8 @@ async function stopAllBots() {
     if (bots.length === 0) { mostrarToast('Todos los bots ya estan inactivos', 'info'); return; }
     const now = new Date().toISOString();
     for (const bot of bots) {
-        await supabase.from('usuarios').update({ is_active: false, last_active: now }).eq('uid', bot.uid);
-        await supabase.from('bots').update({ is_active: false, last_active: now }).eq('uid', bot.uid);
+        await sb.from('usuarios').update({ is_active: false, last_active: now }).eq('uid', bot.uid);
+        await sb.from('bots').update({ is_active: false, last_active: now }).eq('uid', bot.uid);
         bot.is_active = false;
     }
     renderizarBotList(botManagerState.bots);
@@ -3225,8 +3225,8 @@ async function clearAllBots() {
     if (!confirm('Eliminar TODOS los bots permanentemente?')) return;
     logBot('Eliminando bots...', 'error');
     for (const bot of botManagerState.bots) {
-        await supabase.from('usuarios').delete().eq('uid', bot.uid);
-        await supabase.from('bots').delete().eq('uid', bot.uid);
+        await sb.from('usuarios').delete().eq('uid', bot.uid);
+        await sb.from('bots').delete().eq('uid', bot.uid);
     }
     botManagerState.bots = [];
     renderizarBotList([]);
@@ -3240,8 +3240,8 @@ async function toggleBot(uid) {
     if (!bot) return;
     const newState = !bot.is_active;
     const now = new Date().toISOString();
-    await supabase.from('usuarios').update({ is_active: newState, last_active: now }).eq('uid', uid);
-    await supabase.from('bots').update({ is_active: newState, last_active: now }).eq('uid', uid);
+    await sb.from('usuarios').update({ is_active: newState, last_active: now }).eq('uid', uid);
+    await sb.from('bots').update({ is_active: newState, last_active: now }).eq('uid', uid);
     bot.is_active = newState;
     renderizarBotList(botManagerState.bots);
     logBot(bot.username + ' ' + (newState ? 'activado' : 'pausado'), 'success');
