@@ -2390,6 +2390,9 @@ async function votar(direccion) {
 // ==============================================
 // VERIFICACION RESULTADOS
 // ==============================================
+// ==============================================
+// VERIFICACION RESULTADOS - VERSIÓN CORREGIDA
+// ==============================================
 async function verificarResultadosPendientes() {
     try {
         const { data: preds, error } = await sb
@@ -2421,7 +2424,13 @@ async function verificarResultadosPendientes() {
             const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
             const basePts = PUNTOS_POR_PERIODO[pred.periodo] || 1;
             const mult = MULTIPLICADORES[pred.periodo] || 1.0;
-            const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : 0;
+            
+            // ⭐ Calcular puntos base (sin importar si gana o pierde)
+            const ptsBase = Math.round(basePts * mult);
+            
+            // ⭐ Si acierta: suma puntos con multiplicador de racha
+            // ⭐ Si falla: resta los mismos puntos que habría ganado
+            const pts = acierto ? Math.round(ptsBase * streakMultiplier) : -ptsBase;
             
             // Actualizar prediccion
             await sb
@@ -2444,6 +2453,10 @@ async function verificarResultadosPendientes() {
             
             if (!userData) continue;
             
+            // ⭐ Calcular nuevos puntos (nunca menos de 0)
+            const puntosActuales = userData.puntos || 0;
+            const nuevosPuntos = Math.max(0, puntosActuales + pts);
+            
             if (acierto) {
                 const nr = (userData.racha || 0) + 1;
                 const nmr = Math.max(nr, userData.mejor_racha || 0);
@@ -2451,7 +2464,7 @@ async function verificarResultadosPendientes() {
                 await sb
                     .from('usuarios')
                     .update({
-                        puntos: (userData.puntos || 0) + pts,
+                        puntos: nuevosPuntos,
                         aciertos: (userData.aciertos || 0) + 1,
                         total_votos: (userData.total_votos || 0) + 1,
                         racha: nr,
@@ -2460,34 +2473,51 @@ async function verificarResultadosPendientes() {
                     .eq('uid', pred.usuario_id);
                 
                 if (usuarioActual && usuarioActual.uid === pred.usuario_id) {
-                    usuarioActual.puntos = (usuarioActual.puntos || 0) + pts;
+                    usuarioActual.puntos = nuevosPuntos;
                     usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
                     usuarioActual.racha = nr;
                     usuarioActual.mejor_racha = nmr;
                     actualizarUI();
                     actualizarStatsUsuario();
-                    mostrarToast('Acertaste! +' + pts + ' pts (x' + streakMultiplier + ' racha)', 'success');
+                    mostrarToast('✅ Acertaste! +' + pts + ' pts (x' + streakMultiplier + ' racha)', 'success');
                     agregarNotif('+' + pts + ' pts en ' + pred.periodo + ' (racha x' + streakMultiplier + ')', 'success');
                     if (window.confetti && streakMultiplier > 1) {
                         confetti({ particleCount: 50 * streakMultiplier, spread: 60, origin: { y: 0.7 }, colors: ['#f7931a', '#22c55e', '#FFD700', '#8A2BE2'] });
                     }
                 }
             } else {
+                // ⭐ FALLO: Reiniciar racha a 0
                 await sb
                     .from('usuarios')
                     .update({
+                        puntos: nuevosPuntos,
                         total_votos: (userData.total_votos || 0) + 1,
                         racha: 0
                     })
                     .eq('uid', pred.usuario_id);
                 
                 if (usuarioActual && usuarioActual.uid === pred.usuario_id) {
+                    usuarioActual.puntos = nuevosPuntos;
                     usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
                     usuarioActual.racha = 0;
+                    actualizarUI();
                     actualizarStatsUsuario();
-                    mostrarToast('Fallaste. BTC ' + (subio ? 'subio' : 'bajo'), 'error');
-                    agregarNotif('Fallo en ' + pred.periodo, 'error');
+                    
+                    // ⭐ Mostrar mensaje de pérdida de puntos
+                    const perdida = Math.abs(pts);
+                    if (perdida > 0) {
+                        mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subió' : 'bajó') + ' -' + perdida + ' pts', 'error');
+                        agregarNotif('-' + perdida + ' pts en ' + pred.periodo + ' (fallo)', 'error');
+                    } else {
+                        mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subió' : 'bajó'), 'error');
+                        agregarNotif('Fallo en ' + pred.periodo, 'error');
+                    }
+                    
+                    // ⭐ Confeti rojo si perdió muchos puntos
+                    if (window.confetti && perdida >= 5) {
+                        confetti({ particleCount: 30, spread: 40, origin: { y: 0.7 }, colors: ['#ef4444', '#dc2626', '#b91c1c'] });
+                    }
                 }
             }
             
