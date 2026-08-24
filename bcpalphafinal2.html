@@ -1990,11 +1990,26 @@ async function cargarPrecioBTC() {
 // ==============================================
 
 // ⭐ Función principal con múltiples fallbacks
+// ==============================================
+// DATOS MERCADO - VERSIÓN CORREGIDA Y ROBUSTA
+// ==============================================
+
+// ⭐ Función principal con múltiples fallbacks
 async function cargarDatosMercado() {
+    console.log('Cargando datos de mercado...');
+    
+    // Mostrar loading
+    const placeholders = ['quick-mcap', 'quick-vol', 'quick-dom', 'quick-ath', 
+                         'det-mcap', 'det-vol', 'det-high', 'det-low', 'det-ath', 'det-supply', 'det-dom'];
+    placeholders.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '...';
+    });
+    
     try {
-        // ⭐ Primero intentar con Binance (más rápida)
+        // ⭐ Primero intentar con Binance
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         
         const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', {
             signal: controller.signal
@@ -2004,14 +2019,15 @@ async function cargarDatosMercado() {
         if (res.ok) {
             const data = await res.json();
             actualizarConDatosBinance(data);
+            console.log('✅ Datos cargados desde Binance');
             return;
         }
     } catch (e) {
-        console.log('Binance falló, intentando CoinCap...');
+        console.log('Binance falló:', e.message);
     }
     
     try {
-        // ⭐ Segundo intento con CoinCap
+        // ⭐ Segundo intento con CoinCap (sin CORS)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 3000);
         
@@ -2023,16 +2039,17 @@ async function cargarDatosMercado() {
         if (res.ok) {
             const data = await res.json();
             actualizarConDatosCoinCap(data);
+            console.log('✅ Datos cargados desde CoinCap');
             return;
         }
     } catch (e) {
-        console.log('CoinCap falló, intentando CoinGecko...');
+        console.log('CoinCap falló:', e.message);
     }
     
     try {
         // ⭐ Tercer intento con CoinGecko
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         
         const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false', {
             signal: controller.signal
@@ -2042,153 +2059,172 @@ async function cargarDatosMercado() {
         if (res.ok) {
             const data = await res.json();
             actualizarConDatosCoinGecko(data);
+            console.log('✅ Datos cargados desde CoinGecko');
             return;
         }
     } catch (e) {
-        console.log('CoinGecko falló, usando datos estimados');
-        usarDatosEstimados();
+        console.log('CoinGecko falló:', e.message);
     }
+    
+    // ⭐ Si todo falla, usar datos desde el precio del WebSocket
+    console.log('⚠️ Todas las APIs fallaron, usando datos estimados');
+    usarDatosEstimados();
 }
 
 // ⭐ Función para actualizar con datos de Binance
 function actualizarConDatosBinance(data) {
-    const price = parseFloat(data.lastPrice);
-    const mcap = price * 19700000; // Aproximado (19.7M BTC en circulación)
-    const vol = parseFloat(data.quoteVolume);
-    const high24 = parseFloat(data.highPrice);
-    const low24 = parseFloat(data.lowPrice);
-    const change24h = parseFloat(data.priceChangePercent);
+    if (!data) return;
     
-    // Actualizar todos los elementos
-    document.getElementById('quick-mcap').textContent = fmtNum(mcap);
-    document.getElementById('quick-vol').textContent = fmtNum(vol);
-    document.getElementById('quick-dom').textContent = '--';
-    document.getElementById('quick-ath').textContent = '$' + Math.round(price * 1.5).toLocaleString();
-    document.getElementById('det-mcap').textContent = fmtNum(mcap);
-    document.getElementById('det-vol').textContent = fmtNum(vol);
-    document.getElementById('det-high').textContent = '$' + Math.round(high24).toLocaleString();
-    document.getElementById('det-low').textContent = '$' + Math.round(low24).toLocaleString();
-    document.getElementById('det-supply').textContent = '19.7M';
-    document.getElementById('det-supply-bar').style.width = '94%';
-    document.getElementById('det-dom').textContent = '--';
-    document.getElementById('det-dom-bar').style.width = '0%';
+    const price = parseFloat(data.lastPrice) || 0;
+    const mcap = price * 19700000;
+    const vol = parseFloat(data.quoteVolume) || 0;
+    const high24 = parseFloat(data.highPrice) || price;
+    const low24 = parseFloat(data.lowPrice) || price;
+    const change24h = parseFloat(data.priceChangePercent) || 0;
     
-    const heroRange = document.getElementById('hero-range');
-    if (heroRange) heroRange.textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
-    document.getElementById('price-range').textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
-    
-    // Actualizar cambio
-    const cls = change24h >= 0 ? 'bg-green-500/15 text-green-400 border border-green-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20';
-    const txt = (change24h >= 0 ? '+' : '') + change24h.toFixed(2) + '%';
-    const heroChange = document.getElementById('hero-change');
-    if (heroChange) {
-        heroChange.textContent = txt;
-        heroChange.className = 'text-sm px-4 py-1.5 rounded-lg font-bold font-mono ' + cls;
-    }
-    
-    document.getElementById('price-change').textContent = txt;
-    document.getElementById('price-change').className = 'text-xs px-2.5 py-1 rounded-lg font-medium ' + cls;
-    document.getElementById('price-change-movil').textContent = txt;
-    document.getElementById('price-change-movil').className = 'text-xs px-2 py-0.5 rounded-lg font-medium ' + cls;
+    actualizarElementosUI(price, mcap, vol, high24, low24, change24h);
 }
 
 // ⭐ Función para actualizar con datos de CoinCap
 function actualizarConDatosCoinCap(data) {
-    if (data && data.data) {
-        const btc = data.data;
-        const price = parseFloat(btc.priceUsd);
-        const mcap = parseFloat(btc.marketCapUsd);
-        const vol = parseFloat(btc.volumeUsd24Hr);
-        const supply = parseFloat(btc.supply);
-        const maxSupply = parseFloat(btc.maxSupply) || 21000000;
-        const change24h = parseFloat(btc.changePercent24Hr);
-        
-        // Actualizar UI
-        document.getElementById('quick-mcap').textContent = fmtNum(mcap);
-        document.getElementById('quick-vol').textContent = fmtNum(vol);
-        document.getElementById('quick-dom').textContent = '--';
-        document.getElementById('quick-ath').textContent = '$' + Math.round(price * 1.5).toLocaleString();
-        
-        document.getElementById('det-mcap').textContent = fmtNum(mcap);
-        document.getElementById('det-vol').textContent = fmtNum(vol);
-        document.getElementById('det-high').textContent = '$' + Math.round(price * (1 + Math.abs(change24h)/100)).toLocaleString();
-        document.getElementById('det-low').textContent = '$' + Math.round(price * (1 - Math.abs(change24h)/100)).toLocaleString();
-        document.getElementById('det-supply').textContent = (supply/1e6).toFixed(2) + 'M';
-        document.getElementById('det-supply-bar').style.width = Math.min(100, (supply/maxSupply)*100).toFixed(1) + '%';
-        document.getElementById('det-dom').textContent = '--';
-        document.getElementById('det-dom-bar').style.width = '0%';
-        
-        const heroRange = document.getElementById('hero-range');
-        if (heroRange) {
-            const high = price * (1 + Math.abs(change24h)/100);
-            const low = price * (1 - Math.abs(change24h)/100);
-            heroRange.textContent = 'H ' + fmtCompact(high) + ' / L ' + fmtCompact(low);
-        }
-        document.getElementById('price-range').textContent = 'H ' + fmtCompact(price * (1 + Math.abs(change24h)/100)) + ' / L ' + fmtCompact(price * (1 - Math.abs(change24h)/100));
-        
-        // Actualizar cambio
-        const cls = change24h >= 0 ? 'bg-green-500/15 text-green-400 border border-green-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20';
-        const txt = (change24h >= 0 ? '+' : '') + change24h.toFixed(2) + '%';
-        const heroChange = document.getElementById('hero-change');
-        if (heroChange) {
-            heroChange.textContent = txt;
-            heroChange.className = 'text-sm px-4 py-1.5 rounded-lg font-bold font-mono ' + cls;
-        }
-        
-        document.getElementById('price-change').textContent = txt;
-        document.getElementById('price-change').className = 'text-xs px-2.5 py-1 rounded-lg font-medium ' + cls;
-        document.getElementById('price-change-movil').textContent = txt;
-        document.getElementById('price-change-movil').className = 'text-xs px-2 py-0.5 rounded-lg font-medium ' + cls;
-    }
+    if (!data || !data.data) return;
+    
+    const btc = data.data;
+    const price = parseFloat(btc.priceUsd) || 0;
+    const mcap = parseFloat(btc.marketCapUsd) || 0;
+    const vol = parseFloat(btc.volumeUsd24Hr) || 0;
+    const change24h = parseFloat(btc.changePercent24Hr) || 0;
+    const high24 = price * (1 + Math.abs(change24h) / 100);
+    const low24 = price * (1 - Math.abs(change24h) / 100);
+    
+    // Actualizar supply
+    const supply = parseFloat(btc.supply) || 0;
+    const maxSupply = parseFloat(btc.maxSupply) || 21000000;
+    
+    actualizarElementosUI(price, mcap, vol, high24, low24, change24h, supply, maxSupply);
 }
 
 // ⭐ Función para actualizar con datos de CoinGecko
 function actualizarConDatosCoinGecko(data) {
+    if (!data || !data.market_data) return;
+    
     const md = data.market_data;
+    const price = md.current_price?.usd || 0;
     const mcap = md.market_cap?.usd || 0;
     const vol = md.total_volume?.usd || 0;
     const dom = md.market_cap_dominance || 0;
     const ath = md.ath?.usd || 0;
-    const high24 = md.high_24h?.usd || 0;
-    const low24 = md.low_24h?.usd || 0;
+    const high24 = md.high_24h?.usd || price;
+    const low24 = md.low_24h?.usd || price;
     const supply = md.circulating_supply || 0;
     const maxSupply = md.max_supply || 21000000;
     const change24h = md.price_change_percentage_24h || 0;
     
-    document.getElementById('quick-mcap').textContent = fmtNum(mcap);
-    document.getElementById('quick-vol').textContent = fmtNum(vol);
-    document.getElementById('quick-dom').textContent = dom.toFixed(1) + '%';
-    document.getElementById('quick-ath').textContent = '$' + Math.round(ath).toLocaleString();
-    document.getElementById('det-mcap').textContent = fmtNum(mcap);
-    document.getElementById('det-vol').textContent = fmtNum(vol);
-    document.getElementById('det-high').textContent = '$' + Math.round(high24).toLocaleString();
-    document.getElementById('det-low').textContent = '$' + Math.round(low24).toLocaleString();
-    document.getElementById('det-ath').textContent = '$' + Math.round(ath).toLocaleString();
-    document.getElementById('det-ath-date').textContent = md.ath_date?.usd ? new Date(md.ath_date.usd).toLocaleDateString('es-ES') : '--';
-    document.getElementById('det-supply').textContent = (supply/1e6).toFixed(2) + 'M';
-    document.getElementById('det-supply-bar').style.width = Math.min(100, (supply/maxSupply)*100).toFixed(1) + '%';
-    document.getElementById('det-dom').textContent = dom.toFixed(1) + '%';
-    document.getElementById('det-dom-bar').style.width = Math.min(100, dom).toFixed(1) + '%';
+    // Actualizar elementos básicos
+    actualizarElementosUI(price, mcap, vol, high24, low24, change24h, supply, maxSupply);
     
+    // Actualizar elementos específicos de CoinGecko
+    const domEl = document.getElementById('quick-dom');
+    if (domEl) domEl.textContent = dom.toFixed(1) + '%';
+    const domDet = document.getElementById('det-dom');
+    if (domDet) domDet.textContent = dom.toFixed(1) + '%';
+    const domBar = document.getElementById('det-dom-bar');
+    if (domBar) domBar.style.width = Math.min(100, dom).toFixed(1) + '%';
+    
+    const athEl = document.getElementById('quick-ath');
+    if (athEl) athEl.textContent = '$' + Math.round(ath).toLocaleString();
+    const athDet = document.getElementById('det-ath');
+    if (athDet) athDet.textContent = '$' + Math.round(ath).toLocaleString();
+    const athDate = document.getElementById('det-ath-date');
+    if (athDate && md.ath_date?.usd) {
+        athDate.textContent = new Date(md.ath_date.usd).toLocaleDateString('es-ES');
+    }
+}
+
+// ⭐ Función central para actualizar todos los elementos UI
+function actualizarElementosUI(price, mcap, vol, high24, low24, change24h, supply, maxSupply) {
+    // Si no hay datos válidos, salir
+    if (!price || price === 0) {
+        console.warn('Precio inválido, no se actualiza UI');
+        return;
+    }
+    
+    // Formatear números
+    const fmtMcap = fmtNum(mcap);
+    const fmtVol = fmtNum(vol);
+    const fmtHigh = fmtCompact(high24);
+    const fmtLow = fmtCompact(low24);
+    
+    // Actualizar elementos rápidos
+    const quickMcap = document.getElementById('quick-mcap');
+    if (quickMcap) quickMcap.textContent = fmtMcap;
+    
+    const quickVol = document.getElementById('quick-vol');
+    if (quickVol) quickVol.textContent = fmtVol;
+    
+    const quickAth = document.getElementById('quick-ath');
+    if (quickAth) quickAth.textContent = price ? '$' + Math.round(price * 1.5).toLocaleString() : '--';
+    
+    // Actualizar detalles
+    const detMcap = document.getElementById('det-mcap');
+    if (detMcap) detMcap.textContent = fmtMcap;
+    
+    const detVol = document.getElementById('det-vol');
+    if (detVol) detVol.textContent = fmtVol;
+    
+    const detHigh = document.getElementById('det-high');
+    if (detHigh) detHigh.textContent = high24 ? '$' + Math.round(high24).toLocaleString() : '--';
+    
+    const detLow = document.getElementById('det-low');
+    if (detLow) detLow.textContent = low24 ? '$' + Math.round(low24).toLocaleString() : '--';
+    
+    // Actualizar supply
+    if (supply && maxSupply) {
+        const detSupply = document.getElementById('det-supply');
+        if (detSupply) detSupply.textContent = (supply/1e6).toFixed(2) + 'M';
+        const detSupplyBar = document.getElementById('det-supply-bar');
+        if (detSupplyBar) detSupplyBar.style.width = Math.min(100, (supply/maxSupply)*100).toFixed(1) + '%';
+    } else {
+        // Estimado
+        const detSupply = document.getElementById('det-supply');
+        if (detSupply) detSupply.textContent = '19.7M';
+        const detSupplyBar = document.getElementById('det-supply-bar');
+        if (detSupplyBar) detSupplyBar.style.width = '94%';
+    }
+    
+    // Actualizar rango
     const heroRange = document.getElementById('hero-range');
-    if (heroRange) heroRange.textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
-    document.getElementById('price-range').textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
+    if (heroRange && high24 && low24) {
+        heroRange.textContent = 'H ' + fmtHigh + ' / L ' + fmtLow;
+    }
+    const priceRange = document.getElementById('price-range');
+    if (priceRange && high24 && low24) {
+        priceRange.textContent = 'H ' + fmtHigh + ' / L ' + fmtLow;
+    }
     
-    // Actualizar cambio
+    // Actualizar cambio porcentual
     const cls = change24h >= 0 ? 'bg-green-500/15 text-green-400 border border-green-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20';
     const txt = (change24h >= 0 ? '+' : '') + change24h.toFixed(2) + '%';
+    
     const heroChange = document.getElementById('hero-change');
     if (heroChange) {
         heroChange.textContent = txt;
         heroChange.className = 'text-sm px-4 py-1.5 rounded-lg font-bold font-mono ' + cls;
     }
     
-    document.getElementById('price-change').textContent = txt;
-    document.getElementById('price-change').className = 'text-xs px-2.5 py-1 rounded-lg font-medium ' + cls;
-    document.getElementById('price-change-movil').textContent = txt;
-    document.getElementById('price-change-movil').className = 'text-xs px-2 py-0.5 rounded-lg font-medium ' + cls;
+    const priceChange = document.getElementById('price-change');
+    if (priceChange) {
+        priceChange.textContent = txt;
+        priceChange.className = 'text-xs px-2.5 py-1 rounded-lg font-medium ' + cls;
+    }
     
-    // Sentimiento
+    const priceChangeMovil = document.getElementById('price-change-movil');
+    if (priceChangeMovil) {
+        priceChangeMovil.textContent = txt;
+        priceChangeMovil.className = 'text-xs px-2 py-0.5 rounded-lg font-medium ' + cls;
+    }
+    
+    // Actualizar sentimiento en mercado
     const detSent = document.getElementById('det-sentiment');
     if (detSent) {
         let clsSent = 'px-2 py-0.5 rounded text-[10px] font-bold border ';
@@ -2202,46 +2238,68 @@ function actualizarConDatosCoinGecko(data) {
 
 // ⭐ Función para usar datos estimados (fallback final)
 function usarDatosEstimados() {
+    // Usar el precio del WebSocket si está disponible
     const price = precioBTC || 0;
-    if (price === 0) return;
     
-    const mcap = price * 19700000;
-    const vol = mcap * 0.03; // Estimado 3% del market cap
-    const high24 = price * 1.02;
-    const low24 = price * 0.98;
-    const change24h = 0.5; // Estimado
-    
-    document.getElementById('quick-mcap').textContent = fmtNum(mcap);
-    document.getElementById('quick-vol').textContent = fmtNum(vol);
-    document.getElementById('quick-dom').textContent = '~60%';
-    document.getElementById('quick-ath').textContent = '$' + Math.round(price * 1.5).toLocaleString();
-    document.getElementById('det-mcap').textContent = fmtNum(mcap);
-    document.getElementById('det-vol').textContent = fmtNum(vol);
-    document.getElementById('det-high').textContent = '$' + Math.round(high24).toLocaleString();
-    document.getElementById('det-low').textContent = '$' + Math.round(low24).toLocaleString();
-    document.getElementById('det-supply').textContent = '19.7M';
-    document.getElementById('det-supply-bar').style.width = '94%';
-    document.getElementById('det-dom').textContent = '~60%';
-    document.getElementById('det-dom-bar').style.width = '60%';
-    
-    const heroRange = document.getElementById('hero-range');
-    if (heroRange) heroRange.textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
-    document.getElementById('price-range').textContent = 'H ' + fmtCompact(high24) + ' / L ' + fmtCompact(low24);
-    
-    // Actualizar cambio estimado
-    const cls = 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/20';
-    const txt = '~0.5%';
-    const heroChange = document.getElementById('hero-change');
-    if (heroChange) {
-        heroChange.textContent = txt;
-        heroChange.className = 'text-sm px-4 py-1.5 rounded-lg font-bold font-mono ' + cls;
+    if (price === 0) {
+        console.warn('No hay precio disponible, mostrando --');
+        // Mostrar valores por defecto
+        const ids = ['quick-mcap', 'quick-vol', 'quick-dom', 'quick-ath', 'det-mcap', 'det-vol', 'det-high', 'det-low', 'det-ath', 'det-supply', 'det-dom'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '--';
+        });
+        return;
     }
     
-    document.getElementById('price-change').textContent = txt;
-    document.getElementById('price-change').className = 'text-xs px-2.5 py-1 rounded-lg font-medium ' + cls;
-    document.getElementById('price-change-movil').textContent = txt;
-    document.getElementById('price-change-movil').className = 'text-xs px-2 py-0.5 rounded-lg font-medium ' + cls;
+    console.log('Usando datos estimados basados en precio:', price);
+    
+    const mcap = price * 19700000;
+    const vol = mcap * 0.025;
+    const high24 = price * 1.015;
+    const low24 = price * 0.985;
+    const change24h = 0.5;
+    const supply = 19700000;
+    const maxSupply = 21000000;
+    
+    actualizarElementosUI(price, mcap, vol, high24, low24, change24h, supply, maxSupply);
+    
+    // Añadir indicador de que son datos estimados
+    const domEl = document.getElementById('quick-dom');
+    if (domEl) domEl.textContent = '~60%';
+    const domDet = document.getElementById('det-dom');
+    if (domDet) domDet.textContent = '~60%';
+    const domBar = document.getElementById('det-dom-bar');
+    if (domBar) domBar.style.width = '60%';
+    
+    const heroChange = document.getElementById('hero-change');
+    if (heroChange) {
+        heroChange.textContent = '~0.5%';
+        heroChange.className = 'text-sm px-4 py-1.5 rounded-lg font-bold font-mono bg-yellow-500/15 text-yellow-400 border border-yellow-500/20';
+    }
 }
+
+// ⭐ Modificar el DOMContentLoaded para usar la nueva función
+document.addEventListener('DOMContentLoaded', () => {
+    cargarPrecioBTC();
+    cargarTopCryptos();
+    iniciarWebSocketPrecio();
+    iniciarEscuchaGlobal();
+    
+    // ⭐ Cargar datos de mercado después de que el precio esté disponible
+    // Esperar 1 segundo para que el WebSocket tenga tiempo de dar el precio
+    setTimeout(() => {
+        cargarDatosMercado();
+    }, 1000);
+    
+    // Actualizar cada minuto
+    setInterval(cargarDatosMercado, 60000);
+    setInterval(cargarTopCryptos, 60000);
+    setInterval(actualizarFearGreed, 60000);
+    verificarSesion();
+    actualizarFearGreed();
+    renderizarAchievements();
+});
 
 // ⭐ Función para cargar top cryptos (fallback si falla)
 async function cargarTopCryptos() {
