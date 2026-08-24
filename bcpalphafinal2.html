@@ -3181,6 +3181,9 @@ function generateBotName(index, personality) {
 }
 
 
+// ==============================================
+// BOTS
+// ==============================================
 async function createBotSupabase(config) {
     if (!usuarioActual) throw new Error('Inicia sesion primero');
     const personality = config.personality || selectRandomPersonality();
@@ -3190,10 +3193,10 @@ async function createBotSupabase(config) {
     const username = config.username || generateBotName(botManagerState.bots.length, personality);
     const now = new Date().toISOString();
     
+    // ⭐ SOLO las columnas que existen en la tabla 'bots'
     const botData = {
         uid, 
         username, 
-        email: 'bot_' + uid.substr(0,8) + '@bcpredict.bot',
         personality, 
         skill: Math.round(skill * 100) / 100,
         is_active: true, 
@@ -3208,7 +3211,10 @@ async function createBotSupabase(config) {
     };
     
     const { error } = await sb.from('bots').insert(botData);
-    if (error) throw error;
+    if (error) {
+        console.error('Error al crear bot:', error);
+        throw error;
+    }
     
     botManagerState.lastFetch = 0;
     return { success: true, bot: botData };
@@ -3253,7 +3259,10 @@ async function createBots() {
             const config = { personality: personality === 'random' ? undefined : personality, skill: personality === 'random' ? undefined : skill };
             const result = await createBotSupabase(config);
             if (result.success) { created++; logBot('✓ ' + result.bot.username, 'success'); }
-        } catch (e) { logBot('✗ ' + e.message, 'error'); }
+        } catch (e) { 
+            logBot('✗ ' + e.message, 'error');
+            console.error('Error detallado:', e);
+        }
         await new Promise(r => setTimeout(r, 200));
     }
     await refreshBotList(true);
@@ -3362,7 +3371,6 @@ function updateBotStats(bots) {
     if (elTotal) elTotal.textContent = bots.length;
     if (elWinrate) elWinrate.textContent = avgWinrate + '%';
 }
-
 function logBot(message, type) {
     if (!message) return;
     const timestamp = new Date().toLocaleTimeString('es-ES');
