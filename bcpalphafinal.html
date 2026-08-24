@@ -1407,6 +1407,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarDatosMercado();
     cargarTopCryptos();
     iniciarWebSocketPrecio();
+    iniciarEscuchaGlobal();
     setInterval(cargarDatosMercado, 60000);
     setInterval(cargarTopCryptos, 60000);
     setInterval(actualizarFearGreed, 60000);
@@ -1954,7 +1955,7 @@ async function verificarSesion() {
         if (error) throw error;
         if (session?.user) {
             await cargarUsuario(session.user);
-            iniciarEscuchaGlobal();
+            //iniciarEscuchaGlobal();
             setInterval(() => verificarResultadosPendientes(), 15000);
         } else {
             usuarioActual = null;
@@ -2228,6 +2229,7 @@ function getTier(puntos) {
 // ==============================================
 // PREDICCION ACTIVA
 // ==============================================
+// ✅ ASEGURAR que no haya timers duplicados
 async function buscarPrediccionActiva() {
     if (!usuarioActual) return;
     try {
@@ -2245,14 +2247,22 @@ async function buscarPrediccionActiva() {
             const pred = data[0];
             prediccionActivaId = pred.id;
             mostrarPredActiva(pred);
+            
+            // Limpiar timer anterior antes de crear nuevo
             if (intervaloTiempo) clearInterval(intervaloTiempo);
             intervaloTiempo = setInterval(() => actualizarTiempoRestante(pred.cierre), 1000);
         } else {
             document.getElementById('prediccion-activa').classList.add('hidden');
             document.getElementById('botones-voto').classList.remove('hidden');
-            if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
+            if (intervaloTiempo) { 
+                clearInterval(intervaloTiempo); 
+                intervaloTiempo = null; 
+            }
+            prediccionActivaId = null;
         }
-    } catch (e) { console.error('Error buscando prediccion activa:', e); }
+    } catch (e) { 
+        console.error('Error buscando prediccion activa:', e); 
+    }
 }
 
 function mostrarPredActiva(pred) {
@@ -2314,14 +2324,17 @@ function selectPeriodo(periodo, btn) {
     document.getElementById('mensaje').textContent = '';
 }
 
+// ❌ ESTÁ MAL -- prediccionActivaId es null inicialmente, pero la verificación en Supabase sí funciona
+// El problema es que después de votar, no se actualiza la UI correctamente
+
 async function votar(direccion) {
     if (!usuarioActual) { openModal('login'); return mostrarToast('Inicia sesion para votar', 'error'); }
     if (!periodoSeleccionado) return mostrarToast('Selecciona un periodo', 'error');
     if (prediccionActivaId) return mostrarToast('Ya tienes una prediccion activa', 'error');
+    
     const cierre = new Date(Date.now() + DURACIONES[periodoSeleccionado]).toISOString();
     
     try {
-        // Verificar si ya existe prediccion activa en este periodo
         const { data: existing, error: checkError } = await sb
             .from('predicciones')
             .select('id')
@@ -2330,9 +2343,11 @@ async function votar(direccion) {
             .eq('estado', 'activo');
         
         if (checkError) throw checkError;
-        if (existing && existing.length > 0) return mostrarToast('Ya votaste en este periodo', 'error');
+        if (existing && existing.length > 0) {
+            prediccionActivaId = existing[0].id;  // ← actualizar para que no vuelva a pasar
+            return mostrarToast('Ya votaste en este periodo', 'error');
+        }
         
-        // Crear prediccion
         const { data, error } = await sb
             .from('predicciones')
             .insert({
@@ -2349,14 +2364,25 @@ async function votar(direccion) {
         
         if (error) throw error;
         
+        // ✅ ACTUALIZAR el estado local inmediatamente
+        prediccionActivaId = data.id;
+        todasPrediccionesGlobal.unshift(data);  // ← agregar a global para que aparezca en vivo
+        
         mostrarToast('Voto registrado: ' + direccion.toUpperCase());
         document.getElementById('mensaje').textContent = 'Voto registrado exitosamente';
         document.getElementById('botones-voto').classList.add('hidden');
-        buscarPrediccionActiva();
+        
+        // Mostrar inmediatamente sin esperar
+        mostrarPredActiva(data);
+        if (intervaloTiempo) clearInterval(intervaloTiempo);
+        intervaloTiempo = setInterval(() => actualizarTiempoRestante(data.cierre), 1000);
+        
         cargarMisPredicciones();
-    } catch (e) { mostrarToast('Error al registrar voto: ' + e.message, 'error'); }
+        renderizarGlobal();  // ← actualizar la lista global
+    } catch (e) { 
+        mostrarToast('Error al registrar voto: ' + e.message, 'error'); 
+    }
 }
-
 // ==============================================
 // VERIFICACION RESULTADOS
 // ==============================================
@@ -2549,15 +2575,15 @@ function filtrarMisPreds(filtro) {
 // ==============================================
 // GLOBAL EN VIVO (Supabase Realtime)
 // ==============================================
+
 function iniciarEscuchaGlobal() {
     if (globalSub) { globalSub.unsubscribe(); globalSub = null; }
     intervalosGlobales.forEach(id => clearInterval(id));
     intervalosGlobales = [];
     
-    // Cargar datos iniciales
     cargarPrediccionesGlobal();
     
-    // Suscribirse a cambios en tiempo real de predicciones
+    // Suscribirse a cambios en tiempo real
     globalSub = sb
         .channel('predicciones-global')
         .on('postgres_changes', {
@@ -2565,14 +2591,34 @@ function iniciarEscuchaGlobal() {
             schema: 'public',
             table: 'predicciones'
         }, (payload) => {
-            // Recargar predicciones cuando hay cambios
             cargarPrediccionesGlobal();
         })
-        .subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-                console.log('Conectado a predicciones en tiempo real');
+        .subscribe();
+    
+    // INICIAR el intervalo de contadores aquí
+    const timerId = setInterval(actualizarContadoresGlobales, 1000);
+    intervalosGlobales.push(timerId);
+}
+
+// Y actualizarContadoresGlobales debe buscar por atributo data-cierre
+function actualizarContadoresGlobales() {
+    document.querySelectorAll('[data-cierre]').forEach(el => {
+        const cierreStr = el.getAttribute('data-cierre');
+        if (cierreStr) {
+            const tr = calcTiempoRestante(new Date(cierreStr));
+            el.textContent = tr;
+            if (tr === 'Finalizado') {
+                const parent = el.closest('.prediction-row');
+                if (parent) {
+                    const badge = parent.querySelector('.badge-pending');
+                    if (badge) { 
+                        badge.textContent = 'FINALIZANDO'; 
+                        badge.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold badge-loss'; 
+                    }
+                }
             }
-        });
+        }
+    });
 }
 
 async function cargarPrediccionesGlobal() {
@@ -2626,6 +2672,7 @@ function filtrarGlobal(filtro) {
     renderizarGlobal();
 }
 
+
 async function renderizarGlobal() {
     const cont = document.getElementById('global-predicciones');
     let filtradas = todasPrediccionesGlobal;
@@ -2639,7 +2686,7 @@ async function renderizarGlobal() {
         return;
     }
     
-    // Precargar TODOS los usuarios de una sola vez
+    // Precargar TODOS los usuarios de una sola vez (SIN async en map)
     const userIds = [...new Set(filtradas.map(p => p.usuario_id).filter(id => id))];
     const userCache = {};
     
@@ -2655,13 +2702,14 @@ async function renderizarGlobal() {
         } catch (e) {}
     }
     
-    // Ahora sí: map SIN async
+    // Ahora map es SÍNCRONO -- no hay async aquí
     cont.innerHTML = filtradas.map(p => {
         const username = userCache[p.usuario_id] || 'Anonimo';
-        // ... resto del código igual ...
+        const activo = p.estado === 'activo';
+        const esMio = usuarioActual && p.usuario_id === usuarioActual.uid;
+        // ... resto igual ...
     }).join('');
 }
-
 
 
 // ==============================================
@@ -2957,7 +3005,10 @@ function switchTab(tab, event) {
     if (event && event.target) { event.target.classList.add('tab-active'); event.target.classList.remove('text-gray-500'); }
     if (tab === 'ranking') cargarRanking();
     if (tab === 'predict' && usuarioActual) { cargarMisPredicciones(); buscarPrediccionActiva(); }
-    if (tab === 'global') { if (!globalSub && usuarioActual) iniciarEscuchaGlobal(); renderizarGlobal(); }
+    if (tab === 'global') { 
+    if (!globalSub) iniciarEscuchaGlobal();  // ← quitar la condición de usuarioActual
+    else cargarPrediccionesGlobal();         // ← si ya hay subscription, recargar datos
+}
     if (tab === 'mercado') { initCandlestickChart(); cargarDatosMercado(); cargarTopCryptos(); }
     if (tab === 'analisis') cargarAnalisis();
     if (tab === 'orderbook') { renderizarOrderBook(); renderizarLiquidationHeatmap(); }
