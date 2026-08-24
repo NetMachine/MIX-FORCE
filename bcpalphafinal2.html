@@ -2393,6 +2393,9 @@ async function votar(direccion) {
 // ==============================================
 // VERIFICACION RESULTADOS - VERSIÓN CORREGIDA
 // ==============================================
+// ==============================================
+// VERIFICACION RESULTADOS - VERSIÓN CORREGIDA (con soporte para bots)
+// ==============================================
 async function verificarResultadosPendientes() {
     try {
         const { data: preds, error } = await sb
@@ -2424,13 +2427,7 @@ async function verificarResultadosPendientes() {
             const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
             const basePts = PUNTOS_POR_PERIODO[pred.periodo] || 1;
             const mult = MULTIPLICADORES[pred.periodo] || 1.0;
-            
-            // ⭐ Calcular puntos base (sin importar si gana o pierde)
-            const ptsBase = Math.round(basePts * mult);
-            
-            // ⭐ Si acierta: suma puntos con multiplicador de racha
-            // ⭐ Si falla: resta los mismos puntos que habría ganado
-            const pts = acierto ? Math.round(ptsBase * streakMultiplier) : -ptsBase;
+            const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : -Math.round(basePts * mult);
             
             // Actualizar prediccion
             await sb
@@ -2444,81 +2441,45 @@ async function verificarResultadosPendientes() {
                 })
                 .eq('id', pred.id);
             
-            // Obtener datos actuales del usuario
+            // ⭐ Obtener datos actuales del usuario
             const { data: userData } = await sb
                 .from('usuarios')
                 .select('*')
                 .eq('uid', pred.usuario_id)
                 .single();
             
-            if (!userData) continue;
-            
-            // ⭐ Calcular nuevos puntos (nunca menos de 0)
-            const puntosActuales = userData.puntos || 0;
-            const nuevosPuntos = Math.max(0, puntosActuales + pts);
-            
-            if (acierto) {
-                const nr = (userData.racha || 0) + 1;
-                const nmr = Math.max(nr, userData.mejor_racha || 0);
+            if (!userData) {
+                // Si no existe en usuarios, podría ser un bot
+                const { data: botData } = await sb
+                    .from('bots')
+                    .select('*')
+                    .eq('uid', pred.usuario_id)
+                    .single();
                 
-                await sb
-                    .from('usuarios')
-                    .update({
-                        puntos: nuevosPuntos,
-                        aciertos: (userData.aciertos || 0) + 1,
-                        total_votos: (userData.total_votos || 0) + 1,
-                        racha: nr,
-                        mejor_racha: nmr
-                    })
-                    .eq('uid', pred.usuario_id);
-                
-                if (usuarioActual && usuarioActual.uid === pred.usuario_id) {
-                    usuarioActual.puntos = nuevosPuntos;
-                    usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
-                    usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
-                    usuarioActual.racha = nr;
-                    usuarioActual.mejor_racha = nmr;
-                    actualizarUI();
-                    actualizarStatsUsuario();
-                    mostrarToast('✅ Acertaste! +' + pts + ' pts (x' + streakMultiplier + ' racha)', 'success');
-                    agregarNotif('+' + pts + ' pts en ' + pred.periodo + ' (racha x' + streakMultiplier + ')', 'success');
-                    if (window.confetti && streakMultiplier > 1) {
-                        confetti({ particleCount: 50 * streakMultiplier, spread: 60, origin: { y: 0.7 }, colors: ['#f7931a', '#22c55e', '#FFD700', '#8A2BE2'] });
-                    }
+                if (botData) {
+                    // Es un bot - actualizar tabla bots
+                    await actualizarBotResultado(pred, botData, acierto, pts);
                 }
-            } else {
-                // ⭐ FALLO: Reiniciar racha a 0
-                await sb
-                    .from('usuarios')
-                    .update({
-                        puntos: nuevosPuntos,
-                        total_votos: (userData.total_votos || 0) + 1,
-                        racha: 0
-                    })
-                    .eq('uid', pred.usuario_id);
-                
-                if (usuarioActual && usuarioActual.uid === pred.usuario_id) {
-                    usuarioActual.puntos = nuevosPuntos;
-                    usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
-                    usuarioActual.racha = 0;
-                    actualizarUI();
-                    actualizarStatsUsuario();
-                    
-                    // ⭐ Mostrar mensaje de pérdida de puntos
-                    const perdida = Math.abs(pts);
-                    if (perdida > 0) {
-                        mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subió' : 'bajó') + ' -' + perdida + ' pts', 'error');
-                        agregarNotif('-' + perdida + ' pts en ' + pred.periodo + ' (fallo)', 'error');
-                    } else {
-                        mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subió' : 'bajó'), 'error');
-                        agregarNotif('Fallo en ' + pred.periodo, 'error');
-                    }
-                    
-                    // ⭐ Confeti rojo si perdió muchos puntos
-                    if (window.confetti && perdida >= 5) {
-                        confetti({ particleCount: 30, spread: 40, origin: { y: 0.7 }, colors: ['#ef4444', '#dc2626', '#b91c1c'] });
-                    }
-                }
+                continue;
+            }
+            
+            // ⭐ Es un usuario normal - actualizar tabla usuarios
+            await actualizarUsuarioResultado(pred, userData, acierto, pts);
+            
+            // ⭐ Si es un bot, también actualizar la tabla bots
+            const { data: botData } = await sb
+                .from('bots')
+                .select('*')
+                .eq('uid', pred.usuario_id)
+                .single();
+            
+            if (botData) {
+                await actualizarBotResultado(pred, botData, acierto, pts);
+            }
+            
+            // ⭐ Si es el usuario actual, actualizar UI
+            if (usuarioActual && usuarioActual.uid === pred.usuario_id) {
+                await actualizarUsuarioActual(pred, userData, acierto, pts);
             }
             
             if (prediccionActivaId === pred.id) {
@@ -2537,6 +2498,161 @@ async function verificarResultadosPendientes() {
             verificarLogros();
         }
     } catch (e) { console.error('Error verificando resultados:', e); }
+}
+
+// ⭐ NUEVA FUNCIÓN: Actualizar usuario normal
+async function actualizarUsuarioResultado(pred, userData, acierto, pts) {
+    const nuevosPuntos = Math.max(0, (userData.puntos || 0) + pts);
+    
+    if (acierto) {
+        const nr = (userData.racha || 0) + 1;
+        const nmr = Math.max(nr, userData.mejor_racha || 0);
+        
+        await sb
+            .from('usuarios')
+            .update({
+                puntos: nuevosPuntos,
+                aciertos: (userData.aciertos || 0) + 1,
+                total_votos: (userData.total_votos || 0) + 1,
+                racha: nr,
+                mejor_racha: nmr
+            })
+            .eq('uid', pred.usuario_id);
+    } else {
+        await sb
+            .from('usuarios')
+            .update({
+                puntos: nuevosPuntos,
+                total_votos: (userData.total_votos || 0) + 1,
+                racha: 0
+            })
+            .eq('uid', pred.usuario_id);
+    }
+}
+
+// ⭐ NUEVA FUNCIÓN: Actualizar bot (sincronizar con usuarios)
+async function actualizarBotResultado(pred, botData, acierto, pts) {
+    const nuevosPuntos = Math.max(0, (botData.puntos || 0) + pts);
+    
+    // 1. Actualizar tabla bots
+    if (acierto) {
+        const nr = (botData.racha || 0) + 1;
+        const nmr = Math.max(nr, botData.mejor_racha || 0);
+        
+        await sb
+            .from('bots')
+            .update({
+                puntos: nuevosPuntos,
+                aciertos: (botData.aciertos || 0) + 1,
+                total_votos: (botData.total_votos || 0) + 1,
+                racha: nr,
+                mejor_racha: nmr
+            })
+            .eq('uid', pred.usuario_id);
+    } else {
+        await sb
+            .from('bots')
+            .update({
+                puntos: nuevosPuntos,
+                total_votos: (botData.total_votos || 0) + 1,
+                racha: 0
+            })
+            .eq('uid', pred.usuario_id);
+    }
+    
+    // 2. ⭐ SINCRONIZAR con tabla usuarios (para que aparezca en el ranking)
+    // Primero verificar si existe en usuarios
+    const { data: userExists } = await sb
+        .from('usuarios')
+        .select('uid')
+        .eq('uid', pred.usuario_id)
+        .single();
+    
+    if (userExists) {
+        // Actualizar usuario existente
+        if (acierto) {
+            await sb
+                .from('usuarios')
+                .update({
+                    puntos: nuevosPuntos,
+                    aciertos: (botData.aciertos || 0) + 1,
+                    total_votos: (botData.total_votos || 0) + 1,
+                    racha: (botData.racha || 0) + 1,
+                    mejor_racha: Math.max(botData.mejor_racha || 0, (botData.racha || 0) + 1)
+                })
+                .eq('uid', pred.usuario_id);
+        } else {
+            await sb
+                .from('usuarios')
+                .update({
+                    puntos: nuevosPuntos,
+                    total_votos: (botData.total_votos || 0) + 1,
+                    racha: 0
+                })
+                .eq('uid', pred.usuario_id);
+        }
+    } else {
+        // Crear usuario para el bot (si no existe)
+        await sb
+            .from('usuarios')
+            .insert({
+                uid: pred.usuario_id,
+                email: 'bot_' + pred.usuario_id.substr(0,8) + '@bot.local',
+                username: botData.username || 'Bot',
+                puntos: nuevosPuntos,
+                aciertos: acierto ? 1 : 0,
+                total_votos: 1,
+                racha: acierto ? 1 : 0,
+                mejor_racha: acierto ? 1 : 0,
+                logros: [],
+                creado: new Date().toISOString()
+            });
+    }
+}
+
+// ⭐ NUEVA FUNCIÓN: Actualizar usuario actual (UI)
+async function actualizarUsuarioActual(pred, userData, acierto, pts) {
+    const nuevosPuntos = Math.max(0, (userData.puntos || 0) + pts);
+    
+    if (acierto) {
+        const nr = (userData.racha || 0) + 1;
+        const nmr = Math.max(nr, userData.mejor_racha || 0);
+        
+        usuarioActual.puntos = nuevosPuntos;
+        usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
+        usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+        usuarioActual.racha = nr;
+        usuarioActual.mejor_racha = nmr;
+        
+        actualizarUI();
+        actualizarStatsUsuario();
+        mostrarToast('✅ Acertaste! +' + pts + ' pts (x' + streakMultiplier + ' racha)', 'success');
+        agregarNotif('+' + pts + ' pts en ' + pred.periodo + ' (racha x' + streakMultiplier + ')', 'success');
+        
+        if (window.confetti && streakMultiplier > 1) {
+            confetti({ particleCount: 50 * streakMultiplier, spread: 60, origin: { y: 0.7 }, colors: ['#f7931a', '#22c55e', '#FFD700', '#8A2BE2'] });
+        }
+    } else {
+        const perdida = Math.abs(pts);
+        usuarioActual.puntos = nuevosPuntos;
+        usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+        usuarioActual.racha = 0;
+        
+        actualizarUI();
+        actualizarStatsUsuario();
+        
+        if (perdida > 0) {
+            mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subió' : 'bajó') + ' -' + perdida + ' pts', 'error');
+            agregarNotif('-' + perdida + ' pts en ' + pred.periodo + ' (fallo)', 'error');
+        } else {
+            mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subió' : 'bajó'), 'error');
+            agregarNotif('Fallo en ' + pred.periodo, 'error');
+        }
+        
+        if (window.confetti && perdida >= 5) {
+            confetti({ particleCount: 30, spread: 40, origin: { y: 0.7 }, colors: ['#ef4444', '#dc2626', '#b91c1c'] });
+        }
+    }
 }
 
 // ==============================================
@@ -2831,31 +2947,69 @@ function filtrarGlobal(filtro) {
 // ==============================================
 // RANKING
 // ==============================================
+// ==============================================
+// RANKING - VERSIÓN CORREGIDA (incluye bots)
+// ==============================================
 async function cargarRanking() {
     try {
-        const { data: usuarios, error } = await sb
+        // Obtener usuarios (reales)
+        const { data: usuarios, error: userError } = await sb
             .from('usuarios')
             .select('*')
             .order('puntos', { ascending: false })
             .limit(50);
         
-        if (error) throw error;
+        if (userError) throw userError;
+        
+        // Obtener bots
+        const { data: bots, error: botError } = await sb
+            .from('bots')
+            .select('*')
+            .order('puntos', { ascending: false })
+            .limit(50);
+        
+        if (botError) throw botError;
+        
+        // Combinar y ordenar
+        let todos = [...(usuarios || [])];
+        
+        // Agregar bots que no estén ya en usuarios (por si acaso)
+        for (const bot of (bots || [])) {
+            const existe = todos.some(u => u.uid === bot.uid);
+            if (!existe) {
+                todos.push({
+                    uid: bot.uid,
+                    username: bot.username + ' 🤖',
+                    puntos: bot.puntos || 0,
+                    aciertos: bot.aciertos || 0,
+                    total_votos: bot.total_votos || 0,
+                    racha: bot.racha || 0,
+                    mejor_racha: bot.mejor_racha || 0,
+                    es_bot: true
+                });
+            }
+        }
+        
+        // Ordenar por puntos (mayor a menor)
+        todos.sort((a, b) => (b.puntos || 0) - (a.puntos || 0));
+        todos = todos.slice(0, 50);
+        
         const tbody = document.getElementById('ranking-body');
-        if (!usuarios || usuarios.length === 0) {
+        if (!todos || todos.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-600">Sin usuarios registrados</td></tr>';
             return;
         }
         
         let miPos = -1;
-        const usuariosList = usuarios.map((u, i) => {
+        todos.forEach((u, i) => {
             if (usuarioActual && u.uid === usuarioActual.uid) miPos = i + 1;
-            return u;
         });
         
-        tbody.innerHTML = usuariosList.map((u, i) => {
+        tbody.innerHTML = todos.map((u, i) => {
             const tier = getTier(u.puntos || 0);
             const wr = u.total_votos ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : 0;
             const esYo = usuarioActual && u.uid === usuarioActual.uid;
+            const esBot = u.es_bot || false;
             const racha = u.racha || 0;
             const rachaIcon = racha >= 5 ? '🔥' : racha >= 3 ? '⚡' : '';
             let rank = '';
@@ -2863,9 +3017,12 @@ async function cargarRanking() {
             else if (i === 1) rank = '🥈';
             else if (i === 2) rank = '🥉';
             else rank = (i + 1).toString();
+            
             return '<tr class="rank-glow ' + (esYo ? 'bg-amber-500/5' : '') + ' border-t border-white/5 transition">' +
                 '<td class="py-3 px-4 font-bold text-xs ' + (i < 3 ? 'text-amber-400' : 'text-gray-500') + '">' + rank + '</td>' +
-                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
+                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + 
+                (esBot ? ' <span class="text-xs text-blue-400">🤖</span>' : '') +
+                (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
                 '<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ' + tier.clase + '">' + tier.nombre.toUpperCase() + '</span></td>' +
                 '<td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">' + (u.puntos || 0) + '</td>' +
                 '<td class="py-3 px-4 text-center text-green-400 font-mono text-sm">' + (u.aciertos || 0) + '</td>' +
@@ -2875,6 +3032,7 @@ async function cargarRanking() {
                 '</tr>';
         }).join('');
         
+        // Mostrar posición del usuario
         if (miPos > 0 && usuarioActual) {
             document.getElementById('mi-posicion').classList.remove('hidden');
             document.getElementById('mi-rank-pos').textContent = '#' + miPos;
@@ -2889,8 +3047,13 @@ async function cargarRanking() {
                 document.getElementById('tier-progreso-text').textContent = 'NIVEL MAXIMO';
                 document.getElementById('tier-progreso-bar').style.width = '100%';
             }
-        } else document.getElementById('mi-posicion').classList.add('hidden');
-    } catch (e) { console.error('Error cargando ranking:', e); }
+        } else {
+            document.getElementById('mi-posicion').classList.add('hidden');
+        }
+        
+    } catch (e) { 
+        console.error('Error cargando ranking:', e); 
+    }
 }
 
 // ==============================================
