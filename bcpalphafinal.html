@@ -2086,18 +2086,22 @@ async function register() {
     if (!email || !pass || !username) return mostrarToast('Completa todos los campos', 'error');
     if (pass.length < 6) return mostrarToast('Contrasena minimo 6 caracteres', 'error');
     if (username.length < 3) return mostrarToast('Usuario minimo 3 caracteres', 'error');
+    
     try {
         const { data, error } = await sb.auth.signUp({
             email: email,
             password: pass,
             options: {
-                data: { username: username }
+                data: { username: username }  // ← esto se guarda en raw_user_meta_data
             }
         });
         if (error) throw error;
+        
         mostrarToast('Cuenta creada exitosamente');
         cerrarModal();
-    } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
+    } catch (e) { 
+        mostrarToast('Error: ' + e.message, 'error'); 
+    }
 }
 
 async function login() {
