@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>BCPredict Pro -- Supabase Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        // ==============================================
+        // 🔑 CONFIGURA TUS CREDENCIALES DE SUPABASE AQUÍ
+        // ==============================================
+        
+const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
+        //const SUPABASE_URL = 'TU_URL_AQUI';
+        //const SUPABASE_KEY = 'TU_CLAVE_ANON_AQUI';
+        
+        const { createClient } = supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: false
+            }
+        });
+    </script>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17,24,39,0.85);
+            --border: rgba(148,163,184,0.12);
+            --accent: #f7931a;
+            --accent-hover: #e8850f;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        
+        * { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+        
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        body { line-height: 1.5; }
+        
+        .bg-grid {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(247,147,26,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(247,147,26,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .bg-glow {
+            position: fixed;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(247,147,26,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGlow 20s ease-in-out infinite;
+        }
+        .bg-glow-1 { top: -200px; left: -200px; }
+        .bg-glow-2 { bottom: -200px; right: -200px; background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+        
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, 30px) scale(1.1); }
+            50% { transform: translate(-30px, 50px) scale(0.9); }
+            75% { transform: translate(40px, -20px) scale(1.05); }
+        }
+        
+        .glass { 
+            background: rgba(17,24,39,0.85); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); 
+        }
+        .glass:hover { border-color: rgba(247,147,26,0.2); }
+        
+        .glass-card {
+            background: linear-gradient(135deg, rgba(17,24,39,0.9) 0%, rgba(30,41,59,0.8) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148,163,184,0.08);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent);
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #f7931a, #e8850f); 
+            color: #000; 
+            font-weight: 700; 
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(247,147,26,0.3);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(247,147,26,0.4);
+        }
+        
+        .btn-outline { 
+            border: 1px solid rgba(247,147,26,0.4); 
+            color: #f7931a; 
+            transition: all 0.3s;
+            background: rgba(247,147,26,0.05);
+        }
+        .btn-outline:hover { 
+            background: rgba(247,147,26,0.15); 
+            border-color: #f7931a;
+        }
+        
+        .btn-glass {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            transition: all 0.3s;
+        }
+        .btn-glass:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(247,147,26,0.3);
+            color: #f1f5f9;
+        }
+        
+        .tab-active { 
+            border-bottom: 2px solid #f7931a; 
+            color: #f7931a; 
+        }
+        
+        .period-btn { 
+            transition: all 0.3s;
+            border: 1px solid rgba(148,163,184,0.12); 
+            cursor: pointer;
+        }
+        .period-btn:hover { 
+            border-color: rgba(247,147,26,0.4); 
+            background: rgba(247,147,26,0.08);
+            transform: translateY(-2px);
+        }
+        .period-btn.selected { 
+            border-color: #f7931a; 
+            background: linear-gradient(135deg, rgba(247,147,26,0.15), rgba(247,147,26,0.05));
+            box-shadow: 0 0 20px rgba(247,147,26,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .vote-up { 
+            background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05));
+            border: 1px solid rgba(34,197,94,0.3); 
+            color: #22c55e; 
+            transition: all 0.3s;
+        }
+        .vote-up:hover { 
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+            border-color: #22c55e;
+            box-shadow: 0 0 25px rgba(34,197,94,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .vote-down { 
+            background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+            border: 1px solid rgba(239,68,68,0.3); 
+            color: #ef4444; 
+            transition: all 0.3s;
+        }
+        .vote-down:hover { 
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            border-color: #ef4444;
+            box-shadow: 0 0 25px rgba(239,68,68,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .tier-bronze { background: linear-gradient(135deg, #8B6914, #CD7F32); color: #000; }
+        .tier-silver { background: linear-gradient(135deg, #8899a6, #c0c0c0); color: #000; }
+        .tier-gold { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; }
+        .tier-platinum { background: linear-gradient(135deg, #E5E4E2, #B0C4DE); color: #000; }
+        .tier-master { background: linear-gradient(135deg, #4B0082, #8A2BE2); color: #fff; }
+        .tier-legend { background: linear-gradient(135deg, #FF4500, #FFD700); color: #000; }
+        
+        .badge-pending { 
+            background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1));
+            color: #fbbf24; 
+            border: 1px solid rgba(245,158,11,0.3);
+        }
+        .badge-win { 
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+            color: #4ade80; 
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+        .badge-loss { 
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            color: #f87171; 
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        
+        .live-dot { 
+            width: 8px; height: 8px; 
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%; 
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(34,197,94,0.5);
+        }
+        @keyframes pulse { 
+            0%,100% { opacity: 1; transform: scale(1); } 
+            50% { opacity: 0.4; transform: scale(0.8); } 
+        }
+        
+        .scroll-area { 
+            max-height: 480px; 
+            overflow-y: auto; 
+        }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-thumb { 
+            background: linear-gradient(180deg, #f7931a, #e8850f); 
+            border-radius: 4px; 
+        }
+        
+        .price-flash-up { animation: flashUp 0.5s ease; }
+        .price-flash-down { animation: flashDown 0.5s ease; }
+        @keyframes flashUp { 
+            30% { text-shadow: 0 0 30px rgba(34,197,94,0.8); color: #4ade80; } 
+        }
+        @keyframes flashDown { 
+            30% { text-shadow: 0 0 30px rgba(239,68,68,0.8); color: #f87171; } 
+        }
+        
+        #modal-auth {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #modal-auth.visible { display: flex; }
+        #modal-content {
+            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+            border: 1px solid rgba(148,163,184,0.12);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+            animation: modalSlideIn 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+            z-index: 50;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        @media (max-width: 640px) {
+            .chart-container { height: 300px; }
+            .scroll-area { max-height: 350px; }
+            #modal-content { padding: 24px; margin: 10px; }
+        }
+        
+        .no-select { user-select: none; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .hero-display {
+            background: linear-gradient(135deg, rgba(17,24,39,0.9), rgba(30,41,59,0.8));
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card { 
+            background: linear-gradient(135deg, rgba(17,24,39,0.8), rgba(30,41,59,0.6)); 
+            border: 1px solid rgba(148,163,184,0.08); 
+            border-radius: 12px; 
+            padding: 16px; 
+            transition: all 0.3s;
+        }
+        .stat-card:hover { 
+            border-color: rgba(247,147,26,0.2);
+            transform: translateY(-2px);
+        }
+        input:focus, select:focus { 
+            border-color: #f7931a !important; 
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(247,147,26,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-50 px-4 py-3 glass">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-amber-500/20">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">BCPredict <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">Pro</span></h1>
+                </div>
+            </div>
+            
+            <div id="btc-price" class="hidden md:flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="live-dot"></div>
+                    <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC/USD</span>
+                </div>
+                <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="price-value">--</span>
+                <span id="price-change" class="text-xs px-2.5 py-1 rounded-lg font-bold"></span>
+            </div>
+            
+            <div id="auth-buttons" class="flex gap-2">
+                <button onclick="openModal('login')" class="btn-outline px-4 py-2.5 rounded-xl text-sm no-select font-medium">Iniciar</button>
+                <button onclick="openModal('register')" class="btn-primary px-4 py-2.5 rounded-xl text-sm no-select">Registrar</button>
+            </div>
+            
+            <div id="user-menu" class="hidden items-center gap-3">
+                <div class="text-right">
+                    <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
+                    <div id="user-tier" class="text-[10px] font-medium mt-0.5"></div>
+                </div>
+                <button onclick="toggleNotif()" class="p-2.5 rounded-xl hover:bg-white/5 transition relative no-select">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center font-bold">0</span>
+                </button>
+                <button onclick="logout()" class="p-2.5 rounded-xl hover:bg-red-500/10 text-red-400 transition no-select" title="Cerrar sesión">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE PRICE -->
+    <div class="md:hidden glass mx-4 mt-3 p-3 rounded-xl flex justify-center gap-3 items-center">
+        <div class="live-dot"></div>
+        <span class="text-amber-400 font-bold text-base font-mono" id="price-value-movil">--</span>
+        <span id="price-change-movil" class="text-xs px-2 py-0.5 rounded-lg font-medium"></span>
+    </div>
+
+    <!-- TABS -->
+    <div class="max-w-7xl mx-auto px-4 mt-3">
+        <div class="flex border-b border-gray-800 gap-1 text-sm font-medium overflow-x-auto">
+            <button class="py-3 px-4 tab-active whitespace-nowrap no-select" onclick="switchTab('predict', event)">Predecir</button>
+            <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('mercado', event)">Mercado</button>
+            <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('ranking', event)">Ranking</button>
+            <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('global', event)">En Vivo</button>
+            <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('bots', event)">Bots</button>
+        </div>
+    </div>
+
+    <!-- TAB: PREDECIR -->
+    <section id="tab-predict" class="max-w-6xl mx-auto px-4 py-6 relative z-10">
+        <div class="hero-display glass-card rounded-2xl p-8 mb-6 text-center">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <div class="live-dot"></div>
+                <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC / USD</span>
+            </div>
+            <div class="relative">
+                <span class="text-5xl md:text-7xl font-black font-mono tracking-tighter text-amber-400" id="hero-price">--</span>
+            </div>
+            <div class="flex items-center justify-center gap-4 mt-4 flex-wrap">
+                <span id="hero-change" class="text-sm px-4 py-1.5 rounded-lg font-bold font-mono"></span>
+            </div>
+        </div>
+
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-bold tracking-tight">Selecciona un Periodo</h2>
+            <p class="text-sm text-gray-500 mt-1">Mayor periodo, mayores recompensas</p>
+        </div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('5m', this)">
+                <div class="text-lg font-bold">5m</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Ultra Rápido</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+1 pt</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('15m', this)">
+                <div class="text-lg font-bold">15m</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Corto Plazo</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+2 pts</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('30m', this)">
+                <div class="text-lg font-bold">30m</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Medio Plazo</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+3 pts</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1h', this)">
+                <div class="text-lg font-bold">1h</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Intradía</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+4 pts</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('4h', this)">
+                <div class="text-lg font-bold">4h</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Swing</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+5 pts</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('24h', this)">
+                <div class="text-lg font-bold">24h</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Diario</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+8 pts</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1sem', this)">
+                <div class="text-lg font-bold">7d</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Semanal</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+15 pts</div>
+            </button>
+            <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1mes', this)">
+                <div class="text-lg font-bold">30d</div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Mensual</div>
+                <div class="text-[10px] text-amber-400 font-bold mt-1">+30 pts</div>
+            </button>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 text-center">
+            <p class="text-gray-500 text-sm mb-4" id="instruccion">Selecciona un periodo para comenzar a predecir</p>
+            <p id="periodo-activo" class="text-base font-semibold text-amber-400 hidden mb-3"></p>
+            
+            <div id="prediccion-activa" class="hidden mb-4 p-5 rounded-xl bg-black/20 border border-amber-500/10">
+                <div class="flex justify-between items-center flex-wrap gap-3">
+                    <div class="text-left">
+                        <span class="text-xs text-gray-500 uppercase tracking-wider">Tu Voto</span>
+                        <div id="mi-voto" class="font-bold text-base mt-1"></div>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-gray-500 uppercase tracking-wider">Tiempo Restante</span>
+                        <div id="tiempo-restante" class="font-bold text-amber-400 font-mono text-lg mt-1"></div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-gray-500 uppercase tracking-wider">Estado</span>
+                        <div id="estado-prediccion" class="mt-1"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mt-4 hidden" id="botones-voto">
+                <button onclick="votar('sube')" class="vote-up py-7 rounded-xl text-xl font-bold no-select">
+                    <div class="flex items-center justify-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        SUBE
+                    </div>
+                    <div class="text-xs font-normal opacity-60 mt-1">El precio subirá</div>
+                </button>
+                <button onclick="votar('baja')" class="vote-down py-7 rounded-xl text-xl font-bold no-select">
+                    <div class="flex items-center justify-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                        BAJA
+                    </div>
+                    <div class="text-xs font-normal opacity-60 mt-1">El precio bajará</div>
+                </button>
+            </div>
+            <p id="mensaje" class="mt-4 text-gray-400 text-sm min-h-[20px]"></p>
+        </div>
+        
+        <div class="mt-8">
+            <h3 class="text-base font-bold uppercase tracking-wider text-gray-400 text-xs mb-4">Mis Predicciones</h3>
+            <div id="mis-predicciones" class="space-y-2 scroll-area">
+                <p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB: MERCADO -->
+    <section id="tab-mercado" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+        <h2 class="text-xl font-bold tracking-tight text-center mb-6">Análisis de Mercado</h2>
+        <div class="glass-card rounded-2xl p-5 mb-6">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">BTC/USD - Precio en Tiempo Real</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="stat-card p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div>
+                    <div class="text-base font-bold text-gray-200 font-mono" id="det-mcap">--</div>
+                </div>
+                <div class="stat-card p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div>
+                    <div class="text-base font-bold text-gray-200 font-mono" id="det-vol">--</div>
+                </div>
+                <div class="stat-card p-4 rounded-xl bg-white/5 border border-white/10">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div>
+                    <div class="text-base font-bold text-amber-400 font-mono" id="det-ath">--</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB: RANKING -->
+    <section id="tab-ranking" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+        <h2 class="text-xl font-bold tracking-tight text-center mb-6">Ranking Global</h2>
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-bronze">BRONCE 0+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-silver">PLATA 50+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-gold">ORO 200+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-platinum">PLATINO 500+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-master">MAESTRO 1000+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-legend">LEYENDA 5000+</span>
+        </div>
+        <div class="glass-card rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-white/5 text-[10px] uppercase tracking-wider text-gray-500">
+                        <tr>
+                            <th class="py-3 px-4 text-left font-medium">Pos</th>
+                            <th class="py-3 px-4 text-left font-medium">Usuario</th>
+                            <th class="py-3 px-4 text-center font-medium">Nivel</th>
+                            <th class="py-3 px-4 text-center font-medium">Pts</th>
+                            <th class="py-3 px-4 text-center font-medium">Win</th>
+                            <th class="py-3 px-4 text-center font-medium">Total</th>
+                            <th class="py-3 px-4 text-center font-medium">Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB: GLOBAL -->
+    <section id="tab-global" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+        <h2 class="text-xl font-bold tracking-tight text-center mb-6">Predicciones en Vivo</h2>
+        <div id="global-predicciones" class="space-y-2 scroll-area">
+            <p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones...</p>
+        </div>
+    </section>
+
+    <!-- TAB: BOTS -->
+    <section id="tab-bots" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+        <h2 class="text-xl font-bold tracking-tight text-center mb-6">Panel de Bots</h2>
+        <div class="glass-card rounded-2xl p-5 mb-6">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Crear Bots</h3>
+            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Cantidad</label>
+                    <input type="number" id="bot-create-count" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm" value="5" min="1" max="20">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Personalidad</label>
+                    <select id="bot-personality" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm">
+                        <option value="balanced">Balanceada</option>
+                        <option value="aggressive">Agresiva</option>
+                        <option value="conservative">Conservadora</option>
+                        <option value="whale">Whale (Experto)</option>
+                        <option value="newbie">Novato</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Skill Base</label>
+                    <input type="range" id="bot-skill" class="w-full mt-3" min="0.3" max="0.8" step="0.05" value="0.5">
+                </div>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+                <button onclick="crearBots()" class="btn-primary px-6 py-3 rounded-xl text-sm font-bold">Crear Bots</button>
+                <button onclick="iniciarTodosBots()" class="btn-outline px-6 py-3 rounded-xl text-sm font-bold">Iniciar Todos</button>
+                <button onclick="detenerTodosBots()" class="btn-glass px-6 py-3 rounded-xl text-sm font-bold text-red-400 border-red-400/20">Detener Todos</button>
+            </div>
+        </div>
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Lista de Bots</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="text-gray-600 text-[10px] uppercase tracking-wider">
+                        <tr>
+                            <th class="py-2 px-3 text-left">Usuario</th>
+                            <th class="py-2 px-3 text-left">Tipo</th>
+                            <th class="py-2 px-3 text-center">Estado</th>
+                            <th class="py-2 px-3 text-center">Pts</th>
+                            <th class="py-2 px-3 text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bot-list-body">
+                        <tr><td colspan="5" class="text-center py-4 text-gray-600">Sin bots registrados</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- MODAL AUTH -->
+    <div id="modal-auth">
+        <div id="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-titulo" class="text-xl font-bold">Iniciar Sesión</h2>
+                <button onclick="cerrarModal()" class="text-2xl text-gray-500 hover:text-white transition no-select">&times;</button>
+            </div>
+            <div id="login-form">
+                <div class="mb-4">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Correo Electrónico</label>
+                    <input type="email" id="email" class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-white" placeholder="tu@email.com">
+                </div>
+                <div class="mb-6">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Contraseña</label>
+                    <input type="password" id="pass" class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-white" placeholder="********">
+                </div>
+                <button onclick="iniciarSesion()" class="w-full btn-primary py-3 rounded-xl text-sm font-bold mb-3">Ingresar</button>
+                <p class="text-center text-xs text-gray-500">¿No tienes cuenta? <a href="#" onclick="openModal('register')" class="text-amber-400 hover:underline">Regístrate</a></p>
+            </div>
+            <div id="register-form" class="hidden">
+                <div class="mb-4">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Usuario</label>
+                    <input type="text" id="reg-username" class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-white" placeholder="Tu nombre de usuario">
+                </div>
+                <div class="mb-4">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Correo Electrónico</label>
+                    <input type="email" id="reg-email" class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-white" placeholder="tu@email.com">
+                </div>
+                <div class="mb-6">
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider block mb-1">Contraseña</label>
+                    <input type="password" id="reg-pass" class="w-full px-4 py-3 rounded-lg bg-black/40 border border-white/10 text-white" placeholder="Mínimo 6 caracteres">
+                </div>
+                <button onclick="registrarse()" class="w-full btn-primary py-3 rounded-xl text-sm font-bold mb-3">Crear Cuenta</button>
+                <p class="text-center text-xs text-gray-500">¿Ya tienes cuenta? <a href="#" onclick="openModal('login')" class="text-amber-400 hover:underline">Inicia sesión</a></p>
+            </div>
+            <div id="mensaje-modal" class="mt-4 text-center text-sm"></div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast glass-card px-6 py-3 rounded-xl text-sm font-medium"></div>
+
+
+    <script>
+        // ==============================================
+        // 📊 ESTADO GLOBAL
+        // ==============================================
+        let usuarioActual = null;
+        let precioBTC = 0;
+        let periodoSeleccionado = null;
+        let prediccionActiva = null;
+        let precioAnterior = 0;
+        let intervaloPrecio = null;
+        let intervaloTiempo = null;
+        let rankingCache = [];
+
+        // Puntos por periodo
+        const puntosPorPeriodo = {
+            '5m': 1, '15m': 2, '30m': 3, '1h': 4,
+            '4h': 5, '24h': 8, '1sem': 15, '1mes': 30
+        };
+
+        // ==============================================
+        // 🔐 AUTENTICACIÓN
+        // ==============================================
+        async function verificarSesion() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                await cargarUsuario(session.user);
+            } else {
+                mostrarAuth();
+            }
+        }
+
+        async function cargarUsuario(authUser) {
+            const { data: usuario, error } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('id', authUser.id)
+                .single();
+
+            if (error || !usuario) {
+                // Crear perfil si no existe
+                const nuevoUsuario = {
+                    id: authUser.id,
+                    email: authUser.email,
+                    username: authUser.user_metadata?.username || authUser.email.split('@')[0],
+                    puntos: 0,
+                    victorias: 0,
+                    total_predicciones: 0,
+                    tier: 'bronce',
+                    created_at: new Date().toISOString()
+                };
+
+                const { data: creado, error: errCrear } = await supabase
+                    .from('usuarios')
+                    .insert(nuevoUsuario)
+                    .select()
+                    .single();
+
+                if (errCrear) {
+                    console.error('Error creando usuario:', errCrear);
+                    mostrarToast('Error al cargar perfil', 'red');
+                    return;
+                }
+                usuarioActual = creado;
+            } else {
+                usuarioActual = usuario;
+            }
+
+            mostrarUsuario();
+            await cargarMisPredicciones();
+            await cargarRanking();
+        }
+
+        function mostrarAuth() {
+            document.getElementById('auth-buttons').classList.remove('hidden');
+            document.getElementById('auth-buttons').style.display = 'flex';
+            document.getElementById('user-menu').classList.add('hidden');
+            document.getElementById('user-menu').style.display = 'none';
+            document.getElementById('mis-predicciones').innerHTML = 
+                '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+        }
+
+        function mostrarUsuario() {
+            document.getElementById('auth-buttons').classList.add('hidden');
+            document.getElementById('auth-buttons').style.display = 'none';
+            document.getElementById('user-menu').classList.remove('hidden');
+            document.getElementById('user-menu').style.display = 'flex';
+            
+            document.getElementById('user-name').textContent = usuarioActual.username;
+            document.getElementById('user-tier').textContent = usuarioActual.tier.toUpperCase() + ' • ' + usuarioActual.puntos + ' pts';
+            document.getElementById('user-tier').className = `text-[10px] font-medium mt-0.5 tier-${usuarioActual.tier} px-2 py-0.5 rounded-md`;
+        }
+
+        async function iniciarSesion() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('pass').value;
+            const mensaje = document.getElementById('mensaje-modal');
+
+            if (!email || !password) {
+                mensaje.innerHTML = '<span class="text-red-400">Completa todos los campos</span>';
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                mensaje.innerHTML = `<span class="text-red-400">${error.message}</span>`;
+                return;
+            }
+
+            mensaje.innerHTML = '<span class="text-green-400">¡Bienvenido de nuevo! 🎉</span>';
+            setTimeout(() => { cerrarModal(); verificarSesion(); }, 800);
+        }
+
+        async function registrarse() {
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-pass').value;
+            const mensaje = document.getElementById('mensaje-modal');
+
+            if (!username || !email || !password) {
+                mensaje.innerHTML = '<span class="text-red-400">Completa todos los campos</span>';
+                return;
+            }
+            if (password.length < 6) {
+                mensaje.innerHTML = '<span class="text-red-400">Mínimo 6 caracteres</span>';
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { username }
+                }
+            });
+
+            if (error) {
+                mensaje.innerHTML = `<span class="text-red-400">${error.message}</span>`;
+                return;
+            }
+
+            mensaje.innerHTML = '<span class="text-green-400">¡Cuenta creada! Revisa tu correo ✅</span>';
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            usuarioActual = null;
+            mostrarAuth();
+            mostrarToast('Sesión cerrada', 'amber');
+        }
+
+        // ==============================================
+        // 🪟 MODALES
+        // ==============================================
+        function openModal(tipo) {
+            document.getElementById('modal-auth').classList.add('visible');
+            if (tipo === 'login') {
+                document.getElementById('modal-titulo').textContent = 'Iniciar Sesión';
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('register-form').classList.add('hidden');
+            } else {
+                document.getElementById('modal-titulo').textContent = 'Crear Cuenta';
+                document.getElementById('login-form').classList.add('hidden');
+                document.getElementById('register-form').classList.remove('hidden');
+            }
+            document.getElementById('mensaje-modal').innerHTML = '';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-auth').classList.remove('visible');
+            document.getElementById('email').value = '';
+            document.getElementById('pass').value = '';
+            document.getElementById('reg-username').value = '';
+            document.getElementById('reg-email').value = '';
+            document.getElementById('reg-pass').value = '';
+        }
+
+        // ==============================================
+        // 📑 TABS / NAVEGACIÓN
+        // ==============================================
+        function switchTab(nombre, e) {
+            // Ocultar todos
+            document.querySelectorAll('section[id^="tab-"]').forEach(s => s.classList.add('hidden'));
+            // Mostrar el seleccionado
+            document.getElementById(`tab-${nombre}`).classList.remove('hidden');
+            
+            // Actualizar estilos de tabs
+            e.target.parentElement.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('text-gray-500');
+            });
+            e.target.classList.add('tab-active');
+            e.target.classList.remove('text-gray-500');
+
+            // Cargar datos según tab
+            if (nombre === 'ranking') cargarRanking();
+            if (nombre === 'global') cargarPrediccionesGlobales();
+        }
+
+        // ==============================================
+        // 🔔 TOAST
+        // ==============================================
+        function mostrarToast(texto, color = 'amber') {
+            const t = document.getElementById('toast');
+            t.textContent = texto;
+            t.className = `toast glass-card px-6 py-3 rounded-xl text-sm font-medium text-${color}-400`;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function toggleNotif() {
+            mostrarToast('Notificaciones próximamente', 'amber');
+        }
+    </script>
+
+
+
+    <script>
+        // ==============================================
+        // 💰 PRECIO DE BITCOIN
+        // ==============================================
+        async function cargarPrecioBTC() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+                const data = await res.json();
+                precioAnterior = precioBTC;
+                precioBTC = data.bitcoin.usd;
+                const cambio24h = data.bitcoin.usd_24h_change;
+
+                // Formatear precio
+                const precioStr = new Intl.NumberFormat('en-US', {
+                    style: 'currency', currency: 'USD', minimumFractionDigits: 0
+                }).format(precioBTC);
+
+                // Actualizar todos los elementos
+                document.getElementById('price-value').textContent = precioStr;
+                document.getElementById('price-value-movil').textContent = precioStr;
+                document.getElementById('hero-price').textContent = precioStr.replace('$', '');
+
+                // Cambio 24h
+                const esPositivo = cambio24h >= 0;
+                const cambioStr = (esPositivo ? '+' : '') + cambio24h.toFixed(2) + '%';
+                const clase = esPositivo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400';
+
+                document.getElementById('price-change').textContent = cambioStr;
+                document.getElementById('price-change').className = `text-xs px-2.5 py-1 rounded-lg font-bold ${clase}`;
+                document.getElementById('price-change-movil').textContent = cambioStr;
+                document.getElementById('price-change-movil').className = `text-xs px-2 py-0.5 rounded-lg font-medium ${clase}`;
+                document.getElementById('hero-change').textContent = cambioStr;
+                document.getElementById('hero-change').className = `text-sm px-4 py-1.5 rounded-lg font-bold font-mono ${clase}`;
+
+                // Animación de cambio
+                if (precioAnterior && precioAnterior !== precioBTC) {
+                    const claseAnim = precioBTC > precioAnterior ? 'price-flash-up' : 'price-flash-down';
+                    const el = document.getElementById('hero-price');
+                    el.classList.add(claseAnim);
+                    setTimeout(() => el.classList.remove(claseAnim), 500);
+                }
+
+                // Detalles mercado
+                document.getElementById('det-mcap').textContent = '$' + (precioBTC * 19600000).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                document.getElementById('det-vol').textContent = '$' + (28500000000).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                document.getElementById('det-ath').textContent = '$73,750';
+
+            } catch (e) {
+                console.error('Error precio:', e);
+                document.getElementById('price-value').textContent = 'Error';
+            }
+        }
+
+        // ==============================================
+        // 📅 SELECCIÓN DE PERIODO
+        // ==============================================
+        function selectPeriodo(periodo, btn) {
+            periodoSeleccionado = periodo;
+            
+            // Actualizar estilos
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            // Mostrar botones de voto
+            document.getElementById('instruccion').classList.add('hidden');
+            document.getElementById('periodo-activo').classList.remove('hidden');
+            document.getElementById('periodo-activo').textContent = `Periodo seleccionado: ${periodo}`;
+            document.getElementById('botones-voto').classList.remove('hidden');
+            document.getElementById('mensaje').textContent = '';
+
+            // Verificar si ya votó
+            verificarPrediccionActiva();
+        }
+
+        // ==============================================
+        // 🗳️ VOTAR / PREDECIR
+        // ==============================================
+        async function votar(direccion) {
+            if (!usuarioActual) {
+                openModal('login');
+                mostrarToast('Inicia sesión para predecir', 'amber');
+                return;
+            }
+            if (!periodoSeleccionado) {
+                mostrarToast('Selecciona un periodo primero', 'amber');
+                return;
+            }
+
+            // Verificar si ya existe predicción activa
+            const { data: existente, error: errVer } = await supabase
+                .from('predicciones')
+                .select('*')
+                .eq('usuario_id', usuarioActual.id)
+                .eq('periodo', periodoSeleccionado)
+                .eq('estado', 'pendiente')
+                .maybeSingle();
+
+            if (existente) {
+                mostrarToast('Ya tienes una predicción activa para este periodo', 'red');
+                return;
+            }
+
+            // Calcular tiempo final
+            const ahora = new Date();
+            let fin = new Date(ahora);
+            switch (periodoSeleccionado) {
+                case '5m': fin.setMinutes(fin.getMinutes() + 5); break;
+                case '15m': fin.setMinutes(fin.getMinutes() + 15); break;
+                case '30m': fin.setMinutes(fin.getMinutes() + 30); break;
+                case '1h': fin.setHours(fin.getHours() + 1); break;
+                case '4h': fin.setHours(fin.getHours() + 4); break;
+                case '24h': fin.setHours(fin.getHours() + 24); break;
+                case '1sem': fin.setDate(fin.getDate() + 7); break;
+                case '1mes': fin.setMonth(fin.getMonth() + 1); break;
+            }
+
+            // Crear predicción
+            const nueva = {
+                usuario_id: usuarioActual.id,
+                username: usuarioActual.username,
+                periodo: periodoSeleccionado,
+                direccion: direccion,
+                precio_inicio: precioBTC,
+                precio_fin: null,
+                puntos: puntosPorPeriodo[periodoSeleccionado],
+                estado: 'pendiente',
+                fecha_inicio: ahora.toISOString(),
+                fecha_fin: fin.toISOString()
+            };
+
+            const { data, error } = await supabase
+                .from('predicciones')
+                .insert(nueva)
+                .select()
+                .single();
+
+            if (error) {
+                console.error(error);
+                mostrarToast('Error al votar', 'red');
+                return;
+            }
+
+            prediccionActiva = data;
+            mostrarToast(`¡Predicción registrada! ${direccion.toUpperCase()} 🎯`, 'green');
+            actualizarUIprediccion();
+            await cargarMisPredicciones();
+        }
+
+        // ==============================================
+        // 📈 UI DE PREDICCIÓN ACTIVA
+        // ==============================================
+        async function verificarPrediccionActiva() {
+            if (!usuarioActual || !periodoSeleccionado) return;
+
+            const { data } = await supabase
+                .from('predicciones')
+                .select('*')
+                .eq('usuario_id', usuarioActual.id)
+                .eq('periodo', periodoSeleccionado)
+                .eq('estado', 'pendiente')
+                .order('fecha_inicio', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (data) {
+                prediccionActiva = data;
+                actualizarUIprediccion();
+            } else {
+                prediccionActiva = null;
+                document.getElementById('prediccion-activa').classList.add('hidden');
+                document.getElementById('botones-voto').classList.remove('hidden');
+            }
+        }
+
+        function actualizarUIprediccion() {
+            if (!prediccionActiva) return;
+
+            document.getElementById('prediccion-activa').classList.remove('hidden');
+            document.getElementById('botones-voto').classList.add('hidden');
+            document.getElementById('mi-voto').innerHTML = 
+                `<span class="${prediccionActiva.direccion === 'sube' ? 'text-green-400' : 'text-red-400'}">
+                    ${prediccionActiva.direccion === 'sube' ? '📈 SUBE' : '📉 BAJA'}
+                 </span>`;
+            document.getElementById('estado-prediccion').innerHTML = 
+                '<span class="badge-pending px-2 py-0.5 rounded-full text-xs">Pendiente</span>';
+
+            // Iniciar contador
+            iniciarContador(new Date(prediccionActiva.fecha_fin));
+        }
+
+        function iniciarContador(fechaFin) {
+            if (intervaloTiempo) clearInterval(intervaloTiempo);
+            
+            intervaloTiempo = setInterval(() => {
+                const ahora = new Date();
+                const diff = fechaFin - ahora;
+                
+                if (diff <= 0) {
+                    clearInterval(intervaloTiempo);
+                    document.getElementById('tiempo-restante').textContent = '¡Evaluando!';
+                    evaluarPrediccion();
+                    return;
+                }
+
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                document.getElementById('tiempo-restante').textContent = 
+                    `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        // ==============================================
+        // ✅ EVALUAR PREDICCIÓN
+        // ==============================================
+        async function evaluarPrediccion() {
+            if (!prediccionActiva) return;
+
+            const precioFinal = precioBTC;
+            const precioInicio = prediccionActiva.precio_inicio;
+            let resultado;
+
+            if (precioFinal > precioInicio) {
+                resultado = prediccionActiva.direccion === 'sube' ? 'ganada' : 'perdida';
+            } else if (precioFinal < precioInicio) {
+                resultado = prediccionActiva.direccion === 'baja' ? 'ganada' : 'perdida';
+            } else {
+                resultado = 'empate';
+            }
+
+            // Actualizar predicción
+            const { error } = await supabase
+                .from('predicciones')
+                .update({
+                    precio_fin: precioFinal,
+                    estado: resultado
+                })
+                .eq('id', prediccionActiva.id);
+
+            if (error) {
+                console.error('Error actualizando:', error);
+                return;
+            }
+
+            // Actualizar usuario si ganó
+            if (resultado === 'ganada') {
+                const nuevosPuntos = usuarioActual.puntos + prediccionActiva.puntos;
+                const nuevasVictorias = usuarioActual.victorias + 1;
+                const nuevoTotal = usuarioActual.total_predicciones + 1;
+                
+                // Calcular tier
+                let nuevoTier = 'bronce';
+                if (nuevosPuntos >= 5000) nuevoTier = 'leyenda';
+                else if (nuevosPuntos >= 1000) nuevoTier = 'maestro';
+                else if (nuevosPuntos >= 500) nuevoTier = 'platino';
+                else if (nuevosPuntos >= 200) nuevoTier = 'oro';
+                else if (nuevosPuntos >= 50) nuevoTier = 'plata';
+
+                await supabase.from('usuarios').update({
+                    puntos: nuevosPuntos,
+                    victorias: nuevasVictorias,
+                    total_predicciones: nuevoTotal,
+                    tier: nuevoTier
+                }).eq('id', usuarioActual.id);
+
+                usuarioActual.puntos = nuevosPuntos;
+                usuarioActual.victorias = nuevasVictorias;
+                usuarioActual.total_predicciones = nuevoTotal;
+                usuarioActual.tier = nuevoTier;
+
+                mostrarUsuario();
+                mostrarToast(`🎉 ¡Ganaste +${prediccionActiva.puntos} puntos!`, 'green');
+                confetti();
+            } else {
+                // Solo incrementar total
+                await supabase.from('usuarios').update({
+                    total_predicciones: usuarioActual.total_predicciones + 1
+                }).eq('id', usuarioActual.id);
+                usuarioActual.total_predicciones++;
+                mostrarToast(resultado === 'perdida' ? '😔 Predicción fallida' : '⚖️ Empate', resultado === 'perdida' ? 'red' : 'amber');
+            }
+
+            prediccionActiva = null;
+            document.getElementById('prediccion-activa').classList.add('hidden');
+            document.getElementById('botones-voto').classList.remove('hidden');
+            await cargarMisPredicciones();
+            await cargarRanking();
+        }
+
+        // ==============================================
+        // 📋 MIS PREDICCIONES
+        // ==============================================
+        async function cargarMisPredicciones() {
+            if (!usuarioActual) return;
+
+            const { data, error } = await supabase
+                .from('predicciones')
+                .select('*')
+                .eq('usuario_id', usuarioActual.id)
+                .order('fecha_inicio', { ascending: false })
+                .limit(20);
+
+            if (error || !data.length) {
+                document.getElementById('mis-predicciones').innerHTML = 
+                    '<p class="text-gray-600 text-center py-6 text-sm">Sin predicciones aún</p>';
+                return;
+            }
+
+            document.getElementById('mis-predicciones').innerHTML = data.map(p => {
+                let badge, icon;
+                if (p.estado === 'pendiente') {
+                    badge = '<span class="badge-pending px-2 py-0.5 rounded-full text-xs">Pendiente</span>';
+                    icon = p.direccion === 'sube' ? '📈' : '📉';
+                } else if (p.estado === 'ganada') {
+                    badge = '<span class="badge-win px-2 py-0.5 rounded-full text-xs">¡Ganada!</span>';
+                    icon = '✅';
+                } else {
+                    badge = '<span class="badge-loss px-2 py-0.5 rounded-full text-xs">Fallida</span>';
+                    icon = '❌';
+                }
+
+                return `
+                    <div class="glass-card p-3 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xl">${icon}</span>
+                            <div>
+                                <div class="font-semibold text-sm">${p.periodo.toUpperCase()} • ${p.direccion.toUpperCase()}</div>
+                                <div class="text-[10px] text-gray-500">${new Date(p.fecha_inicio).toLocaleDateString()} • ${p.puntos} pts</div>
+                            </div>
+                        </div>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+
+
+    <script>
+        // ==============================================
+        // 🏆 RANKING
+        // ==============================================
+        async function cargarRanking() {
+            const { data, error } = await supabase
+                .from('usuarios')
+                .select('*')
+                .order('puntos', { ascending: false })
+                .limit(50);
+
+            if (error || !data.length) {
+                document.getElementById('ranking-body').innerHTML = 
+                    '<tr><td colspan="7" class="text-center py-4 text-gray-500">Sin datos</td></tr>';
+                return;
+            }
+
+            rankingCache = data;
+            document.getElementById('ranking-body').innerHTML = data.map((u, i) => {
+                const rate = u.total_predicciones > 0 
+                    ? ((u.victorias / u.total_predicciones) * 100).toFixed(1) 
+                    : '0.0';
+                const pos = i + 1;
+                const posBadge = pos <= 3 
+                    ? `<span class="w-7 h-7 flex items-center justify-center rounded-full font-bold text-xs ${pos === 1 ? 'bg-yellow-500 text-black' : pos === 2 ? 'bg-gray-300 text-black' : 'bg-amber-700 text-white'}">${pos}</span>`
+                    : `<span class="text-gray-500 text-sm">${pos}</span>`;
+
+                return `
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                        <td class="py-3 px-4">${posBadge}</td>
+                        <td class="py-3 px-4 font-medium">${u.username}</td>
+                        <td class="py-3 px-4 text-center"><span class="tier-${u.tier} px-2 py-0.5 rounded text-xs font-bold">${u.tier.toUpperCase()}</span></td>
+                        <td class="py-3 px-4 text-center font-mono font-bold text-amber-400">${u.puntos}</td>
+                        <td class="py-3 px-4 text-center text-green-400">${u.victorias}</td>
+                        <td class="py-3 px-4 text-center text-gray-400">${u.total_predicciones}</td>
+                        <td class="py-3 px-4 text-center font-mono text-sm">${rate}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==============================================
+        // 🌍 PREDICCIONES GLOBALES
+        // ==============================================
+        async function cargarPrediccionesGlobales() {
+            const { data, error } = await supabase
+                .from('predicciones')
+                .select('*')
+                .eq('estado', 'pendiente')
+                .order('fecha_inicio', { ascending: false })
+                .limit(30);
+
+            if (error || !data.length) {
+                document.getElementById('global-predicciones').innerHTML = 
+                    '<p class="text-gray-600 text-center py-6 text-sm">Sin predicciones activas aún</p>';
+                return;
+            }
+
+            document.getElementById('global-predicciones').innerHTML = data.map(p => `
+                <div class="glass-card p-3 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-black font-bold text-xs">
+                            ${p.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="font-semibold text-sm">${p.username}</div>
+                            <div class="text-[10px] text-gray-500">${p.periodo.toUpperCase()} • $${p.precio_inicio.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold ${p.direccion === 'sube' ? 'text-green-400' : 'text-red-400'}">
+                            ${p.direccion === 'sube' ? '📈 SUBE' : '📉 BAJA'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==============================================
+        // 🤖 BOTS
+        // ==============================================
+        let botsRegistrados = [];
+
+        function crearBots() {
+            if (!usuarioActual) { openModal('login'); return; }
+            mostrarToast('Bots creados (simulación)', 'green');
+            document.getElementById('bot-list-body').innerHTML = `
+                <tr class="border-b border-white/5">
+                    <td class="py-2 px-3">Bot_Trader_01</td>
+                    <td class="py-2 px-3">Balanceado</td>
+                    <td class="py-2 px-3 text-center text-green-400">● Activo</td>
+                    <td class="py-2 px-3 text-center font-mono">12</td>
+                    <td class="py-2 px-3 text-center"><button class="text-red-400 text-xs">Detener</button></td>
+                </tr>
+                <tr class="border-b border-white/5">
+                    <td class="py-2 px-3">Bot_Aggressive_02</td>
+                    <td class="py-2 px-3">Agresivo</td>
+                    <td class="py-2 px-3 text-center text-green-400">● Activo</td>
+                    <td class="py-2 px-3 text-center font-mono">8</td>
+                    <td class="py-2 px-3 text-center"><button class="text-red-400 text-xs">Detener</button></td>
+                </tr>
+            `;
+        }
+
+        function iniciarTodosBots() { mostrarToast('Todos los bots iniciados 🤖', 'green'); }
+        function detenerTodosBots() { mostrarToast('Todos los bots detenidos', 'red'); }
+
+        // ==============================================
+        // 🚀 INICIO DE LA APLICACIÓN
+        // ==============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 BCPredict Pro cargando...');
+            
+            // Cargar precio inmediatamente
+            await cargarPrecioBTC();
+            intervaloPrecio = setInterval(cargarPrecioBTC, 30000); // Cada 30s
+
+            // Verificar sesión
+            await verificarSesion();
+
+            // Cargar ranking en segundo plano
+            cargarRanking();
+        });
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modal-auth').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-auth') cerrarModal();
+        });
+    </script>
+
+</body>
+</html>
