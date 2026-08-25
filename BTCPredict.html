@@ -1840,6 +1840,804 @@ function actualizarConversions(price) {
 
 
 
+// ==============================================
+// AUTENTICACION SUPABASE
+// ==============================================
+async function verificarSesion() {
+    try {
+        const { data: { session }, error } = await sb.auth.getSession();
+        if (error) throw error;
+        if (session?.user) {
+            await cargarUsuario(session.user);
+            setInterval(verificarResultadosPendientes, 15000);
+        } else {
+            usuarioActual = null;
+            actualizarUI();
+            if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
+            if ($['prediccion-activa']) $['prediccion-activa'].classList.add('hidden');
+            if (globalSub) { globalSub.unsubscribe(); globalSub = null; }
+            actualizarStatsUsuario();
+            userAchievements = [];
+            renderizarAchievements();
+        }
+        
+        sb.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                await cargarUsuario(session.user);
+                iniciarEscuchaGlobal();
+                setInterval(verificarResultadosPendientes, 15000);
+            } else if (event === 'SIGNED_OUT') {
+                usuarioActual = null;
+                actualizarUI();
+                if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
+                if ($['prediccion-activa']) $['prediccion-activa'].classList.add('hidden');
+                if (globalSub) { globalSub.unsubscribe(); globalSub = null; }
+                if (userSub) { userSub.unsubscribe(); userSub = null; }
+                if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
+                actualizarStatsUsuario();
+                userAchievements = [];
+                renderizarAchievements();
+            }
+        });
+    } catch (e) {
+        usuarioActual = null;
+        actualizarUI();
+    }
+}
+
+async function cargarUsuario(user) {
+    try {
+        let { data: userData, error } = await sb.from('usuarios').select('*').eq('uid', user.id).single();
+        
+        if (error && error.code === 'PGRST116') {
+            const username = user.user_metadata?.username || user.email.split('@')[0];
+            const { data: newUser, error: insertError } = await sb.from('usuarios').insert({
+                uid: user.id, email: user.email, username: username,
+                puntos: 0, aciertos: 0, total_votos: 0, racha: 0, mejor_racha: 0, logros: [], creado: new Date().toISOString()
+            }).select().single();
+            if (insertError) throw insertError;
+            userData = newUser;
+        } else if (error) { throw error; }
+        
+        usuarioActual = {
+            uid: user.id, email: user.email,
+            username: userData.username || user.email.split('@')[0],
+            puntos: userData.puntos || 0, aciertos: userData.aciertos || 0,
+            total_votos: userData.total_votos || 0, racha: userData.racha || 0,
+            mejor_racha: userData.mejor_racha || 0, logros: userData.logros || []
+        };
+        userAchievements = usuarioActual.logros;
+        actualizarUI();
+        cargarMisPredicciones();
+        cargarRanking();
+        buscarPrediccionActiva();
+        actualizarStatsUsuario();
+        cargarAnalisis();
+        renderizarAchievements();
+        verificarLogros();
+        
+        if (userSub) userSub.unsubscribe();
+        userSub = sb.channel('user-changes-' + user.id)
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'usuarios', filter: 'uid=eq.' + user.id },
+                (payload) => {
+                    const d = payload.new;
+                    usuarioActual = { uid: user.id, ...d };
+                    userAchievements = d.logros || [];
+                    actualizarUI(); actualizarStatsUsuario(); renderizarAchievements();
+                }).subscribe();
+    } catch (e) {
+        mostrarToast('Error al cargar usuario: ' + e.message, 'error');
+    }
+}
+
+async function register() {
+    const email = $['email-reg']?.value.trim();
+    const pass = $['pass-reg']?.value;
+    const username = $['username']?.value.trim();
+    if (!email || !pass || !username) return mostrarToast('Completa todos los campos', 'error');
+    if (pass.length < 6) return mostrarToast('Contrasena minimo 6 caracteres', 'error');
+    if (username.length < 3) return mostrarToast('Usuario minimo 3 caracteres', 'error');
+    try {
+        const { data, error } = await sb.auth.signUp({
+            email: email, password: pass,
+            options: { data: { name: username, username: username } }
+        });
+        if (data?.user) await sb.auth.updateUser({ data: { name: username } });
+        if (error) throw error;
+        mostrarToast('Cuenta creada exitosamente');
+        cerrarModal();
+    } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
+}
+
+async function login() {
+    const email = $['email']?.value.trim();
+    const pass = $['pass']?.value;
+    if (!email || !pass) return mostrarToast('Completa todos los campos', 'error');
+    try {
+        const { data, error } = await sb.auth.signInWithPassword({ email: email, password: pass });
+        if (error) throw error;
+        mostrarToast('Bienvenido');
+        cerrarModal();
+    } catch (e) { mostrarToast('Error: ' + e.message, 'error'); }
+}
+
+async function logout() {
+    if (globalSub) { globalSub.unsubscribe(); globalSub = null; }
+    if (userSub) { userSub.unsubscribe(); userSub = null; }
+    if (wsBinance) { wsBinance.close(); wsBinance = null; }
+    if (wsPrice) { wsPrice.close(); wsPrice = null; }
+    if (misPredTimer) { clearInterval(misPredTimer); misPredTimer = null; }
+    await sb.auth.signOut();
+    usuarioActual = null;
+    actualizarUI();
+    if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
+    if ($['prediccion-activa']) $['prediccion-activa'].classList.add('hidden');
+    if (intervaloTiempo) clearInterval(intervaloTiempo);
+    actualizarStatsUsuario();
+    userAchievements = [];
+    renderizarAchievements();
+    mostrarToast('Sesion cerrada');
+}
+
+function actualizarUI() {
+    if (usuarioActual) {
+        if ($['auth-buttons']) $['auth-buttons'].classList.add('hidden');
+        if ($['user-menu']) { $['user-menu'].classList.remove('hidden'); $['user-menu'].classList.add('flex'); }
+        if ($['user-name']) $['user-name'].textContent = usuarioActual.username;
+        const tier = getTier(usuarioActual.puntos || 0);
+        if ($['user-tier']) { $['user-tier'].textContent = tier.nombre; $['user-tier'].className = 'text-[10px] font-medium px-2.5 py-0.5 rounded-lg ' + tier.clase; }
+        if ($['user-pred-stats']) $['user-pred-stats'].classList.remove('hidden');
+    } else {
+        if ($['auth-buttons']) $['auth-buttons'].classList.remove('hidden');
+        if ($['user-menu']) { $['user-menu'].classList.add('hidden'); $['user-menu'].classList.remove('flex'); }
+        if ($['user-pred-stats']) $['user-pred-stats'].classList.add('hidden');
+    }
+}
+
+function actualizarStatsUsuario() {
+    if (!usuarioActual) {
+        ['stats-puntos','stats-aciertos','stats-fallos','stats-winrate','user-total-preds','user-win-preds','user-winrate-preds'].forEach(id => {
+            if ($[id]) $[id].textContent = id.includes('winrate') ? '0%' : '0';
+        });
+        return;
+    }
+    const pts = usuarioActual.puntos || 0;
+    const ac = usuarioActual.aciertos || 0;
+    const tot = usuarioActual.total_votos || 0;
+    const wr = tot > 0 ? ((ac / tot) * 100).toFixed(1) : 0;
+    if ($['stats-puntos']) $['stats-puntos'].textContent = pts;
+    if ($['stats-aciertos']) $['stats-aciertos'].textContent = ac;
+    if ($['stats-fallos']) $['stats-fallos'].textContent = tot - ac;
+    if ($['stats-winrate']) $['stats-winrate'].textContent = wr + '%';
+    if ($['user-total-preds']) $['user-total-preds'].textContent = tot;
+    if ($['user-win-preds']) $['user-win-preds'].textContent = ac;
+    if ($['user-winrate-preds']) $['user-winrate-preds'].textContent = wr + '%';
+    
+    if ($['user-achievements-preview'] && userAchievements.length > 0) {
+        $['user-achievements-preview'].innerHTML = userAchievements.slice(-3).map(a => {
+            const ach = ACHIEVEMENTS.find(x => x.id === a);
+            return ach ? '<span class="text-[10px] px-2 py-1 rounded border" style="border-color:rgba(247,147,26,0.3);color:#f7931a;">' + ach.icon + ' ' + ach.nombre + '</span>' : '';
+        }).join('');
+    } else if ($['user-achievements-preview']) {
+        $['user-achievements-preview'].innerHTML = '';
+    }
+    
+    if ($['ach-unlocked']) $['ach-unlocked'].textContent = (userAchievements.length || 0) + '/' + ACHIEVEMENTS.length;
+    if ($['ach-best-streak']) $['ach-best-streak'].textContent = usuarioActual.mejor_racha || 0;
+    if ($['ach-current-streak']) $['ach-current-streak'].textContent = usuarioActual.racha || 0;
+    
+    const racha = usuarioActual.racha || 0;
+    streakMultiplier = racha >= 10 ? 3.0 : racha >= 5 ? 2.0 : racha >= 3 ? 1.5 : 1.0;
+    if ($['ach-multiplier']) {
+        $['ach-multiplier'].textContent = 'x' + streakMultiplier.toFixed(1);
+        $['ach-multiplier'].className = 'text-2xl font-bold font-mono ' + (streakMultiplier > 1 ? 'text-purple-400' : 'text-gray-500');
+    }
+}
+
+function getTier(puntos) {
+    let t = TIERS[0];
+    for (const x of TIERS) if (puntos >= x.min) t = x;
+    return t;
+}
+
+// ==============================================
+// PREDICCIONES
+// ==============================================
+async function buscarPrediccionActiva() {
+    if (!usuarioActual) return;
+    try {
+        const { data, error } = await sb.from('predicciones').select('*').eq('usuario_id', usuarioActual.uid).eq('estado', 'activo').order('creado', { ascending: false }).limit(1);
+        if (error) throw error;
+        if (data?.length > 0) {
+            prediccionActivaId = data[0].id;
+            mostrarPredActiva(data[0]);
+            if (intervaloTiempo) clearInterval(intervaloTiempo);
+            intervaloTiempo = setInterval(() => actualizarTiempoRestante(data[0].cierre), 1000);
+        } else {
+            if ($['prediccion-activa']) $['prediccion-activa'].classList.add('hidden');
+            if ($['botones-voto']) $['botones-voto'].classList.remove('hidden');
+            if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
+            prediccionActivaId = null;
+        }
+    } catch (e) { console.error('Error buscando prediccion activa:', e); }
+}
+
+function mostrarPredActiva(pred) {
+    if (!$['prediccion-activa']) return;
+    $['prediccion-activa'].classList.remove('hidden');
+    const voto = pred.voto === 'sube' ? 'SUBE' : 'BAJA';
+    const cls = pred.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+    const icon = pred.voto === 'sube' ? '▲' : '▼';
+    if ($['mi-voto']) $['mi-voto'].innerHTML = '<span class="' + cls + '">' + icon + ' ' + voto + '</span>';
+    if ($['tiempo-restante']) $['tiempo-restante'].textContent = calcTiempoRestante(pred.cierre);
+    if ($['estado-prediccion']) $['estado-prediccion'].innerHTML = '<span class="px-2.5 py-1 rounded-md text-[10px] font-bold badge-pending">PENDIENTE</span>';
+    if ($['pred-precio-inicial']) $['pred-precio-inicial'].textContent = '$' + Math.round(pred.precio_inicial || 0).toLocaleString();
+    if ($['pred-precio-actual']) $['pred-precio-actual'].textContent = precioBTC > 0 ? '$' + Math.round(precioBTC).toLocaleString() : '--';
+    actualizarDiferenciaPrediccion();
+}
+
+function actualizarDiferenciaPrediccion() {
+    if (!$['pred-diferencia'] || !prediccionActivaId) return;
+    const inicialStr = $['pred-precio-inicial']?.textContent;
+    if (!inicialStr || inicialStr === '--') return;
+    const inicial = parseFloat(inicialStr.replace(/[$,]/g, ''));
+    if (!inicial || !precioBTC) return;
+    const diff = ((precioBTC - inicial) / inicial) * 100;
+    const col = diff >= 0 ? 'text-green-400' : 'text-red-400';
+    $['pred-diferencia'].innerHTML = '<span class="' + col + '">' + (diff >= 0 ? '▲' : '▼') + ' ' + Math.abs(diff).toFixed(2) + '%</span>';
+}
+
+function actualizarTiempoRestante(cierre) {
+    if ($['tiempo-restante']) $['tiempo-restante'].textContent = calcTiempoRestante(cierre);
+    if (new Date() >= new Date(cierre)) {
+        clearInterval(intervaloTiempo); intervaloTiempo = null;
+        verificarResultadosPendientes();
+    }
+}
+
+function calcTiempoRestante(cierre) {
+    const diff = new Date(cierre) - new Date();
+    if (diff <= 0) return 'Finalizado';
+    const s = Math.floor(diff / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    const d = Math.floor(h / 24);
+    if (d > 0) return d + 'd ' + (h % 24) + 'h ' + (m % 60) + 'm';
+    if (h > 0) return h + 'h ' + (m % 60) + 'm ' + (s % 60) + 's';
+    if (m > 0) return m + 'm ' + (s % 60) + 's';
+    return s + 's';
+}
+
+function selectPeriodo(periodo, btn) {
+    if (prediccionActivaId) { mostrarToast('Ya tienes una prediccion activa', 'error'); return; }
+    periodoSeleccionado = periodo;
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    if ($['botones-voto']) $['botones-voto'].classList.remove('hidden');
+    if ($['periodo-activo']) { $['periodo-activo'].classList.remove('hidden'); $['periodo-activo'].textContent = 'Periodo: ' + periodo + ' (+' + PUNTOS[periodo] + ' pts x' + MULTS[periodo] + ')'; }
+    if ($['instruccion']) $['instruccion'].classList.add('hidden');
+    if ($['mensaje']) $['mensaje'].textContent = '';
+}
+
+async function votar(direccion) {
+    if (!usuarioActual) { openModal('login'); return mostrarToast('Inicia sesion para votar', 'error'); }
+    if (!periodoSeleccionado) return mostrarToast('Selecciona un periodo', 'error');
+    if (prediccionActivaId) return mostrarToast('Ya tienes una prediccion activa', 'error');
+    
+    const cierre = new Date(Date.now() + DURACIONES[periodoSeleccionado]).toISOString();
+    try {
+        const { data: existing, error: checkError } = await sb.from('predicciones').select('id').eq('usuario_id', usuarioActual.uid).eq('periodo', periodoSeleccionado).eq('estado', 'activo');
+        if (checkError) throw checkError;
+        if (existing?.length > 0) { prediccionActivaId = existing[0].id; return mostrarToast('Ya votaste en este periodo', 'error'); }
+        
+        const { data, error } = await sb.from('predicciones').insert({
+            usuario_id: usuarioActual.uid, periodo: periodoSeleccionado, voto: direccion,
+            precio_inicial: precioBTC, cierre: cierre, estado: 'activo', creado: new Date().toISOString()
+        }).select().single();
+        if (error) throw error;
+        
+        prediccionActivaId = data.id;
+        todasPrediccionesGlobal.unshift(data);
+        mostrarToast('Voto registrado: ' + direccion.toUpperCase());
+        if ($['mensaje']) $['mensaje'].textContent = 'Voto registrado exitosamente';
+        if ($['botones-voto']) $['botones-voto'].classList.add('hidden');
+        mostrarPredActiva(data);
+        if (intervaloTiempo) clearInterval(intervaloTiempo);
+        intervaloTiempo = setInterval(() => actualizarTiempoRestante(data.cierre), 1000);
+        cargarMisPredicciones();
+        renderizarGlobal();
+    } catch (e) { mostrarToast('Error al registrar voto: ' + e.message, 'error'); }
+}
+
+// ==============================================
+// VERIFICACION RESULTADOS
+// ==============================================
+async function verificarResultadosPendientes() {
+    try {
+        const { data: preds, error } = await sb.from('predicciones').select('*').eq('estado', 'activo');
+        if (error) throw error;
+        if (!preds?.length) return;
+        
+        let alguna = false;
+        const ahora = new Date();
+        
+        for (const pred of preds) {
+            if (new Date(pred.cierre) > ahora) continue;
+            alguna = true;
+            
+            let precioFinal = precioBTC;
+            if (!precioFinal) {
+                try { const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+                const d = await r.json(); precioFinal = d.bitcoin.usd; } catch (e) { precioFinal = pred.precio_inicial; }
+            }
+            
+            const subio = precioFinal > pred.precio_inicial;
+            const acierto = (pred.voto === 'sube' && subio) || (pred.voto === 'baja' && !subio);
+            const basePts = PUNTOS[pred.periodo] || 1;
+            const mult = MULTS[pred.periodo] || 1;
+            const pts = acierto ? Math.round(basePts * mult * streakMultiplier) : -Math.round(basePts * mult);
+            
+            await sb.from('predicciones').update({
+                precio_final: precioFinal, estado: 'cerrado', resultado: acierto ? 'acierto' : 'fallo',
+                puntos_ganados: pts, cerrado: new Date().toISOString()
+            }).eq('id', pred.id);
+            
+            const { data: userData } = await sb.from('usuarios').select('*').eq('uid', pred.usuario_id).single();
+            if (!userData) {
+                const { data: botData } = await sb.from('bots').select('*').eq('uid', pred.usuario_id).single();
+                if (botData) await actualizarBotResultado(pred, botData, acierto, pts);
+                continue;
+            }
+            
+            await actualizarUsuarioResultado(pred, userData, acierto, pts);
+            if (usuarioActual?.uid === pred.usuario_id) await actualizarUsuarioActual(pred, userData, acierto, pts, subio);
+            
+            if (prediccionActivaId === pred.id) {
+                prediccionActivaId = null;
+                if ($['prediccion-activa']) $['prediccion-activa'].classList.add('hidden');
+                if ($['botones-voto']) $['botones-voto'].classList.remove('hidden');
+                if (intervaloTiempo) { clearInterval(intervaloTiempo); intervaloTiempo = null; }
+            }
+        }
+        
+        if (alguna) {
+            cargarMisPredicciones(); cargarRanking(); buscarPrediccionActiva();
+            cargarAnalisis(); verificarLogros();
+        }
+    } catch (e) { console.error('Error verificando resultados:', e); }
+}
+
+async function actualizarUsuarioResultado(pred, userData, acierto, pts) {
+    const nuevosPuntos = Math.max(0, (userData.puntos || 0) + pts);
+    if (acierto) {
+        const nr = (userData.racha || 0) + 1;
+        await sb.from('usuarios').update({
+            puntos: nuevosPuntos, aciertos: (userData.aciertos || 0) + 1,
+            total_votos: (userData.total_votos || 0) + 1, racha: nr, mejor_racha: Math.max(nr, userData.mejor_racha || 0)
+        }).eq('uid', pred.usuario_id);
+    } else {
+        await sb.from('usuarios').update({
+            puntos: nuevosPuntos, total_votos: (userData.total_votos || 0) + 1, racha: 0
+        }).eq('uid', pred.usuario_id);
+    }
+}
+
+async function actualizarUsuarioActual(pred, userData, acierto, pts, subio) {
+    const nuevosPuntos = Math.max(0, (userData.puntos || 0) + pts);
+    if (acierto) {
+        const nr = (userData.racha || 0) + 1;
+        usuarioActual.puntos = nuevosPuntos;
+        usuarioActual.aciertos = (usuarioActual.aciertos || 0) + 1;
+        usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+        usuarioActual.racha = nr;
+        usuarioActual.mejor_racha = Math.max(nr, usuarioActual.mejor_racha || 0);
+        actualizarUI(); actualizarStatsUsuario();
+        mostrarToast('✅ Acertaste! +' + pts + ' pts (x' + streakMultiplier + ' racha)', 'success');
+        agregarNotif('+' + pts + ' pts en ' + pred.periodo + ' (racha x' + streakMultiplier + ')', 'success');
+        if (window.confetti && streakMultiplier > 1) confetti({ particleCount: 50 * streakMultiplier, spread: 60, origin: { y: 0.7 }, colors: ['#f7931a', '#22c55e', '#FFD700', '#8A2BE2'] });
+    } else {
+        const perdida = Math.abs(pts);
+        usuarioActual.puntos = nuevosPuntos;
+        usuarioActual.total_votos = (usuarioActual.total_votos || 0) + 1;
+        usuarioActual.racha = 0;
+        actualizarUI(); actualizarStatsUsuario();
+        if (perdida > 0) {
+            mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subio' : 'bajo') + ' -' + perdida + ' pts', 'error');
+            agregarNotif('-' + perdida + ' pts en ' + pred.periodo, 'error');
+        } else {
+            mostrarToast('❌ Fallaste. BTC ' + (subio ? 'subio' : 'bajo'), 'error');
+        }
+    }
+}
+
+// ==============================================
+// MIS PREDICCIONES
+// ==============================================
+async function cargarMisPredicciones() {
+    if (!usuarioActual) {
+        if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesion para ver tus predicciones</p>';
+        return;
+    }
+    try {
+        const { data, error } = await sb.from('predicciones').select('*').eq('usuario_id', usuarioActual.uid).order('creado', { ascending: false }).limit(50);
+        if (error) throw error;
+        if (!data?.length) {
+            if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No tienes predicciones registradas</p>';
+            return;
+        }
+        
+        let docs = data;
+        if (filtroMisPreds === 'activos') docs = docs.filter(d => d.estado === 'activo');
+        else if (filtroMisPreds === 'cerrados') docs = docs.filter(d => d.estado === 'cerrado');
+        
+        if (!docs.length) {
+            if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones en esta categoria</p>';
+            return;
+        }
+        
+        let html = '';
+        for (const p of docs) {
+            const activo = p.estado === 'activo';
+            const cierreStr = p.cierre || '';
+            const tiempoRestante = calcTiempoRestante(new Date(cierreStr));
+            const precioInicial = '$' + Math.round(p.precio_inicial || 0).toLocaleString();
+            
+            let estadoCls, estadoTxt;
+            if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
+            else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO +' + (p.puntos_ganados || 1); }
+            else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
+            
+            const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+            const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
+            let resultado = '';
+            if (!activo && p.precio_final) {
+                const subio = p.precio_final > p.precio_inicial;
+                const cambio = ((p.precio_final - p.precio_inicial) / p.precio_inicial * 100).toFixed(2);
+                resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precio_final).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
+            }
+            const fecha = new Date(p.creado);
+            const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' ' + fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            
+            html += '<div class="prediction-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in"' + (activo && cierreStr ? ' data-cierre="' + cierreStr + '"' : '') + '>' +
+                '<div><span class="font-bold text-sm">' + p.periodo + '</span><span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span><div class="text-[10px] text-gray-500 font-mono mt-0.5">' + precioInicial + ' Inicio</div></div>' +
+                '<div class="text-right"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
+                (activo ? '<div class="text-xs text-amber-400 font-mono countdown-tiempo" data-cierre="' + cierreStr + '">' + tiempoRestante + '</div>' : '') +
+                resultado + '<div class="text-[10px] text-gray-600 mt-1">' + fechaStr + '</div></div></div>';
+        }
+        if ($['mis-predicciones']) $['mis-predicciones'].innerHTML = html;
+        iniciarContadorMisPredicciones();
+    } catch (e) { console.error('Error cargando mis predicciones:', e); }
+}
+
+function iniciarContadorMisPredicciones() {
+    if (misPredTimer) clearInterval(misPredTimer);
+    actualizarContadorMisPredicciones();
+    misPredTimer = setInterval(actualizarContadorMisPredicciones, 1000);
+}
+
+function actualizarContadorMisPredicciones() {
+    document.querySelectorAll('.countdown-tiempo[data-cierre]').forEach(el => {
+        const cierreStr = el.getAttribute('data-cierre');
+        if (cierreStr) {
+            const tr = calcTiempoRestante(new Date(cierreStr));
+            el.textContent = tr;
+            if (tr === 'Finalizado') {
+                const parent = el.closest('.prediction-row');
+                if (parent) {
+                    const badge = parent.querySelector('.badge-pending');
+                    if (badge) { badge.textContent = 'FINALIZANDO'; badge.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold badge-loss'; }
+                }
+            }
+        }
+    });
+}
+
+function filtrarMisPreds(filtro) {
+    filtroMisPreds = filtro;
+    ['todos', 'activos', 'cerrados'].forEach(f => {
+        const btn = document.getElementById('misfiltro-' + f);
+        if (btn) btn.className = f === filtro ? 'px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select' : 'px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select';
+    });
+    cargarMisPredicciones();
+}
+
+// ==============================================
+// GLOBAL EN VIVO
+// ==============================================
+function iniciarEscuchaGlobal() {
+    if (globalSub) { globalSub.unsubscribe(); globalSub = null; }
+    cargarPrediccionesGlobal();
+    globalSub = sb.channel('predicciones-global')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'predicciones' }, () => cargarPrediccionesGlobal())
+        .subscribe();
+}
+
+async function cargarPrediccionesGlobal() {
+    try {
+        const { data, error } = await sb.from('predicciones').select('*').order('creado', { ascending: false }).limit(100);
+        if (error) throw error;
+        todasPrediccionesGlobal = data || [];
+        renderizarGlobal();
+        actualizarContGlobal();
+    } catch (e) { console.error('Error cargando predicciones global:', e); }
+}
+
+async function renderizarGlobal() {
+    const cont = $['global-predicciones'];
+    if (!cont) return;
+    let filtradas = todasPrediccionesGlobal;
+    if (filtroGlobal === 'activos') filtradas = filtradas.filter(p => p.estado === 'activo');
+    else if (filtroGlobal === 'cerrados') filtradas = filtradas.filter(p => p.estado === 'cerrado');
+    else if (filtroGlobal === 'sube') filtradas = filtradas.filter(p => p.voto === 'sube');
+    else if (filtroGlobal === 'baja') filtradas = filtradas.filter(p => p.voto === 'baja');
+    
+    if (!filtradas.length) { cont.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones que mostrar</p>'; return; }
+    
+    const userIds = [...new Set(filtradas.map(p => p.usuario_id).filter(id => id))];
+    const userCache = {};
+    if (userIds.length > 0) {
+        try {
+            const { data: users } = await sb.from('usuarios').select('uid, username').in('uid', userIds);
+            if (users) users.forEach(u => { userCache[u.uid] = u.username || 'Anonimo'; });
+        } catch (e) {}
+    }
+    
+    let html = '';
+    for (const p of filtradas) {
+        const username = userCache[p.usuario_id] || 'Anonimo';
+        const activo = p.estado === 'activo';
+        const esMio = usuarioActual && p.usuario_id === usuarioActual.uid;
+        const cierreStr = p.cierre || '';
+        const tiempoRestante = calcTiempoRestante(new Date(cierreStr));
+        const precioInicial = '$' + Math.round(p.precio_inicial || 0).toLocaleString();
+        
+        let estadoCls, estadoTxt;
+        if (activo) { estadoCls = 'badge-pending'; estadoTxt = 'PENDIENTE'; }
+        else if (p.resultado === 'acierto') { estadoCls = 'badge-win'; estadoTxt = 'ACIERTO +' + (p.puntos_ganados || 1); }
+        else { estadoCls = 'badge-loss'; estadoTxt = 'FALLO'; }
+        
+        const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+        const dirIcon = p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA';
+        const fecha = new Date(p.creado);
+        const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' ' + fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        
+        let resultado = '';
+        if (!activo && p.precio_final) {
+            const subio = p.precio_final > p.precio_inicial;
+            const cambio = ((p.precio_final - p.precio_inicial) / p.precio_inicial * 100).toFixed(2);
+            resultado = '<span class="text-xs ' + (subio ? 'text-green-400' : 'text-red-400') + ' font-mono">$' + Math.round(p.precio_final).toLocaleString() + ' ' + (subio ? '▲' : '▼') + ' ' + cambio + '%</span>';
+        }
+        
+        html += '<div class="prediction-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in"' + (activo && cierreStr ? ' data-cierre="' + cierreStr + '"' : '') + '>' +
+            '<div><span class="font-bold text-sm">' + p.periodo + '</span><span class="ml-2 ' + dirCls + ' text-xs font-semibold">' + dirIcon + '</span><div class="text-xs text-gray-500 mt-0.5">' + username + (esMio ? ' <span class="text-amber-400">(tu)</span>' : '') + '</div><div class="text-[10px] text-gray-500 font-mono">' + precioInicial + ' Inicio</div></div>' +
+            '<div class="text-right"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ' + estadoCls + '">' + estadoTxt + '</span>' +
+            (activo ? '<div class="text-xs text-amber-400 font-mono countdown-tiempo" data-cierre="' + cierreStr + '">' + tiempoRestante + '</div>' : '') +
+            resultado + '<div class="text-[10px] text-gray-600 mt-1">' + fechaStr + '</div></div></div>';
+    }
+    cont.innerHTML = html;
+}
+
+function actualizarContGlobal() {
+    const activas = todasPrediccionesGlobal.filter(p => p.estado === 'activo').length;
+    if ($['global-count']) $['global-count'].textContent = todasPrediccionesGlobal.length + ' predicciones';
+    if ($['global-activas-count']) $['global-activas-count'].textContent = activas + ' activas';
+}
+
+function filtrarGlobal(filtro) {
+    filtroGlobal = filtro;
+    ['todos', 'activos', 'cerrados', 'sube', 'baja'].forEach(f => {
+        const btn = document.getElementById('filtro-' + f);
+        if (btn) btn.className = f === filtro ? 'px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select' : 'px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select';
+    });
+    renderizarGlobal();
+}
+
+// ==============================================
+// RANKING
+// ==============================================
+async function cargarRanking() {
+    try {
+        const [{ data: usuarios }, { data: bots }] = await Promise.all([
+            sb.from('usuarios').select('*').order('puntos', { ascending: false }).limit(50),
+            sb.from('bots').select('*').order('puntos', { ascending: false }).limit(50)
+        ]);
+        
+        let todos = [];
+        const usuariosMap = new Map();
+        
+        if (usuarios) {
+            for (const u of usuarios) {
+                usuariosMap.set(u.uid, true);
+                todos.push({ uid: u.uid, username: u.username || 'Anonimo', puntos: u.puntos || 0, aciertos: u.aciertos || 0, total_votos: u.total_votos || 0, racha: u.racha || 0, mejor_racha: u.mejor_racha || 0, es_bot: u.es_bot || false });
+            }
+        }
+        if (bots) {
+            for (const bot of bots) {
+                if (!usuariosMap.has(bot.uid)) {
+                    todos.push({ uid: bot.uid, username: bot.username, puntos: bot.puntos || 0, aciertos: bot.aciertos || 0, total_votos: bot.total_votos || 0, racha: bot.racha || 0, mejor_racha: bot.mejor_racha || 0, es_bot: true });
+                }
+            }
+        }
+        
+        todos.sort((a, b) => (b.puntos || 0) - (a.puntos || 0));
+        todos = todos.slice(0, 50);
+        
+        const tbody = $['ranking-body'];
+        if (!todos?.length) { if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-gray-600">Sin usuarios registrados</td></tr>'; return; }
+        
+        let miPos = -1;
+        todos.forEach((u, i) => { if (usuarioActual && u.uid === usuarioActual.uid) miPos = i + 1; });
+        
+        let html = '';
+        for (let i = 0; i < todos.length; i++) {
+            const u = todos[i];
+            const tier = getTier(u.puntos || 0);
+            const wr = u.total_votos ? ((u.aciertos / u.total_votos) * 100).toFixed(1) : 0;
+            const esYo = usuarioActual && u.uid === usuarioActual.uid;
+            const esBot = u.es_bot || false;
+            const racha = u.racha || 0;
+            const rachaIcon = racha >= 5 ? '🔥' : racha >= 3 ? '⚡' : '';
+            let rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1).toString();
+            
+            html += '<tr class="rank-glow ' + (esYo ? 'bg-amber-500/5' : '') + ' border-t border-white/5 transition">' +
+                '<td class="py-3 px-4 font-bold text-xs ' + (i < 3 ? 'text-amber-400' : 'text-gray-500') + '">' + rank + '</td>' +
+                '<td class="py-3 px-4"><span class="font-semibold text-sm">' + (u.username || 'Anonimo') + '</span>' + (esBot ? ' <span class="text-xs text-blue-400">🤖</span>' : '') + (esYo ? '<span class="ml-2 text-[10px] text-amber-400">TU</span>' : '') + '</td>' +
+                '<td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ' + tier.clase + '">' + tier.nombre.toUpperCase() + '</span></td>' +
+                '<td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">' + (u.puntos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center text-green-400 font-mono text-sm">' + (u.aciertos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center text-gray-500 font-mono text-sm">' + (u.total_votos || 0) + '</td>' +
+                '<td class="py-3 px-4 text-center font-medium text-sm">' + wr + '%</td>' +
+                '<td class="py-3 px-4 text-center hidden sm:table-cell text-xs text-gray-500">' + (racha > 0 ? rachaIcon + ' ' + racha : '-') + '</td></tr>';
+        }
+        if (tbody) tbody.innerHTML = html;
+        
+        if (miPos > 0 && usuarioActual) {
+            if ($['mi-posicion']) $['mi-posicion'].classList.remove('hidden');
+            if ($['mi-rank-pos']) $['mi-rank-pos'].textContent = '#' + miPos;
+            const tierActual = getTier(usuarioActual.puntos || 0);
+            const tierIdx = TIERS.indexOf(tierActual);
+            const sigTier = tierIdx < TIERS.length - 1 ? TIERS[tierIdx + 1] : null;
+            if (sigTier) {
+                const prog = Math.min(100, ((usuarioActual.puntos || 0) / sigTier.min) * 100);
+                if ($['tier-progreso-text']) $['tier-progreso-text'].textContent = (usuarioActual.puntos || 0) + ' / ' + sigTier.min + ' pts';
+                if ($['tier-progreso-bar']) $['tier-progreso-bar'].style.width = prog + '%';
+            } else {
+                if ($['tier-progreso-text']) $['tier-progreso-text'].textContent = 'NIVEL MAXIMO';
+                if ($['tier-progreso-bar']) $['tier-progreso-bar'].style.width = '100%';
+            }
+        } else {
+            if ($['mi-posicion']) $['mi-posicion'].classList.add('hidden');
+        }
+    } catch (e) {
+        console.error('Error cargando ranking:', e);
+        const tbody = $['ranking-body'];
+        if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-red-400">Error cargando ranking</td></tr>';
+    }
+}
+
+// ==============================================
+// ANALISIS
+// ==============================================
+async function cargarAnalisis() {
+    try {
+        const { data: preds, error } = await sb.from('predicciones').select('*');
+        if (error) throw error;
+        const total = preds?.length || 0;
+        const activas = preds?.filter(p => p.estado === 'activo').length || 0;
+        const cerradas = preds?.filter(p => p.estado === 'cerrado') || [];
+        const aciertos = cerradas.filter(p => p.resultado === 'acierto').length;
+        const wrGlobal = cerradas.length > 0 ? ((aciertos / cerradas.length) * 100).toFixed(1) : 0;
+        const usuariosUnicos = new Set(preds?.map(p => p.usuario_id) || []).size;
+        
+        if ($['anal-total']) $['anal-total'].textContent = total;
+        if ($['anal-winrate']) $['anal-winrate'].textContent = wrGlobal + '%';
+        if ($['anal-activas']) $['anal-activas'].textContent = activas;
+        if ($['anal-usuarios']) $['anal-usuarios'].textContent = usuariosUnicos;
+        
+        const subidas = preds?.filter(p => p.voto === 'sube').length || 0;
+        const bajadas = preds?.filter(p => p.voto === 'baja').length || 0;
+        const totalV = subidas + bajadas;
+        if (totalV > 0) {
+            const ps = ((subidas / totalV) * 100).toFixed(1);
+            const pb = ((bajadas / totalV) * 100).toFixed(1);
+            if ($['dist-sube-bar']) $['dist-sube-bar'].style.width = ps + '%';
+            if ($['dist-sube-pct']) $['dist-sube-pct'].textContent = ps + '%';
+            if ($['dist-baja-bar']) $['dist-baja-bar'].style.width = pb + '%';
+            if ($['dist-baja-pct']) $['dist-baja-pct'].textContent = pb + '%';
+        }
+        
+        const periodosStats = {};
+        cerradas.forEach(p => {
+            if (!periodosStats[p.periodo]) periodosStats[p.periodo] = { total: 0, aciertos: 0 };
+            periodosStats[p.periodo].total++;
+            if (p.resultado === 'acierto') periodosStats[p.periodo].aciertos++;
+        });
+        const mejores = Object.entries(periodosStats).map(([periodo, s]) => ({
+            periodo, winrate: s.total > 0 ? ((s.aciertos / s.total) * 100).toFixed(1) : 0, total: s.total
+        })).sort((a, b) => parseFloat(b.winrate) - parseFloat(a.winrate)).slice(0, 5);
+        
+        if ($['mejores-periodos']) {
+            $['mejores-periodos'].innerHTML = mejores.length > 0 ? mejores.map(p =>
+                '<div class="flex justify-between items-center text-sm"><span class="text-gray-500">' + p.periodo + '</span><span class="font-bold font-mono ' + (p.winrate >= 50 ? 'text-green-400' : 'text-red-400') + '">' + p.winrate + '% <span class="text-gray-600 text-xs">(' + p.total + ')</span></span></div>'
+            ).join('') : '<p class="text-gray-600 text-sm">Sin datos suficientes</p>';
+        }
+        
+        const ultimos = cerradas.sort((a, b) => new Date(b.cerrado || b.creado) - new Date(a.cerrado || a.creado)).slice(0, 10);
+        if ($['ultimos-resultados']) {
+            $['ultimos-resultados'].innerHTML = ultimos.length > 0 ? ultimos.map(p => {
+                const esA = p.resultado === 'acierto';
+                return '<div class="flex justify-between items-center text-xs p-2.5 rounded-lg ' + (esA ? 'bg-green-500/5 border border-green-500/10' : 'bg-red-500/5 border border-red-500/10') + '"><span class="text-gray-400">' + p.periodo + ' - ' + (p.voto === 'sube' ? '▲' : '▼') + '</span><span class="' + (esA ? 'text-green-400' : 'text-red-400') + ' font-bold font-mono">' + (esA ? '+' + (p.puntos_ganados || 1) : 'FALLO') + '</span></div>';
+            }).join('') : '<p class="text-gray-600 text-sm">Sin resultados aun</p>';
+        }
+    } catch (e) { console.error('Error cargando analisis:', e); }
+}
+
+// ==============================================
+// ACHIEVEMENTS
+// ==============================================
+function renderizarAchievements() {
+    const container = $['achievements-grid'];
+    if (!container) return;
+    container.innerHTML = ACHIEVEMENTS.map(a => {
+        const unlocked = userAchievements.includes(a.id);
+        const progress = usuarioActual ? (unlocked ? 100 : calcularProgresoLogro(a)) : 0;
+        return '<div class="glass-card rounded-xl p-4 ' + (unlocked ? 'border-amber-500/20' : 'opacity-60') + ' transition hover:opacity-100">' +
+            '<div class="flex items-start gap-3">' +
+            '<div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg ' + (unlocked ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-600') + '">' + a.icon + '</div>' +
+            '<div class="flex-1"><div class="flex justify-between items-start"><div><div class="font-bold text-sm ' + (unlocked ? 'text-amber-400' : 'text-gray-400') + '">' + a.nombre + '</div><div class="text-xs text-gray-600 mt-0.5">' + a.desc + '</div></div><div class="text-xs font-bold ' + (unlocked ? 'text-amber-400' : 'text-gray-600') + '">+' + a.pts + ' pts</div></div>' +
+            '<div class="mt-2"><div class="flex justify-between text-[10px] text-gray-600 mb-1"><span>' + (unlocked ? 'DESBLOQUEADO' : 'EN PROGRESO') + '</span><span>' + progress + '%</span></div><div class="progress-track"><div class="progress-fill ' + (unlocked ? 'bg-amber-400' : 'bg-gray-600') + '" style="width:' + progress + '%"></div></div></div></div></div></div>';
+    }).join('');
+}
+
+function calcularProgresoLogro(ach) {
+    if (!usuarioActual) return 0;
+    const ac = usuarioActual.aciertos || 0;
+    const tot = usuarioActual.total_votos || 0;
+    const pts = usuarioActual.puntos || 0;
+    const racha = usuarioActual.racha || 0;
+    switch (ach.id) {
+        case 'first_win': return Math.min(100, (ac / 1) * 100);
+        case 'streak_3': return Math.min(100, (racha / 3) * 100);
+        case 'streak_5': return Math.min(100, (racha / 5) * 100);
+        case 'streak_10': return Math.min(100, (racha / 10) * 100);
+        case 'points_50': return Math.min(100, (pts / 50) * 100);
+        case 'points_200': return Math.min(100, (pts / 200) * 100);
+        case 'points_500': return Math.min(100, (pts / 500) * 100);
+        case 'points_1000': return Math.min(100, (pts / 1000) * 100);
+        case 'total_10': return Math.min(100, (tot / 10) * 100);
+        case 'total_50': return Math.min(100, (tot / 50) * 100);
+        case 'winrate_60': return tot < 10 ? Math.min(100, (tot / 10) * 100) : Math.min(100, (((ac / tot) * 100) / 60) * 100);
+        case 'winrate_75': return tot < 20 ? Math.min(100, (tot / 20) * 100) : Math.min(100, (((ac / tot) * 100) / 75) * 100);
+        default: return 0;
+    }
+}
+
+async function verificarLogros() {
+    if (!usuarioActual) return;
+    const nuevos = ACHIEVEMENTS.filter(ach => !userAchievements.includes(ach.id) && ach.cond(usuarioActual));
+    if (!nuevos.length) return;
+    
+    const nuevosIds = nuevos.map(a => a.id);
+    userAchievements = [...userAchievements, ...nuevosIds];
+    const ptsExtra = nuevos.reduce((s, a) => s + a.pts, 0);
+    
+    await sb.from('usuarios').update({
+        logros: userAchievements, puntos: (usuarioActual.puntos || 0) + ptsExtra
+    }).eq('uid', usuarioActual.uid);
+    
+    usuarioActual.puntos = (usuarioActual.puntos || 0) + ptsExtra;
+    usuarioActual.logros = userAchievements;
+    
+    if (window.confetti) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#f7931a', '#22c55e', '#FFD700'] });
+    nuevos.forEach(a => {
+        mostrarToast('Logro desbloqueado: ' + a.nombre + ' +' + a.pts + ' pts', 'success');
+        agregarNotif('Logro: ' + a.nombre + ' +' + a.pts + ' pts', 'success');
+    });
+    renderizarAchievements();
+}
+
+
+
 
 
 
