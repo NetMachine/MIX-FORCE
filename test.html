@@ -12,7 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
-        // ⚠️ ADVERTENCIA: Estas claves son públicas. Asegúrate de configurar RLS en Supabase.
         const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -416,7 +415,6 @@
             .ticker-content { animation: none; }
         }
 
-        /* Estilos para los logros */
         .achievement {
             border: 1px solid rgba(247,147,26,0.2);
             padding: 2px 10px;
@@ -1323,11 +1321,10 @@
 const MAX_HISTORY = 80;
 const MAX_BOTS_PER_BATCH = 10;
 const PRICE_UPDATE_INTERVAL = 65000;
+const PRICE_FLASH_INTERVAL = 30; // ⚡ ACTUALIZACIÓN CADA 30ms
 const VERIFY_RESULTS_INTERVAL = 15000;
 const BOT_REFRESH_INTERVAL = 15000;
 const TOAST_DURATION = 4000;
-const PRICE_UPDATE_INTERVAL = 65000;
-const PRICE_FLASH_INTERVAL = 30;
 
 // ==============================================
 // VARIABLES GLOBALES
@@ -1467,7 +1464,7 @@ function iniciarRelojHero() {
 }
 
 // ==============================================
-// WEBSOCKET PRECIO
+// WEBSOCKET PRECIO - OPTIMIZADO PARA 30ms
 // ==============================================
 function iniciarWebSocketPrecio() {
     if (wsPrice) { wsPrice.close(); wsPrice = null; }
@@ -1477,7 +1474,6 @@ function iniciarWebSocketPrecio() {
     // Variables para control de velocidad
     let lastUpdate = 0;
     let sparklineCounter = 0;
-    let pendingPrice = 0;
     let frameRequested = false;
     
     // Cache de elementos para máximo rendimiento
@@ -1548,7 +1544,7 @@ function iniciarWebSocketPrecio() {
         
         const now = performance.now(); // Usar performance.now() para mayor precisión
         
-        // Actualizar cada 30ms en lugar de 100ms
+        // Actualizar cada 30ms
         if (now - lastUpdate >= PRICE_FLASH_INTERVAL) {
             lastUpdate = now;
             
@@ -1563,7 +1559,7 @@ function iniciarWebSocketPrecio() {
                     
                     // Sparkline más frecuente
                     sparklineCounter++;
-                    if (sparklineCounter % 1 === 0) { // Actualizar cada frame
+                    if (sparklineCounter % 1 === 0) {
                         actualizarSparkline();
                     }
                     
@@ -1591,45 +1587,9 @@ function iniciarWebSocketPrecio() {
     wsPrice.onclose = () => setTimeout(iniciarWebSocketPrecio, 3000);
 }
 
-function actualizarDisplayPrecio(price) {
-    if (!window._priceElements) {
-        window._priceElements = {
-            heroPrice: DOMCache.get('hero-price'),
-            heroDec: DOMCache.get('hero-price-dec'),
-            priceValue: DOMCache.get('price-value'),
-            priceValueMovil: DOMCache.get('price-value-movil'),
-            heroTime: DOMCache.get('hero-time'),
-            predAct: DOMCache.get('pred-precio-actual')
-        };
-    }
-    
-    const elements = window._priceElements;
-    const fmt = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});
-    const fmtRaw = fmt.format(price);
-    const parts = fmtRaw.split('.');
-    const entero = parts[0];
-    const decimal = parts[1] ? '.' + parts[1] : '';
-    
-    if (elements.heroPrice) {
-        elements.heroPrice.textContent = entero;
-        if (elements.heroDec) elements.heroDec.textContent = decimal;
-        
-        if (precioAnterior > 0) {
-            elements.heroPrice.classList.remove('price-flash-up', 'price-flash-down');
-            void elements.heroPrice.offsetWidth;
-            if (price > precioAnterior) {
-                elements.heroPrice.classList.add('price-flash-up');
-            } else if (price < precioAnterior) {
-                elements.heroPrice.classList.add('price-flash-down');
-            }
-        }
-    }
-    
-    if (elements.priceValue) elements.priceValue.textContent = fmtRaw;
-    if (elements.priceValueMovil) elements.priceValueMovil.textContent = fmtRaw;
-    if (elements.predAct) elements.predAct.textContent = fmtRaw;
-}
-
+// ==============================================
+// SPARKLINE OPTIMIZADO
+// ==============================================
 function actualizarSparkline() {
     if (priceHistory.length < 2) return;
     
@@ -3917,7 +3877,6 @@ function updateBotStats(bots) {
     if (elActive) elActive.textContent = active;
     if (elTotal) elTotal.textContent = bots.length;
     if (elWinrate) elWinrate.textContent = avgWinrate + '%';
-    // Predicciones hoy (simulado)
     const botPredsToday = DOMCache.get('bot-preds-today');
     if (botPredsToday) botPredsToday.textContent = Math.floor(Math.random() * 20 + 5);
 }
