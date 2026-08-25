@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Bitcoin Predict Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lightweight-charts@5.2.1/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17,24,39,0.85);
+            --border: rgba(148,163,184,0.12);
+            --accent: #f7931a;
+            --accent-hover: #e8850f;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        
+        * { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+        }
+        
+        html, body { 
+            min-height: 100%;
+            -webkit-text-size-adjust: 100%;
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            overflow-x: hidden;
+        }
+        
+        /* Background effects */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image: 
+                linear-gradient(rgba(247,147,26,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(247,147,26,0.03) 1px, transparent 1px);
+            background-size: 50px 50px; pointer-events: none; z-index: 0;
+        }
+        
+        .bg-glow {
+            position: fixed; width: 600px; height: 600px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(247,147,26,0.08) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+            animation: floatGlow 20s ease-in-out infinite;
+            will-change: transform;
+        }
+        .bg-glow-1 { top: -200px; left: -200px; }
+        .bg-glow-2 { bottom: -200px; right: -200px; animation-delay: -10s; background: radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%); }
+        
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, 30px) scale(1.1); }
+            50% { transform: translate(-30px, 50px) scale(0.9); }
+            75% { transform: translate(40px, -20px) scale(1.05); }
+        }
+        
+        /* Glass components */
+        .glass { 
+            background: var(--bg-card); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border: 1px solid var(--border); 
+        }
+        .glass:hover { border-color: rgba(247,147,26,0.2); }
+        
+        .glass-card {
+            background: linear-gradient(135deg, rgba(17,24,39,0.9) 0%, rgba(30,41,59,0.8) 100%);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(148,163,184,0.08); border-radius: 16px;
+            position: relative; overflow: hidden;
+        }
+        .glass-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(247,147,26,0.3), transparent);
+        }
+        
+        /* Buttons */
+        .tab-active { border-bottom: 2px solid var(--accent); color: var(--accent); }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #f7931a, #e8850f); color: #000; font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(247,147,26,0.3);
+        }
+        .btn-primary:hover { 
+            background: linear-gradient(135deg, #e8850f, #d97706);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(247,147,26,0.4);
+        }
+        .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(247,147,26,0.3); }
+        
+        .btn-outline { 
+            border: 1px solid rgba(247,147,26,0.4); color: var(--accent);
+            transition: all 0.3s; background: rgba(247,147,26,0.05);
+        }
+        .btn-outline:hover { 
+            background: rgba(247,147,26,0.15); border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(247,147,26,0.1);
+        }
+        
+        .btn-glass {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-secondary); transition: all 0.3s;
+        }
+        .btn-glass:hover {
+            background: rgba(255,255,255,0.1); border-color: rgba(247,147,26,0.3); color: var(--text-primary);
+        }
+        
+        /* Tier badges */
+        .tier-bronze { background: linear-gradient(135deg, #8B6914, #CD7F32); color: #000; box-shadow: 0 0 15px rgba(205,127,50,0.3); }
+        .tier-silver { background: linear-gradient(135deg, #8899a6, #c0c0c0); color: #000; box-shadow: 0 0 15px rgba(192,192,192,0.3); }
+        .tier-gold { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        .tier-platinum { background: linear-gradient(135deg, #E5E4E2, #B0C4DE); color: #000; box-shadow: 0 0 15px rgba(176,196,222,0.3); }
+        .tier-master { background: linear-gradient(135deg, #4B0082, #8A2BE2); color: #fff; box-shadow: 0 0 15px rgba(138,43,226,0.3); }
+        .tier-legend { background: linear-gradient(135deg, #FF4500, #FFD700); color: #000; box-shadow: 0 0 20px rgba(255,69,0,0.4); }
+        
+        /* Period buttons */
+        .period-btn { 
+            transition: all 0.3s;
+            border: 1px solid var(--border); cursor: pointer; position: relative; overflow: hidden;
+        }
+        .period-btn::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(247,147,26,0.1), transparent);
+            transition: left 0.5s;
+        }
+        .period-btn:hover::after { left: 100%; }
+        .period-btn:hover { 
+            border-color: rgba(247,147,26,0.4); background: rgba(247,147,26,0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(247,147,26,0.1);
+        }
+        .period-btn.selected { 
+            border-color: var(--accent); 
+            background: linear-gradient(135deg, rgba(247,147,26,0.15), rgba(247,147,26,0.05));
+            box-shadow: 0 0 20px rgba(247,147,26,0.2), inset 0 0 20px rgba(247,147,26,0.05);
+            transform: translateY(-2px);
+        }
+        
+        /* Vote buttons */
+        .vote-up { 
+            background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05));
+            border: 1px solid rgba(34,197,94,0.3); color: var(--green);
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .vote-up:hover { 
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+            border-color: var(--green); box-shadow: 0 0 25px rgba(34,197,94,0.2);
+            transform: translateY(-2px);
+        }
+        .vote-down { 
+            background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
+            border: 1px solid rgba(239,68,68,0.3); color: var(--red);
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .vote-down:hover { 
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            border-color: var(--red); box-shadow: 0 0 25px rgba(239,68,68,0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Badges */
+        .badge-pending { 
+            background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1));
+            color: #fbbf24; border: 1px solid rgba(245,158,11,0.3);
+            box-shadow: 0 0 10px rgba(245,158,11,0.1);
+        }
+        .badge-win { 
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+            color: #4ade80; border: 1px solid rgba(34,197,94,0.3);
+            box-shadow: 0 0 10px rgba(34,197,94,0.1);
+        }
+        .badge-loss { 
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            color: #f87171; border: 1px solid rgba(239,68,68,0.3);
+            box-shadow: 0 0 10px rgba(239,68,68,0.1);
+        }
+        
+        /* Scroll areas */
+        .scroll-area { 
+            max-height: 480px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .scroll-area::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--accent), var(--accent-hover)); border-radius: 4px; }
+        
+        /* Live dot */
+        .live-dot { 
+            width: 8px; height: 8px;
+            background: linear-gradient(135deg, var(--green), #16a34a); border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 10px rgba(34,197,94,0.5);
+        }
+        @keyframes pulse { 
+            0%,100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px rgba(34,197,94,0.5); } 
+            50% { opacity: 0.4; transform: scale(0.8); box-shadow: 0 0 20px rgba(34,197,94,0.2); } 
+        }
+        
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(12px) scale(0.98); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        
+        /* ⭐ CRÍTICO: Animación de destello de precio - CORREGIDA */
+        .price-flash-up { animation: flashUp 0.5s ease; }
+        .price-flash-down { animation: flashDown 0.5s ease; }
+        @keyframes flashUp { 
+            0% { text-shadow: 0 0 0px transparent; color: var(--text-primary); } 
+            30% { text-shadow: 0 0 30px rgba(34,197,94,0.8); color: #4ade80; } 
+            100% { text-shadow: 0 0 0px transparent; color: var(--text-primary); } 
+        }
+        @keyframes flashDown { 
+            0% { text-shadow: 0 0 0px transparent; color: var(--text-primary); } 
+            30% { text-shadow: 0 0 30px rgba(239,68,68,0.8); color: #f87171; } 
+            100% { text-shadow: 0 0 0px transparent; color: var(--text-primary); } 
+        }
+        
+        /* Stat cards */
+        .stat-card { 
+            background: linear-gradient(135deg, rgba(17,24,39,0.8), rgba(30,41,59,0.6));
+            border: 1px solid rgba(148,163,184,0.08); border-radius: 12px; padding: 16px;
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(247,147,26,0.2), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .stat-card:hover { 
+            border-color: rgba(247,147,26,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        .stat-card:hover::before { opacity: 1; }
+        
+        /* Prediction rows */
+        .prediction-row { 
+            transition: all 0.2s;
+            border-left: 2px solid transparent; position: relative;
+        }
+        .prediction-row:hover { 
+            background: rgba(247,147,26,0.04); border-left-color: var(--accent);
+            transform: translateX(4px);
+        }
+        
+        /* Form inputs */
+        input:focus, select:focus { 
+            border-color: var(--accent) !important; outline: none;
+            box-shadow: 0 0 0 3px rgba(247,147,26,0.1);
+        }
+        
+        /* Toast */
+        .toast { 
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            opacity: 0; transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
+            z-index: 50;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        .toast.show { 
+            transform: translateX(-50%) translateY(0); opacity: 1; 
+        }
+        
+        /* Ticker bar */
+        .ticker-bar { 
+            background: linear-gradient(90deg, rgba(10,14,23,0.95), rgba(17,24,39,0.95), rgba(10,14,23,0.95));
+            border-bottom: 1px solid rgba(148,163,184,0.08); position: relative;
+        }
+        .ticker-bar::before, .ticker-bar::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 60px;
+            background: linear-gradient(90deg, rgba(10,14,23,0.95), transparent); z-index: 2; pointer-events: none;
+        }
+        .ticker-bar::after { right: 0; background: linear-gradient(270deg, rgba(10,14,23,0.95), transparent); }
+        .ticker-content { 
+            display: flex; animation: ticker 50s linear infinite; white-space: nowrap; 
+        }
+        @keyframes ticker { 
+            0% { transform: translateX(0); } 100% { transform: translateX(-50%); } 
+        }
+        .ticker-item { padding: 0 24px; font-size: 12px; }
+        
+        /* Modal */
+        #modal-auth {
+            position: fixed; inset: 0;
+            z-index: 9999;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            padding: 20px; box-sizing: border-box;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            align-items: center; justify-content: center;
+        }
+        #modal-auth.visible { display: flex; }
+        
+        #modal-content {
+            background: linear-gradient(135deg, #111827 0%, #1e293b 100%);
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 32px; width: 100%; max-width: 420px;
+            position: relative; box-sizing: border-box;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(247,147,26,0.1);
+            animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        #modal-auth input {
+            appearance: none; -webkit-appearance: none;
+            border-radius: 10px; width: 100%;
+            padding: 14px 18px; background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08); color: var(--text-primary);
+            font-size: 14px; box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        #modal-auth input:focus {
+            border-color: var(--accent); outline: none;
+            box-shadow: 0 0 0 3px rgba(247,147,26,0.1);
+            background: rgba(0,0,0,0.5);
+        }
+        
+        /* Hero display */
+        .hero-display {
+            background: linear-gradient(135deg, rgba(17,24,39,0.9), rgba(30,41,59,0.8));
+            position: relative; overflow: hidden;
+        }
+        .hero-display::before {
+            content: ''; position: absolute; top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(247,147,26,0.03) 0%, transparent 50%);
+            animation: heroGlow 8s ease-in-out infinite;
+        }
+        @keyframes heroGlow {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+        
+        /* Charts */
+        .mini-chart { width: 80px; height: 30px; }
+        .chart-container { width: 100%; height: 420px; }
+        .tv-chart { border-radius: 12px; overflow: hidden; }
+        
+        /* Progress bars */
+        .progress-track { height: 4px; background: rgba(148,163,184,0.1); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Heartbeat line */
+        .heartbeat-line { 
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(247,147,26,0.4), rgba(247,147,26,0.8), rgba(247,147,26,0.4), transparent);
+            opacity: 0.5; position: relative; overflow: hidden; 
+        }
+        .heartbeat-line::after { 
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(247,147,26,0.8), rgba(247,147,26,0.4), transparent);
+            animation: heartbeat 3s ease-in-out infinite; 
+        }
+        @keyframes heartbeat { 
+            0% { left: -100%; } 50% { left: 100%; } 100% { left: 100%; } 
+        }
+        
+        /* Order book */
+        .order-row { 
+            display: flex; justify-content: space-between;
+            padding: 2px 8px; font-size: 11px;
+            font-family: 'JetBrains Mono', monospace; position: relative;
+            transition: background 0.2s;
+        }
+        .order-row:hover { background: rgba(255,255,255,0.02); }
+        .order-row .bar { 
+            position: absolute; top: 0; height: 100%; opacity: 0.12; z-index: 0; 
+        }
+        .order-row .content { 
+            position: relative; z-index: 1; display: flex;
+            justify-content: space-between; width: 100%; 
+        }
+        
+        /* Heatmap */
+        .heatmap-cell { 
+            border-radius: 6px; padding: 6px 4px; font-size: 10px;
+            font-weight: 700; text-align: center;
+            transition: all 0.3s; cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .heatmap-cell:hover { 
+            transform: scale(1.08);
+            border-color: rgba(247,147,26,0.3); z-index: 10;
+        }
+        
+        .rank-glow:hover { background: rgba(247,147,26,0.04); }
+        
+        /* ⭐ OPTIMIZACIÓN CRÍTICA: will-change para elementos animados frecuentemente */
+        #hero-price, #price-value, #price-value-movil { will-change: color, text-shadow; }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .chart-container { height: 300px; }
+            .scroll-area { max-height: 350px; }
+            #modal-content { padding: 24px !important; margin: 10px !important; }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .ticker-content { animation: none; }
+        }
+    </style>
+</head>
+
+
+
+<body class="min-h-screen relative">
+
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<!-- NAVBAR -->
+<nav class="sticky top-0 z-50 px-4 py-3" style="background: linear-gradient(180deg, rgba(10,14,23,0.98) 0%, rgba(17,24,39,0.95) 100%); border-bottom: 1px solid rgba(148,163,184,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-amber-500/20">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight">BCPredict <span class="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">beta</span></h1>
+            </div>
+        </div>
+        
+        <div id="btc-price" class="hidden md:flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="live-dot"></div>
+                <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC/USD</span>
+            </div>
+            <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="price-value" style="font-family:'JetBrains Mono',monospace;">--</span>
+            <span id="price-change" class="text-xs px-2.5 py-1 rounded-lg font-bold"></span>
+            <span class="text-xs text-gray-600 font-mono" id="price-range" style="font-family:'JetBrains Mono',monospace;"></span>
+        </div>
+        
+        <div id="auth-buttons" class="flex gap-2">
+            <button onclick="openModal('login')" class="btn-outline px-4 py-2.5 rounded-xl text-sm no-select font-medium">Iniciar Sesion</button>
+            <button onclick="openModal('register')" class="btn-primary px-4 py-2.5 rounded-xl text-sm no-select">Registrarse</button>
+        </div>
+        
+        <div id="user-menu" class="hidden items-center gap-3">
+            <div class="text-right">
+                <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
+                <div id="user-tier" class="text-[10px] font-medium mt-0.5"></div>
+            </div>
+            <div class="relative">
+                <button onclick="toggleNotif()" class="p-2.5 rounded-xl hover:bg-white/5 transition relative no-select">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30">0</span>
+                </button>
+                <div id="notif-panel" class="hidden absolute right-0 top-full mt-2 w-80 glass rounded-xl p-4 z-50 max-h-72 overflow-y-auto touch-scroll">
+                    <div class="text-sm font-semibold mb-3 text-gray-300 uppercase tracking-wider text-xs">Notificaciones</div>
+                    <div id="notif-list" class="space-y-2"></div>
+                </div>
+            </div>
+            <button onclick="logout()" class="p-2.5 rounded-xl hover:bg-red-500/10 text-red-400 transition no-select" title="Cerrar sesion">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-bar py-2.5 overflow-hidden relative">
+    <div class="ticker-content" id="market-ticker">
+        <span class="ticker-item text-gray-500">Cargando mercado...</span>
+    </div>
+</div>
+
+<!-- MOBILE PRICE -->
+<div class="md:hidden glass mx-4 mt-3 p-3 rounded-xl flex justify-center gap-3 items-center">
+    <div class="live-dot"></div>
+    <span class="text-amber-400 font-bold text-base font-mono" id="price-value-movil" style="font-family:'JetBrains Mono',monospace;">--</span>
+    <span id="price-change-movil" class="text-xs px-2 py-0.5 rounded-lg font-medium"></span>
+</div>
+
+<!-- TABS -->
+<div class="max-w-7xl mx-auto px-4 mt-3">
+    <div class="flex border-b border-gray-800 gap-1 text-sm font-medium overflow-x-auto touch-scroll">
+        <button class="py-3 px-4 tab-active whitespace-nowrap no-select" onclick="switchTab('predict', event)">Predecir</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('mercado', event)">Mercado</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('ranking', event)">Ranking</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('global', event)">En Vivo</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('analisis', event)">Analisis</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('orderbook', event)">Order Book</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('calculadora', event)">Calc</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('achievements', event)">Logros</button>
+        <button class="py-3 px-4 text-gray-500 whitespace-nowrap hover:text-gray-300 transition no-select" onclick="switchTab('bots', event)">Bots</button>
+    </div>
+</div>
+
+
+
+
+<!-- ==================== TAB: PREDECIR ==================== -->
+<section id="tab-predict" class="max-w-6xl mx-auto px-4 py-6 relative z-10">
+    
+    <div class="hero-display glass-card rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
+        <div class="heartbeat-line mb-5"></div>
+        <div class="flex items-center justify-center gap-2 mb-2">
+            <div class="live-dot"></div>
+            <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC / USD</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-md bg-green-500/10 text-green-400 font-bold border border-green-500/20" id="market-status">SPOT</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 font-bold border border-blue-500/20" id="market-trend">TENDENCIA</span>
+        </div>
+        <div class="relative">
+            <span class="text-5xl md:text-7xl font-black font-mono tracking-tighter transition-colors duration-300" id="hero-price" style="font-family:'JetBrains Mono',monospace; color:var(--accent);">--</span>
+            <span class="text-lg text-gray-500 font-mono ml-2" id="hero-price-dec" style="font-family:'JetBrains Mono',monospace;"></span>
+        </div>
+        <div class="flex items-center justify-center gap-4 mt-4 flex-wrap">
+            <span id="hero-change" class="text-sm px-4 py-1.5 rounded-lg font-bold font-mono" style="font-family:'JetBrains Mono',monospace;"></span>
+            <span class="text-xs text-gray-600 font-mono" id="hero-range" style="font-family:'JetBrains Mono',monospace;"></span>
+            <span class="text-xs text-gray-600 font-mono" id="hero-time" style="font-family:'JetBrains Mono',monospace;"></span>
+        </div>
+        <!-- Sparkline SVG optimizado -->
+        <svg id="hero-sparkline" class="mini-chart mx-auto mt-4" viewBox="0 0 80 30" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(247,147,26,0.3)"/>
+                    <stop offset="100%" stop-color="rgba(247,147,26,0)"/>
+                </linearGradient>
+            </defs>
+            <polygon id="sparkline-area" fill="url(#sg)" points=""/>
+            <polyline id="sparkline-path" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points=""/>
+        </svg>
+        <div class="heartbeat-line mt-5"></div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div>
+            <div class="text-sm font-bold text-gray-200 font-mono" id="quick-mcap" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div>
+            <div class="text-sm font-bold text-gray-200 font-mono" id="quick-vol" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div>
+            <div class="text-sm font-bold text-amber-400 font-mono" id="quick-dom" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div>
+            <div class="text-sm font-bold text-green-400 font-mono" id="quick-ath" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+    </div>
+    
+    <!-- Fear & Greed -->
+    <div class="glass-card rounded-2xl p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Indice Miedo & Codicia</h3>
+                <p class="text-xs text-gray-600 mt-0.5">Sentimiento del mercado en tiempo real</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="fear-greed-value" class="text-3xl font-black font-mono" style="font-family:'JetBrains Mono',monospace;">--</span>
+                <span id="fear-greed-label" class="text-xs font-bold px-2 py-1 rounded-md"></span>
+            </div>
+        </div>
+        <div class="relative h-4 rounded-full overflow-hidden bg-gray-800">
+            <div id="fear-greed-bar" class="h-full rounded-full" style="width:0%; background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);"></div>
+            <div class="absolute inset-0 flex justify-between items-center px-3">
+                <span class="text-[8px] text-gray-600 font-bold">EXTREMO MIEDO</span>
+                <span class="text-[8px] text-gray-600 font-bold">NEUTRAL</span>
+                <span class="text-[8px] text-gray-600 font-bold">EXTREMO CODICIA</span>
+            </div>
+        </div>
+        <div class="flex justify-between mt-2 text-[10px] text-gray-600 font-mono" style="font-family:'JetBrains Mono',monospace;">
+            <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+        </div>
+    </div>
+
+    <!-- Period Selection -->
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Selecciona un Periodo</h2>
+        <p class="text-sm text-gray-500 mt-1">Mayor periodo, mayores recompensas y multiplicadores</p>
+    </div>
+    
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('5m', this)">
+            <div class="text-lg font-bold">5m</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Ultra Rapido</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+1 pt</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x1.0 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('15m', this)">
+            <div class="text-lg font-bold">15m</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Corto Plazo</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+2 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x1.2 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('30m', this)">
+            <div class="text-lg font-bold">30m</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Medio Plazo</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+3 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x1.5 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1h', this)">
+            <div class="text-lg font-bold">1h</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Intradia</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+4 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x2.0 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('4h', this)">
+            <div class="text-lg font-bold">4h</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Swing</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+5 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x2.5 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('24h', this)">
+            <div class="text-lg font-bold">24h</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Diario</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+8 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x3.0 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1sem', this)">
+            <div class="text-lg font-bold">7d</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Semanal</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+15 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x4.0 multiplicador</div>
+        </button>
+        <button class="period-btn glass-card p-4 text-center no-select" onclick="selectPeriodo('1mes', this)">
+            <div class="text-lg font-bold">30d</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">Mensual</div>
+            <div class="text-[10px] text-amber-400 font-bold mt-1">+30 pts</div>
+            <div class="text-[9px] text-gray-600 mt-0.5">x5.0 multiplicador</div>
+        </button>
+    </div>
+
+
+
+    <!-- Voting Section -->
+    <div class="glass-card rounded-2xl p-6 text-center">
+        <p class="text-gray-500 text-sm mb-4" id="instruccion">Selecciona un periodo para comenzar a predecir</p>
+        <p id="periodo-activo" class="text-base font-semibold text-amber-400 hidden mb-3"></p>
+        
+        <div id="prediccion-activa" class="hidden mb-4 p-5 rounded-xl bg-black/20 border border-amber-500/10">
+            <div class="flex justify-between items-center flex-wrap gap-3">
+                <div class="text-left">
+                    <span class="text-xs text-gray-500 uppercase tracking-wider">Tu Voto</span>
+                    <div id="mi-voto" class="font-bold text-base mt-1"></div>
+                </div>
+                <div class="text-center">
+                    <span class="text-xs text-gray-500 uppercase tracking-wider">Tiempo Restante</span>
+                    <div id="tiempo-restante" class="font-bold text-amber-400 font-mono text-lg mt-1" style="font-family:'JetBrains Mono',monospace;"></div>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-gray-500 uppercase tracking-wider">Estado</span>
+                    <div id="estado-prediccion" class="mt-1"></div>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/5 flex justify-between text-xs text-gray-500 flex-wrap gap-2 font-mono" style="font-family:'JetBrains Mono',monospace;">
+                <span>Inicio: <span id="pred-precio-inicial" class="text-gray-300">--</span></span>
+                <span>Actual: <span id="pred-precio-actual" class="text-amber-400">--</span></span>
+                <span id="pred-diferencia">--</span>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mt-4 hidden" id="botones-voto">
+            <button onclick="votar('sube')" class="vote-up py-7 rounded-xl text-xl font-bold no-select">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    SUBE
+                </div>
+                <div class="text-xs font-normal opacity-60 mt-1">El precio subira</div>
+            </button>
+            <button onclick="votar('baja')" class="vote-down py-7 rounded-xl text-xl font-bold no-select">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                    BAJA
+                </div>
+                <div class="text-xs font-normal opacity-60 mt-1">El precio bajara</div>
+            </button>
+        </div>
+        <p id="mensaje" class="mt-4 text-gray-400 text-sm min-h-[20px]"></p>
+        
+        <div id="user-pred-stats" class="hidden mt-6 pt-4 border-t border-white/5">
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="text-xl font-bold text-amber-400 font-mono" id="user-total-preds" style="font-family:'JetBrains Mono',monospace;">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Total</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-green-400 font-mono" id="user-win-preds" style="font-family:'JetBrains Mono',monospace;">0</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Ganadas</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-blue-400 font-mono" id="user-winrate-preds" style="font-family:'JetBrains Mono',monospace;">0%</div>
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mt-1">Winrate</div>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-center gap-2 flex-wrap" id="user-achievements-preview"></div>
+        </div>
+    </div>
+
+    <!-- Mis Predicciones -->
+    <div class="mt-8">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold uppercase tracking-wider text-gray-400 text-xs">Mis Predicciones</h3>
+            <div class="flex gap-1">
+                <button onclick="filtrarMisPreds('todos')" class="px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select" id="misfiltro-todos">Todos</button>
+                <button onclick="filtrarMisPreds('activos')" class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="misfiltro-activos">Activos</button>
+                <button onclick="filtrarMisPreds('cerrados')" class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="misfiltro-cerrados">Cerrados</button>
+            </div>
+        </div>
+        <div id="mis-predicciones" class="space-y-2 scroll-area">
+            <p class="text-gray-600 text-center py-6 text-sm">No tienes predicciones registradas</p>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- ==================== TAB: MERCADO ==================== -->
+<section id="tab-mercado" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Analisis de Mercado</h2>
+        <p class="text-sm text-gray-500 mt-1">Datos en tiempo real del mercado cripto</p>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5 mb-6">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">BTC/USD - Grafico de Velas</h3>
+                <p class="text-xs text-gray-600 mt-0.5">Actualizacion en tiempo real via WebSocket</p>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="cambiarTimeframe('5s')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-amber-500/20 text-amber-400 no-select" id="tf-5s">5s</button>
+                <button onclick="cambiarTimeframe('1m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-1m">1m</button>
+                <button onclick="cambiarTimeframe('5m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-5m">5m</button>
+                <button onclick="cambiarTimeframe('15m')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-15m">15m</button>
+                <button onclick="cambiarTimeframe('1h')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-1h">1h</button>
+                <button onclick="cambiarTimeframe('4h')" class="px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" id="tf-4h">4h</button>
+            </div>
+        </div>
+        <div id="candlestick-chart" class="chart-container tv-chart"></div>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Cap. Mercado</div>
+            <div class="text-base font-bold text-gray-200 font-mono" id="det-mcap" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Volumen 24h</div>
+            <div class="text-base font-bold text-gray-200 font-mono" id="det-vol" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Ranking</div>
+            <div class="text-base font-bold text-amber-400 font-mono" style="font-family:'JetBrains Mono',monospace;">#1</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Max 24h</div>
+            <div class="text-base font-bold text-green-400 font-mono" id="det-high" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Min 24h</div>
+            <div class="text-base font-bold text-red-400 font-mono" id="det-low" style="font-family:'JetBrains Mono',monospace;">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">ATH</div>
+            <div class="text-base font-bold text-amber-400 font-mono" id="det-ath" style="font-family:'JetBrains Mono',monospace;">--</div>
+            <div class="text-[10px] text-gray-600 mt-0.5" id="det-ath-date">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Supply</div>
+            <div class="text-base font-bold text-gray-200 font-mono" id="det-supply" style="font-family:'JetBrains Mono',monospace;">--</div>
+            <div class="progress-track mt-1.5"><div class="progress-fill bg-amber-400" id="det-supply-bar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dominancia</div>
+            <div class="text-base font-bold text-amber-400 font-mono" id="det-dom" style="font-family:'JetBrains Mono',monospace;">--</div>
+            <div class="progress-track mt-1.5"><div class="progress-fill bg-amber-400" id="det-dom-bar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Sentimiento</div>
+            <div class="text-base font-bold text-gray-200" id="det-sentiment">--</div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Top 10 Criptomonedas</h3>
+        <div class="overflow-x-auto touch-scroll">
+            <table class="w-full text-sm">
+                <thead class="text-gray-600 text-[10px] uppercase tracking-wider">
+                    <tr>
+                        <th class="py-2 px-3 text-left font-medium">#</th>
+                        <th class="py-2 px-3 text-left font-medium">Activo</th>
+                        <th class="py-2 px-3 text-right font-medium">Precio</th>
+                        <th class="py-2 px-3 text-right font-medium">24h</th>
+                        <th class="py-2 px-3 text-right font-medium hidden sm:table-cell">Cap. Mercado</th>
+                        <th class="py-2 px-3 text-right font-medium hidden md:table-cell">Volumen</th>
+                        <th class="py-2 px-3 text-right font-medium hidden lg:table-cell">7d</th>
+                    </tr>
+                </thead>
+                <tbody id="top-crypto-table"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+
+
+
+
+<!-- ==================== TAB: RANKING ==================== -->
+<section id="tab-ranking" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Ranking Global</h2>
+        <p class="text-sm text-gray-500 mt-1">Compite y sube de nivel</p>
+    </div>
+    
+    <div class="flex flex-wrap justify-center gap-2 mb-6">
+        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-bronze">BRONCE 0+</span>
+        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-silver">PLATA 50+</span>
+        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-gold">ORO 200+</span>
+        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-platinum">PLATINO 500+</span>
+        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-master">MAESTRO 1000+</span>
+        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-legend">LEYENDA 5000+</span>
+    </div>
+    
+    <div class="glass-card rounded-xl overflow-hidden">
+        <div class="overflow-x-auto touch-scroll">
+            <table class="w-full text-sm">
+                <thead class="bg-white/5 text-[10px] uppercase tracking-wider text-gray-500">
+                    <tr>
+                        <th class="py-3 px-4 text-left font-medium">Pos</th>
+                        <th class="py-3 px-4 text-left font-medium">Usuario</th>
+                        <th class="py-3 px-4 text-center font-medium">Nivel</th>
+                        <th class="py-3 px-4 text-center font-medium">Pts</th>
+                        <th class="py-3 px-4 text-center font-medium">Win</th>
+                        <th class="py-3 px-4 text-center font-medium">Total</th>
+                        <th class="py-3 px-4 text-center font-medium">Rate</th>
+                        <th class="py-3 px-4 text-center font-medium hidden sm:table-cell">Racha</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-body"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="mi-posicion" class="mt-6 glass-card rounded-xl p-5 hidden">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-3">Tu Posicion</h3>
+        <div class="flex items-center gap-4">
+            <div class="text-3xl font-bold text-amber-400 font-mono" id="mi-rank-pos" style="font-family:'JetBrains Mono',monospace;">--</div>
+            <div class="flex-1">
+                <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-gray-500">Progreso al siguiente nivel</span>
+                    <span class="text-amber-400 font-mono" id="tier-progreso-text" style="font-family:'JetBrains Mono',monospace;">--</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill bg-amber-400" id="tier-progreso-bar" style="width:0%"></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== TAB: GLOBAL ==================== -->
+<section id="tab-global" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Predicciones en Vivo</h2>
+        <p class="text-sm text-gray-500 mt-1">Actividad de la comunidad en tiempo real</p>
+    </div>
+    
+    <div id="user-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Puntos</div>
+            <div class="text-xl font-bold text-amber-400 font-mono" id="stats-puntos" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Aciertos</div>
+            <div class="text-xl font-bold text-green-400 font-mono" id="stats-aciertos" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Fallos</div>
+            <div class="text-xl font-bold text-red-400 font-mono" id="stats-fallos" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider">Winrate</div>
+            <div class="text-xl font-bold text-blue-400 font-mono" id="stats-winrate" style="font-family:'JetBrains Mono',monospace;">0%</div>
+        </div>
+    </div>
+    
+    <div class="flex gap-1 mb-4 flex-wrap">
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 text-amber-400 font-medium no-select" onclick="filtrarGlobal('todos')" id="filtro-todos">Todos</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('activos')" id="filtro-activos">Activos</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('cerrados')" id="filtro-cerrados">Cerrados</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('sube')" id="filtro-sube">Subidas</button>
+        <button class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition font-medium no-select" onclick="filtrarGlobal('baja')" id="filtro-baja">Bajadas</button>
+    </div>
+    
+    <div class="flex justify-between items-center mb-3">
+        <span class="text-xs text-gray-600 font-mono" id="global-count" style="font-family:'JetBrains Mono',monospace;">0 predicciones</span>
+        <span class="text-xs text-gray-600 font-mono" id="global-activas-count" style="font-family:'JetBrains Mono',monospace;">0 activas</span>
+    </div>
+    
+    <div id="global-predicciones" class="space-y-2 scroll-area">
+        <p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones...</p>
+    </div>
+</section>
+
+<!-- ==================== TAB: ANALISIS ==================== -->
+<section id="tab-analisis" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Analisis de la Comunidad</h2>
+        <p class="text-sm text-gray-500 mt-1">Estadisticas y tendencias globales</p>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Predicciones</div>
+            <div class="text-lg font-bold text-gray-200 font-mono" id="anal-total" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Winrate Global</div>
+            <div class="text-lg font-bold text-green-400 font-mono" id="anal-winrate" style="font-family:'JetBrains Mono',monospace;">0%</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Activas</div>
+            <div class="text-lg font-bold text-amber-400 font-mono" id="anal-activas" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Usuarios</div>
+            <div class="text-lg font-bold text-blue-400 font-mono" id="anal-usuarios" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Distribucion de Votos</h3>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-green-400 text-xs font-medium w-12">SUBE</span>
+                <div class="flex-1 progress-track h-2"><div class="progress-fill bg-green-500" id="dist-sube-bar" style="width:50%"></div></div>
+                <span class="text-xs font-bold w-10 text-right font-mono" id="dist-sube-pct" style="font-family:'JetBrains Mono',monospace;">50%</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-red-400 text-xs font-medium w-12">BAJA</span>
+                <div class="flex-1 progress-track h-2"><div class="progress-fill bg-red-500" id="dist-baja-bar" style="width:50%"></div></div>
+                <span class="text-xs font-bold w-10 text-right font-mono" id="dist-baja-pct" style="font-family:'JetBrains Mono',monospace;">50%</span>
+            </div>
+        </div>
+        
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mejores Periodos</h3>
+            <div id="mejores-periodos" class="space-y-2">
+                <p class="text-gray-600 text-sm">Cargando datos...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Ultimos Resultados</h3>
+        <div id="ultimos-resultados" class="space-y-1.5">
+            <p class="text-gray-600 text-sm">Cargando resultados...</p>
+        </div>
+    </div>
+</section>
+
+
+
+
+<!-- ==================== TAB: ORDER BOOK ==================== -->
+<section id="tab-orderbook" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Order Book Simulado</h2>
+        <p class="text-sm text-gray-500 mt-1">Profundidad de mercado en tiempo real</p>
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-green-400">Compras (Bids)</h3>
+                <span class="text-xs text-gray-600 font-mono" id="bid-total" style="font-family:'JetBrains Mono',monospace;">-- BTC</span>
+            </div>
+            <div id="orderbook-bids" class="space-y-0.5">
+                <div class="order-row"><div class="bar bg-green-500" style="width:0%"></div><div class="content"><span class="text-green-400">--</span><span class="text-gray-500">--</span></div></div>
+            </div>
+        </div>
+        
+        <div class="glass-card rounded-2xl p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-red-400">Ventas (Asks)</h3>
+                <span class="text-xs text-gray-600 font-mono" id="ask-total" style="font-family:'JetBrains Mono',monospace;">-- BTC</span>
+            </div>
+            <div id="orderbook-asks" class="space-y-0.5">
+                <div class="order-row"><div class="bar bg-red-500" style="width:0%"></div><div class="content"><span class="text-red-400">--</span><span class="text-gray-500">--</span></div></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <span class="text-[10px] text-gray-500 uppercase tracking-wider">Spread</span>
+                <div class="text-lg font-bold text-amber-400 font-mono" id="orderbook-spread" style="font-family:'JetBrains Mono',monospace;">--</div>
+            </div>
+            <div class="text-right">
+                <span class="text-[10px] text-gray-500 uppercase tracking-wider">Ratio Compra/Venta</span>
+                <div class="text-lg font-bold font-mono" id="orderbook-ratio" style="font-family:'JetBrains Mono',monospace;">--</div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <div class="flex justify-between text-[10px] text-gray-600 mb-1">
+                <span>Presion de compra</span>
+                <span id="buy-pressure-pct">50%</span>
+            </div>
+            <div class="h-3 rounded-full overflow-hidden bg-gray-800">
+                <div id="buy-pressure-bar" class="h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width:50%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mapa de Calor de Liquidaciones</h3>
+        <div class="grid grid-cols-5 gap-1" id="liquidation-heatmap"></div>
+        <div class="flex justify-between mt-3 text-[10px] text-gray-600 font-mono" style="font-family:'JetBrains Mono',monospace;">
+            <span>Soporte Fuerte</span>
+            <span>Precio Actual</span>
+            <span>Resistencia Fuerte</span>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== TAB: CALCULADORA ==================== -->
+<section id="tab-calculadora" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Calculadora de Trading</h2>
+        <p class="text-sm text-gray-500 mt-1">Simula tus operaciones y predicciones</p>
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Calculadora de Ganancias</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Precio de Entrada ($)</label>
+                    <input type="number" id="calc-entry" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="65000" oninput="calcularGanancia()">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Precio de Salida ($)</label>
+                    <input type="number" id="calc-exit" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="70000" oninput="calcularGanancia()">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Cantidad (BTC)</label>
+                    <input type="number" id="calc-amount" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="0.5" step="0.001" oninput="calcularGanancia()">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Apalancamiento (x)</label>
+                    <input type="range" id="calc-leverage" class="w-full" min="1" max="125" value="1" oninput="document.getElementById('lev-display').textContent = this.value + 'x'; calcularGanancia()">
+                    <div class="text-right text-xs text-amber-400 font-mono mt-1" id="lev-display" style="font-family:'JetBrains Mono',monospace;">1x</div>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-500">Ganancia/Perdida</span>
+                    <span class="text-xl font-bold font-mono" id="calc-result" style="font-family:'JetBrains Mono',monospace;">$0.00</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">ROI</span>
+                    <span class="text-lg font-bold font-mono" id="calc-roi" style="font-family:'JetBrains Mono',monospace;">0%</span>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-sm text-gray-500">Liquidacion</span>
+                    <span class="text-sm font-bold font-mono text-red-400" id="calc-liquidation" style="font-family:'JetBrains Mono',monospace;">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Simulador de Prediccion</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Precio Actual BTC ($)</label>
+                    <input type="number" id="sim-current" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="65000" oninput="simularPrediccion()">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Prediccion de Precio ($)</label>
+                    <input type="number" id="sim-target" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" style="font-family:'JetBrains Mono',monospace;" placeholder="70000" oninput="simularPrediccion()">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Periodo</label>
+                    <select id="sim-periodo" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm" onchange="simularPrediccion()">
+                        <option value="5m">5 minutos (+1 pt)</option>
+                        <option value="15m">15 minutos (+2 pts)</option>
+                        <option value="30m">30 minutos (+3 pts)</option>
+                        <option value="1h">1 hora (+4 pts)</option>
+                        <option value="4h">4 horas (+5 pts)</option>
+                        <option value="24h">24 horas (+8 pts)</option>
+                        <option value="1sem">7 dias (+15 pts)</option>
+                        <option value="1mes">30 dias (+30 pts)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-500">Cambio Requerido</span>
+                    <span class="text-xl font-bold font-mono" id="sim-change" style="font-family:'JetBrains Mono',monospace;">0%</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Puntos Potenciales</span>
+                    <span class="text-lg font-bold font-mono text-amber-400" id="sim-puntos" style="font-family:'JetBrains Mono',monospace;">+0 pts</span>
+                </div>
+                <div class="mt-3 p-3 rounded-lg bg-black/20 border border-white/5">
+                    <p class="text-xs text-gray-500" id="sim-advice">Ingresa los datos para ver la simulacion</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Conversiones Rapidas</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition">
+                <div class="text-[10px] text-gray-500 uppercase">0.1 BTC</div>
+                <div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-01" style="font-family:'JetBrains Mono',monospace;">--</div>
+            </div>
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition">
+                <div class="text-[10px] text-gray-500 uppercase">0.5 BTC</div>
+                <div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-05" style="font-family:'JetBrains Mono',monospace;">--</div>
+            </div>
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition">
+                <div class="text-[10px] text-gray-500 uppercase">1 BTC</div>
+                <div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-1" style="font-family:'JetBrains Mono',monospace;">--</div>
+            </div>
+            <div class="text-center p-3 rounded-lg bg-black/20 border border-white/5 hover:border-amber-500/20 transition">
+                <div class="text-[10px] text-gray-500 uppercase">5 BTC</div>
+                <div class="text-sm font-bold text-amber-400 font-mono mt-1" id="conv-5" style="font-family:'JetBrains Mono',monospace;">--</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== TAB: ACHIEVEMENTS ==================== -->
+<section id="tab-achievements" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Logros y Recompensas</h2>
+        <p class="text-sm text-gray-500 mt-1">Desbloquea insignias exclusivas demostrando tu habilidad</p>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Logros Desbloqueados</div>
+            <div class="text-2xl font-bold text-amber-400 font-mono" id="ach-unlocked" style="font-family:'JetBrains Mono',monospace;">0/15</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Mejor Racha</div>
+            <div class="text-2xl font-bold text-orange-400 font-mono" id="ach-best-streak" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Racha Actual</div>
+            <div class="text-2xl font-bold text-green-400 font-mono" id="ach-current-streak" style="font-family:'JetBrains Mono',monospace;">0</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Multiplicador</div>
+            <div class="text-2xl font-bold text-purple-400 font-mono" id="ach-multiplier" style="font-family:'JetBrains Mono',monospace;">x1.0</div>
+        </div>
+    </div>
+    
+    <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</section>
+
+
+
+<!-- ==================== TAB: BOTS ==================== -->
+<section id="tab-bots" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+    <div class="text-center mb-6">
+        <h2 class="text-xl font-bold tracking-tight">Panel de Control de Bots</h2>
+        <p class="text-sm text-gray-500 mt-1">Gestiona los bots automaticos de prediccion</p>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Bots Activos</div>
+            <div class="text-2xl font-bold text-amber-400 font-mono" id="bot-count-active">0</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Bots</div>
+            <div class="text-2xl font-bold text-blue-400 font-mono" id="bot-count-total">0</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Predicciones Hoy</div>
+            <div class="text-2xl font-bold text-green-400 font-mono" id="bot-preds-today">0</div>
+        </div>
+        <div class="stat-card text-center">
+            <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Winrate Promedio</div>
+            <div class="text-2xl font-bold text-purple-400 font-mono" id="bot-avg-winrate">0%</div>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5 mb-6">
+        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Crear Nuevos Bots</h3>
+        <div class="grid md:grid-cols-3 gap-4 mb-4">
+            <div>
+                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Cantidad</label>
+                <input type="number" id="bot-create-count" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm font-mono" value="5" min="1" max="50">
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Personalidad</label>
+                <select id="bot-personality" class="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 text-sm">
+                    <option value="random">Aleatoria (Mixta)</option>
+                    <option value="aggressive">Agresiva</option>
+                    <option value="balanced">Balanceada</option>
+                    <option value="conservative">Conservadora</option>
+                    <option value="whale">Whale (Experto)</option>
+                    <option value="newbie">Novato</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-500 uppercase tracking-wider mb-1 block">Skill Base (0-1)</label>
+                <input type="range" id="bot-skill" class="w-full mt-3" min="0.3" max="0.8" step="0.05" value="0.5" oninput="document.getElementById('bot-skill-display').textContent = this.value">
+                <div class="text-right text-xs text-amber-400 font-mono mt-1" id="bot-skill-display">0.5</div>
+            </div>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+            <button onclick="createBots()" class="btn-primary px-6 py-3 rounded-xl text-sm font-bold no-select">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                Crear Bots
+            </button>
+            <button onclick="startAllBots()" class="btn-outline px-6 py-3 rounded-xl text-sm font-bold no-select">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Iniciar Todos
+            </button>
+            <button onclick="stopAllBots()" class="btn-glass px-6 py-3 rounded-xl text-sm font-bold no-select text-red-400 border-red-400/20 hover:bg-red-500/10">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/></svg>
+                Detener Todos
+            </button>
+            <button onclick="clearAllBots()" class="btn-glass px-6 py-3 rounded-xl text-sm font-bold no-select text-red-400 border-red-400/20 hover:bg-red-500/10">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                Eliminar Todos
+            </button>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Bots Activos</h3>
+            <button onclick="refreshBotList()" class="text-xs text-amber-400 hover:text-amber-300 transition">Actualizar</button>
+        </div>
+        <div class="overflow-x-auto touch-scroll">
+            <table class="w-full text-sm">
+                <thead class="text-gray-600 text-[10px] uppercase tracking-wider">
+                    <tr>
+                        <th class="py-2 px-3 text-left font-medium">Bot</th>
+                        <th class="py-2 px-3 text-left font-medium">Personalidad</th>
+                        <th class="py-2 px-3 text-center font-medium">Skill</th>
+                        <th class="py-2 px-3 text-center font-medium">Estado</th>
+                        <th class="py-2 px-3 text-center font-medium">Pts</th>
+                        <th class="py-2 px-3 text-center font-medium">Win</th>
+                        <th class="py-2 px-3 text-center font-medium">Total</th>
+                        <th class="py-2 px-3 text-center font-medium">Rate</th>
+                        <th class="py-2 px-3 text-center font-medium">Racha</th>
+                        <th class="py-2 px-3 text-center font-medium">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="bot-list-body">
+                    <tr><td colspan="10" class="text-center py-4 text-gray-600">No hay bots activos</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-5 mt-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Log de Actividad</h3>
+            <button onclick="clearBotLog()" class="text-xs text-gray-500 hover:text-gray-300 transition">Limpiar</button>
+        </div>
+        <div id="bot-log" class="scroll-area font-mono text-xs space-y-1" style="max-height: 200px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px;">
+            <span class="text-gray-600">Esperando actividad de bots...</span>
+        </div>
+    </div>
+</section>
+
+<!-- MODAL AUTH -->
+<div id="modal-auth">
+    <div id="modal-content">
+        <div class="flex justify-between items-center mb-6">
+            <h2 id="modal-titulo" style="color:#f1f5f9; font-size:20px; font-weight:700; margin:0;">Iniciar Sesion</h2>
+            <button onclick="cerrarModal()" class="modal-close-btn" style="background:none; border:none; font-size:28px; line-height:1; padding:0 8px; cursor:pointer; color:#94a3b8;">&times;</button>
+        </div>
+        <div id="login-form">
+            <div style="margin-bottom:20px;">
+                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Correo Electronico</label>
+                <input type="email" id="email" placeholder="tu@email.com">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Contrasena</label>
+                <input type="password" id="pass" placeholder="********">
+            </div>
+            <button onclick="login()" style="width:100%; padding:14px; border-radius:10px; background:linear-gradient(135deg, #f7931a, #e8850f); color:#000; font-weight:700; font-size:14px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(247,147,26,0.3);">Entrar</button>
+            <p style="text-align:center; margin-top:20px; color:#64748b; font-size:14px;">No tienes cuenta? <a href="#" onclick="openModal('register')" style="color:#f7931a; text-decoration:none; font-weight:600;">Registrarse</a></p>
+        </div>
+        <div id="register-form" style="display:none;">
+            <div style="margin-bottom:20px;">
+                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Usuario</label>
+                <input type="text" id="username" placeholder="TraderPro">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Correo Electronico</label>
+                <input type="email" id="email-reg" placeholder="tu@email.com">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="color:#64748b; display:block; margin-bottom:6px; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; font-weight:600;">Contrasena (min 6)</label>
+                <input type="password" id="pass-reg" placeholder="********">
+            </div>
+            <button onclick="register()" style="width:100%; padding:14px; border-radius:10px; background:linear-gradient(135deg, #f7931a, #e8850f); color:#000; font-weight:700; font-size:14px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(247,147,26,0.3);">Crear Cuenta</button>
+            <p style="text-align:center; margin-top:20px; color:#64748b; font-size:14px;">Ya tienes cuenta? <a href="#" onclick="openModal('login')" style="color:#f7931a; text-decoration:none; font-weight:600;">Iniciar Sesion</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast glass px-6 py-3 rounded-xl text-sm font-medium">
+    <span id="toast-text"></span>
+</div>
+
+
+
+
+<script>
+// ==============================================
+// VARIABLES GLOBALES OPTIMIZADAS
+// ==============================================
+let usuarioActual = null;
+let periodoSeleccionado = null;
+let precioBTC = 0;
+let precioAnterior = 0;
+let intervaloTiempo = null;
+let prediccionActivaId = null;
+let filtroGlobal = 'todos';
+let filtroMisPreds = 'todos';
+let todasPrediccionesGlobal = [];
+let candleSeries = null;
+let chartTV = null;
+let wsBinance = null;
+let wsPrice = null;
+let currentTF = '5s';
+let lastCandle = null;
+let priceHistory = [];
+const MAX_HISTORY = 80;
+let globalSub = null;
+let userSub = null;
+let misPredTimer = null;
+let botRefreshTimer = null;
+let achievementsUnlocked = [];
+let userAchievements = [];
+let streakMultiplier = 1.0;
+
+// ⭐ CACHEO DE DOM - Todos los elementos cacheados al inicio
+const $ = {};
+function cacheDOM() {
+    const ids = [
+        'hero-price','hero-price-dec','price-value','price-value-movil','hero-change',
+        'price-change','price-change-movil','hero-range','price-range','hero-time',
+        'market-trend','market-status','sparkline-path','sparkline-area',
+        'quick-mcap','quick-vol','quick-dom','quick-ath',
+        'det-mcap','det-vol','det-high','det-low','det-ath','det-ath-date',
+        'det-supply','det-supply-bar','det-dom','det-dom-bar','det-sentiment',
+        'fear-greed-value','fear-greed-bar','fear-greed-label',
+        'prediccion-activa','botones-voto','periodo-activo','instruccion',
+        'mi-voto','tiempo-restante','estado-prediccion','pred-precio-inicial',
+        'pred-precio-actual','pred-diferencia','mensaje',
+        'user-pred-stats','user-total-preds','user-win-preds','user-winrate-preds',
+        'user-achievements-preview','mis-predicciones',
+        'misfiltro-todos','misfiltro-activos','misfiltro-cerrados',
+        'global-predicciones','global-count','global-activas-count',
+        'stats-puntos','stats-aciertos','stats-fallos','stats-winrate',
+        'ranking-body','mi-posicion','mi-rank-pos','tier-progreso-text','tier-progreso-bar',
+        'anal-total','anal-winrate','anal-activas','anal-usuarios',
+        'dist-sube-bar','dist-sube-pct','dist-baja-bar','dist-baja-pct',
+        'mejores-periodos','ultimos-resultados',
+        'orderbook-bids','orderbook-asks','bid-total','ask-total',
+        'orderbook-spread','orderbook-ratio','buy-pressure-bar','buy-pressure-pct',
+        'liquidation-heatmap',
+        'calc-entry','calc-exit','calc-amount','calc-leverage','lev-display',
+        'calc-result','calc-roi','calc-liquidation',
+        'sim-current','sim-target','sim-periodo','sim-change','sim-puntos','sim-advice',
+        'conv-01','conv-05','conv-1','conv-5',
+        'ach-unlocked','ach-best-streak','ach-current-streak','ach-multiplier','achievements-grid',
+        'bot-count-active','bot-count-total','bot-preds-today','bot-avg-winrate',
+        'bot-create-count','bot-personality','bot-skill','bot-skill-display',
+        'bot-list-body','bot-log',
+        'auth-buttons','user-menu','user-name','user-tier',
+        'notif-badge','notif-panel','notif-list',
+        'modal-auth','modal-content','modal-titulo','login-form','register-form',
+        'email','pass','email-reg','pass-reg','username',
+        'toast','toast-text','market-ticker','top-crypto-table','candlestick-chart'
+    ];
+    ids.forEach(id => { $[id] = document.getElementById(id); });
+}
+
+const DURACIONES = {
+    '5m': 3e5, '15m': 9e5, '30m': 18e5, '1h': 36e5,
+    '4h': 144e5, '24h': 864e5, '1sem': 6048e5, '1mes': 2592e6
+};
+const PUNTOS = { '5m':1, '15m':2, '30m':3, '1h':4, '4h':5, '24h':8, '1sem':15, '1mes':30 };
+const MULTS = { '5m':1, '15m':1.2, '30m':1.5, '1h':2, '4h':2.5, '24h':3, '1sem':4, '1mes':5 };
+const TIERS = [
+    { nombre:'Bronce', min:0, clase:'tier-bronze' },
+    { nombre:'Plata', min:50, clase:'tier-silver' },
+    { nombre:'Oro', min:200, clase:'tier-gold' },
+    { nombre:'Platino', min:500, clase:'tier-platinum' },
+    { nombre:'Maestro', min:1000, clase:'tier-master' },
+    { nombre:'Leyenda', min:5000, clase:'tier-legend' }
+];
+const TF_MAP = { '5s':'1s', '1m':'1m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h' };
+
+const ACHIEVEMENTS = [
+    { id:'first_win', nombre:'Primer Acierto', desc:'Acerta tu primera prediccion', icon:'🎯', cond:u=>(u.aciertos||0)>=1, pts:5 },
+    { id:'streak_3', nombre:'Racha de 3', desc:'Acerta 3 predicciones seguidas', icon:'🔥', cond:u=>(u.racha||0)>=3, pts:10 },
+    { id:'streak_5', nombre:'Racha de 5', desc:'Acerta 5 predicciones seguidas', icon:'⚡', cond:u=>(u.racha||0)>=5, pts:25 },
+    { id:'streak_10', nombre:'Imparable', desc:'Acerta 10 predicciones seguidas', icon:'👑', cond:u=>(u.racha||0)>=10, pts:100 },
+    { id:'points_50', nombre:'Novato', desc:'Alcanza 50 puntos', icon:'⭐', cond:u=>(u.puntos||0)>=50, pts:5 },
+    { id:'points_200', nombre:'Experto', desc:'Alcanza 200 puntos', icon:'⭐', cond:u=>(u.puntos||0)>=200, pts:15 },
+    { id:'points_500', nombre:'Veterano', desc:'Alcanza 500 puntos', icon:'⭐', cond:u=>(u.puntos||0)>=500, pts:30 },
+    { id:'points_1000', nombre:'Leyenda Viva', desc:'Alcanza 1000 puntos', icon:'👑', cond:u=>(u.puntos||0)>=1000, pts:50 },
+    { id:'total_10', nombre:'Participante', desc:'Realiza 10 predicciones', icon:'📊', cond:u=>(u.total_votos||0)>=10, pts:5 },
+    { id:'total_50', nombre:'Adicto', desc:'Realiza 50 predicciones', icon:'📊', cond:u=>(u.total_votos||0)>=50, pts:20 },
+    { id:'winrate_60', nombre:'Preciso', desc:'Alcanza 60% de winrate (min 10)', icon:'🎯', cond:u=>(u.total_votos||0)>=10&&((u.aciertos/u.total_votos)*100)>=60, pts:15 },
+    { id:'winrate_75', nombre:'Maestro', desc:'Alcanza 75% de winrate (min 20)', icon:'🎯', cond:u=>(u.total_votos||0)>=20&&((u.aciertos/u.total_votos)*100)>=75, pts:50 }
+];
+
+const PERSONALITIES = {
+    aggressive: { periodWeights:{'5m':0.4,'15m':0.3,'30m':0.2,'1h':0.1}, activityLevel:0.9, skillRange:[0.45,0.55] },
+    balanced: { periodWeights:{'5m':0.15,'15m':0.25,'30m':0.25,'1h':0.2,'4h':0.1,'24h':0.05}, activityLevel:0.7, skillRange:[0.48,0.58] },
+    conservative: { periodWeights:{'1h':0.3,'4h':0.3,'24h':0.2,'1sem':0.15,'1mes':0.05}, activityLevel:0.4, skillRange:[0.52,0.65] },
+    random: { periodWeights:null, activityLevel:0.6, skillRange:[0.3,0.7] },
+    whale: { periodWeights:{'15m':0.2,'30m':0.3,'1h':0.3,'4h':0.2}, activityLevel:0.8, skillRange:[0.6,0.75] },
+    newbie: { periodWeights:{'5m':0.5,'15m':0.3,'30m':0.2}, activityLevel:0.5, skillRange:[0.35,0.48] }
+};
+
+let botManagerState = { bots:[], lastFetch:0, cacheMs:30000, isLoading:false };
+let botLogEntries = [];
+let notificaciones = [];
+
+// ==============================================
+// INICIO OPTIMIZADO
+// ==============================================
+document.addEventListener('DOMContentLoaded', () => {
+    cacheDOM();
+    iniciarRelojHero();
+    cargarPrecioBTC();
+    cargarTopCryptos();
+    iniciarWebSocketPrecio();
+    iniciarEscuchaGlobal();
+    
+    // Cargar datos de mercado con delay escalonado
+    setTimeout(cargarDatosMercado, 500);
+    setTimeout(actualizarFearGreed, 1000);
+    
+    // Loop único de actualización cada 60s
+    setInterval(() => { cargarDatosMercado(); cargarTopCryptos(); actualizarFearGreed(); }, 60000);
+    
+    verificarSesion();
+    renderizarAchievements();
+});
+
+// ==============================================
+// RELOJ HERO - requestAnimationFrame para 60fps
+// ==============================================
+let lastClockUpdate = 0;
+function iniciarRelojHero() {
+    function updateClock(ts) {
+        if (ts - lastClockUpdate > 1000) {
+            lastClockUpdate = ts;
+            if ($['hero-time']) {
+                const now = new Date();
+                $['hero-time'].textContent = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+            }
+        }
+        requestAnimationFrame(updateClock);
+    }
+    requestAnimationFrame(updateClock);
+}
+
+// ==============================================
+// WEBSOCKET PRECIO - VERSIÓN ULTRA-OPTIMIZADA
+// ==============================================
+// ⭐ CRÍTICO: Sin throttling. Cada mensaje actualiza UI vía requestAnimationFrame
+// ⭐ CRÍTICO: precioAnterior se guarda ANTES de asignar precioBTC para detectar dirección correctamente
+function iniciarWebSocketPrecio() {
+    if (wsPrice) { wsPrice.close(); }
+    
+    wsPrice = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
+    let rafPending = false;
+    let lastPrice = 0;
+    
+    wsPrice.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        const price = parseFloat(msg.p);
+        const qty = parseFloat(msg.q);
+        
+        // ⭐ GUARDAR precio anterior ANTES de actualizar
+        precioAnterior = precioBTC;
+        precioBTC = price;
+        
+        // Actualizar historial
+        priceHistory.push(price);
+        if (priceHistory.length > MAX_HISTORY) priceHistory.shift();
+        
+        // Actualizar OrderBook en background
+        actualizarOrderBookSim(price, qty);
+        
+        // Actualizar diferencia de predicción si hay activa
+        if (prediccionActivaId) actualizarDiferenciaPrediccion();
+        
+        // ⭐ UI updates vía requestAnimationFrame (sin throttling)
+        if (!rafPending) {
+            rafPending = true;
+            requestAnimationFrame(() => {
+                rafPending = false;
+                actualizarDisplayPrecio(price);
+                actualizarSparkline();
+                actualizarConversions(price);
+                
+                // Actualizar simulador si está vacío
+                if ($['sim-current'] && !$['sim-current'].value) {
+                    $['sim-current'].value = Math.round(price);
+                }
+                
+                // Tendencia cada 10 precios
+                if (priceHistory.length >= 10) actualizarTendencia();
+            });
+        }
+    };
+    
+    wsPrice.onerror = () => console.log('WS Price Error');
+    wsPrice.onclose = () => setTimeout(iniciarWebSocketPrecio, 3000);
+}
+
+// ⭐ FUNCIÓN OPTIMIZADA: Actualización directa sin búsquedas DOM
+function actualizarDisplayPrecio(price) {
+    const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});
+    const raw = fmt.format(price);
+    const [entero, decimal] = raw.split('.');
+    const decStr = decimal ? '.' + decimal : '';
+    
+    // Hero price
+    if ($['hero-price']) {
+        $['hero-price'].textContent = entero;
+        if ($['hero-price-dec']) $['hero-price-dec'].textContent = decStr;
+        
+        // ⭐ ANIMACIÓN FLASH CORREGIDA: Comparar precioAnterior vs precioBTC
+        if (precioAnterior > 0 && precioAnterior !== price) {
+            $['hero-price'].classList.remove('price-flash-up', 'price-flash-down');
+            void $['hero-price'].offsetWidth; // Force reflow
+            if (price > precioAnterior) {
+                $['hero-price'].classList.add('price-flash-up');
+            } else {
+                $['hero-price'].classList.add('price-flash-down');
+            }
+        }
+    }
+    
+    // Navbar prices
+    if ($['price-value']) $['price-value'].textContent = raw;
+    if ($['price-value-movil']) $['price-value-movil'].textContent = raw;
+    if ($['pred-precio-actual']) $['pred-precio-actual'].textContent = raw;
+}
+
+// ⭐ SPARKLINE OPTIMIZADO: Actualizado en CADA frame, path simplificado
+function actualizarSparkline() {
+    const len = priceHistory.length;
+    if (len < 2 || !$['sparkline-path']) return;
+    
+    const min = Math.min(...priceHistory);
+    const max = Math.max(...priceHistory);
+    const range = max - min || 1;
+    
+    let points = '';
+    let areaPoints = '0,30 ';
+    
+    for (let i = 0; i < len; i++) {
+        const x = (i / (MAX_HISTORY - 1)) * 80;
+        const y = 30 - ((priceHistory[i] - min) / range) * 26 - 2;
+        const pt = x + ',' + y;
+        points += (i > 0 ? ' ' : '') + pt;
+        areaPoints += pt + ' ';
+    }
+    areaPoints += '80,30';
+    
+    $['sparkline-path'].setAttribute('points', points);
+    if ($['sparkline-area']) $['sparkline-area'].setAttribute('points', areaPoints);
+    
+    // Color basado en tendencia
+    const color = priceHistory[len-1] >= priceHistory[0] ? '#22c55e' : '#ef4444';
+    $['sparkline-path'].setAttribute('stroke', color);
+}
+
+function actualizarTendencia() {
+    if (priceHistory.length < 10 || !$['market-trend']) return;
+    const rec = priceHistory.slice(-10);
+    const change = ((rec[rec.length-1] - rec[0]) / rec[0]) * 100;
+    const el = $['market-trend'];
+    if (change > 0.5) {
+        el.textContent = 'ALCISTA';
+        el.className = 'text-[10px] px-2 py-0.5 rounded-md bg-green-500/10 text-green-400 font-bold border border-green-500/20';
+    } else if (change < -0.5) {
+        el.textContent = 'BAJISTA';
+        el.className = 'text-[10px] px-2 py-0.5 rounded-md bg-red-500/10 text-red-400 font-bold border border-red-500/20';
+    } else {
+        el.textContent = 'LATERAL';
+        el.className = 'text-[10px] px-2 py-0.5 rounded-md bg-yellow-500/10 text-yellow-400 font-bold border border-yellow-500/20';
+    }
+}
+
+// ==============================================
+// FEAR & GREED
+// ==============================================
+async function actualizarFearGreed() {
+    try {
+        const res = await fetch('https://api.alternative.me/fng/?limit=1');
+        const data = await res.json();
+        if (!data.data?.[0]) return;
+        const val = parseInt(data.data[0].value);
+        const label = data.data[0].value_classification;
+        
+        if ($['fear-greed-value']) {
+            const color = val <= 25 ? '#ef4444' : val >= 75 ? '#22c55e' : '#f59e0b';
+            $['fear-greed-value'].textContent = val;
+            $['fear-greed-value'].style.color = color;
+        }
+        if ($['fear-greed-bar']) $['fear-greed-bar'].style.width = val + '%';
+        if ($['fear-greed-label']) {
+            let cls = 'text-xs font-bold px-2 py-1 rounded-md ';
+            if (val <= 20) cls += 'bg-red-500/20 text-red-400 border border-red-500/20';
+            else if (val <= 40) cls += 'bg-orange-500/20 text-orange-400 border border-orange-500/20';
+            else if (val <= 60) cls += 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20';
+            else if (val <= 80) cls += 'bg-green-500/20 text-green-400 border border-green-500/20';
+            else cls += 'bg-green-400/20 text-green-300 border border-green-400/20';
+            $['fear-greed-label'].className = cls;
+            $['fear-greed-label'].textContent = label.toUpperCase();
+        }
+        if ($['det-sentiment']) {
+            let cls = 'px-2 py-0.5 rounded text-[10px] font-bold border ';
+            if (val <= 20) cls += 'bg-red-500/20 text-red-400 border-red-500/20';
+            else if (val <= 40) cls += 'bg-orange-500/20 text-orange-400 border-orange-500/20';
+            else if (val <= 60) cls += 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20';
+            else if (val <= 80) cls += 'bg-green-500/20 text-green-400 border-green-500/20';
+            else cls += 'bg-green-400/20 text-green-300 border-green-400/20';
+            $['det-sentiment'].innerHTML = '<span class="' + cls + '">' + label.toUpperCase() + '</span>';
+        }
+    } catch (e) {}
+}
+
+// ==============================================
+// ORDER BOOK SIMULADO - Más eficiente
+// ==============================================
+let orderBookData = { bids: [], asks: [] };
+
+function actualizarOrderBookSim(price, qty) {
+    const spread = price * 0.0005;
+    const levels = 12;
+    orderBookData.bids = [];
+    orderBookData.asks = [];
+    
+    for (let i = 0; i < levels; i++) {
+        const factor = 1 - i * 0.08;
+        orderBookData.bids.push({
+            price: price - spread - (i * price * 0.0002),
+            qty: Math.max(0.01, (Math.random() * 5 + 0.1) * factor)
+        });
+        orderBookData.asks.push({
+            price: price + spread + (i * price * 0.0002),
+            qty: Math.max(0.01, (Math.random() * 5 + 0.1) * factor)
+        });
+    }
+    
+    // Renderizar solo si el tab está visible (optimización)
+    if (!$['tab-orderbook']?.classList.contains('hidden')) {
+        renderizarOrderBook();
+    }
+}
+
+function renderizarOrderBook() {
+    if (!$['orderbook-bids'] || !$['orderbook-asks']) return;
+    
+    const maxBid = Math.max(...orderBookData.bids.map(b => b.qty));
+    const maxAsk = Math.max(...orderBookData.asks.map(a => a.qty));
+    const totalBids = orderBookData.bids.reduce((s, b) => s + b.qty, 0);
+    const totalAsks = orderBookData.asks.reduce((s, a) => s + a.qty, 0);
+    
+    let bidsHTML = '';
+    for (const b of orderBookData.bids) {
+        const pct = (b.qty / maxBid) * 100;
+        bidsHTML += '<div class="order-row"><div class="bar bg-green-500" style="width:' + pct + '%;right:0;"></div><div class="content"><span class="text-green-400 font-mono">' + b.price.toFixed(2) + '</span><span class="text-gray-500 font-mono">' + b.qty.toFixed(4) + '</span></div></div>';
+    }
+    $['orderbook-bids'].innerHTML = bidsHTML;
+    
+    let asksHTML = '';
+    for (const a of orderBookData.asks) {
+        const pct = (a.qty / maxAsk) * 100;
+        asksHTML += '<div class="order-row"><div class="bar bg-red-500" style="width:' + pct + '%;left:0;"></div><div class="content"><span class="text-red-400 font-mono">' + a.price.toFixed(2) + '</span><span class="text-gray-500 font-mono">' + a.qty.toFixed(4) + '</span></div></div>';
+    }
+    $['orderbook-asks'].innerHTML = asksHTML;
+    
+    if ($['bid-total']) $['bid-total'].textContent = totalBids.toFixed(2) + ' BTC';
+    if ($['ask-total']) $['ask-total'].textContent = totalAsks.toFixed(2) + ' BTC';
+    
+    if ($['orderbook-spread'] && orderBookData.asks[0] && orderBookData.bids[0]) {
+        const sp = orderBookData.asks[0].price - orderBookData.bids[0].price;
+        const spPct = (sp / precioBTC * 100).toFixed(3);
+        $['orderbook-spread'].textContent = '$' + sp.toFixed(2) + ' (' + spPct + '%)';
+    }
+    
+    if ($['orderbook-ratio']) {
+        const ratio = totalBids / (totalAsks || 1);
+        $['orderbook-ratio'].textContent = ratio.toFixed(2);
+        $['orderbook-ratio'].className = 'text-lg font-bold font-mono ' + (ratio > 1 ? 'text-green-400' : 'text-red-400');
+    }
+    
+    const bp = totalBids / (totalBids + totalAsks) * 100;
+    if ($['buy-pressure-bar']) $['buy-pressure-bar'].style.width = bp + '%';
+    if ($['buy-pressure-pct']) $['buy-pressure-pct'].textContent = bp.toFixed(1) + '%';
+    
+    renderizarLiquidationHeatmap();
+}
+
+function renderizarLiquidationHeatmap() {
+    if (!$['liquidation-heatmap'] || !precioBTC) return;
+    const steps = 5;
+    const range = precioBTC * 0.15;
+    let cells = '';
+    
+    for (let i = 0; i < steps * 5; i++) {
+        const pl = precioBTC - range + (i / (steps * 5 - 1)) * range * 2;
+        const dist = Math.abs(pl - precioBTC) / precioBTC;
+        const intensity = Math.max(0, 1 - dist * 5);
+        const isBuy = pl < precioBTC;
+        const bg = isBuy ? 'rgba(34,197,94,' + (intensity * 0.6 + 0.1) + ')' : 'rgba(239,68,68,' + (intensity * 0.6 + 0.1) + ')';
+        const text = isBuy ? '#4ade80' : '#f87171';
+        const isCurrent = Math.abs(pl - precioBTC) < precioBTC * 0.005;
+        const border = isCurrent ? 'border:2px solid #f7931a;box-shadow:0 0 10px rgba(247,147,26,0.3);' : '';
+        cells += '<div class="heatmap-cell" style="background:' + bg + ';color:' + text + ';' + border + '">' + (pl / 1000).toFixed(1) + 'K</div>';
+    }
+    $['liquidation-heatmap'].innerHTML = cells;
+}
+
+// ==============================================
+// CALCULADORA
+// ==============================================
+function calcularGanancia() {
+    const entry = parseFloat($['calc-entry']?.value) || 0;
+    const exit = parseFloat($['calc-exit']?.value) || 0;
+    const amount = parseFloat($['calc-amount']?.value) || 0;
+    const leverage = parseFloat($['calc-leverage']?.value) || 1;
+    
+    if (entry <= 0 || exit <= 0 || amount <= 0) {
+        if ($['calc-result']) $['calc-result'].textContent = '$0.00';
+        if ($['calc-roi']) $['calc-roi'].textContent = '0%';
+        if ($['calc-liquidation']) $['calc-liquidation'].textContent = '--';
+        return;
+    }
+    
+    const diff = exit - entry;
+    const profit = diff * amount * leverage;
+    const roi = (diff / entry) * 100 * leverage;
+    const liq = entry * (1 - (1 / leverage));
+    
+    if ($['calc-result']) {
+        $['calc-result'].textContent = (profit >= 0 ? '+' : '') + '$' + Math.abs(profit).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        $['calc-result'].className = 'text-xl font-bold font-mono ' + (profit >= 0 ? 'text-green-400' : 'text-red-400');
+    }
+    if ($['calc-roi']) {
+        $['calc-roi'].textContent = (roi >= 0 ? '+' : '') + roi.toFixed(2) + '%';
+        $['calc-roi'].className = 'text-lg font-bold font-mono ' + (roi >= 0 ? 'text-green-400' : 'text-red-400');
+    }
+    if ($['calc-liquidation']) $['calc-liquidation'].textContent = '$' + liq.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function simularPrediccion() {
+    const current = parseFloat($['sim-current']?.value) || 0;
+    const target = parseFloat($['sim-target']?.value) || 0;
+    const periodo = $['sim-periodo']?.value || '5m';
+    
+    if (current <= 0 || target <= 0) {
+        if ($['sim-change']) $['sim-change'].textContent = '0%';
+        if ($['sim-puntos']) $['sim-puntos'].textContent = '+0 pts';
+        if ($['sim-advice']) { $['sim-advice'].textContent = 'Ingresa los datos para ver la simulacion'; $['sim-advice'].className = 'text-xs text-gray-500'; }
+        return;
+    }
+    
+    const change = ((target - current) / current) * 100;
+    const pts = PUNTOS[periodo] || 1;
+    const mult = MULTS[periodo] || 1;
+    const totalPts = Math.round(pts * mult);
+    
+    if ($['sim-change']) {
+        $['sim-change'].textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        $['sim-change'].className = 'text-xl font-bold font-mono ' + (change >= 0 ? 'text-green-400' : 'text-red-400');
+    }
+    if ($['sim-puntos']) $['sim-puntos'].textContent = '+' + totalPts + ' pts (x' + mult + ')';
+    
+    if ($['sim-advice']) {
+        let msg = 'Prediccion viable. Buena suerte!';
+        let cls = 'text-xs text-green-400';
+        if (Math.abs(change) < 0.5) { msg = 'Cambio muy pequeno. Considera un periodo mas corto.'; cls = 'text-xs text-yellow-400'; }
+        else if (Math.abs(change) > 20 && (periodo === '5m' || periodo === '15m')) { msg = 'Cambio muy agresivo para este periodo.'; cls = 'text-xs text-red-400'; }
+        else if (Math.abs(change) > 50 && periodo !== '1mes') { msg = 'Cambio extremo. Solo viable en periodos muy largos.'; cls = 'text-xs text-red-400'; }
+        $['sim-advice'].textContent = msg;
+        $['sim-advice'].className = cls;
+    }
+}
+
+function actualizarConversions(price) {
+    if (!price) return;
+    const fmt = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+    if ($['conv-01']) $['conv-01'].textContent = fmt.format(price * 0.1);
+    if ($['conv-05']) $['conv-05'].textContent = fmt.format(price * 0.5);
+    if ($['conv-1']) $['conv-1'].textContent = fmt.format(price);
+    if ($['conv-5']) $['conv-5'].textContent = fmt.format(price * 5);
+}
+
+
+
+
+
+
+
+
