@@ -1326,6 +1326,8 @@ const PRICE_UPDATE_INTERVAL = 65000;
 const VERIFY_RESULTS_INTERVAL = 15000;
 const BOT_REFRESH_INTERVAL = 15000;
 const TOAST_DURATION = 4000;
+const PRICE_UPDATE_INTERVAL = 65000;
+const PRICE_FLASH_INTERVAL = 30;
 
 // ==============================================
 // VARIABLES GLOBALES
@@ -1469,36 +1471,117 @@ function iniciarRelojHero() {
 // ==============================================
 function iniciarWebSocketPrecio() {
     if (wsPrice) { wsPrice.close(); wsPrice = null; }
+    
     wsPrice = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@trade');
+    
+    // Variables para control de velocidad
     let lastUpdate = 0;
     let sparklineCounter = 0;
+    let pendingPrice = 0;
+    let frameRequested = false;
+    
+    // Cache de elementos para máximo rendimiento
+    const priceElements = {
+        heroPrice: DOMCache.get('hero-price'),
+        heroDec: DOMCache.get('hero-price-dec'),
+        priceValue: DOMCache.get('price-value'),
+        priceValueMovil: DOMCache.get('price-value-movil'),
+        predAct: DOMCache.get('pred-precio-actual')
+    };
+    
+    // Formateador reutilizable
+    const fmt = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    // Función optimizada de actualización
+    function updatePriceDisplay(price) {
+        const fmtRaw = fmt.format(price);
+        const parts = fmtRaw.split('.');
+        const entero = parts[0];
+        const decimal = parts[1] ? '.' + parts[1] : '';
+        
+        if (priceElements.heroPrice) {
+            priceElements.heroPrice.textContent = entero;
+            if (priceElements.heroDec) {
+                priceElements.heroDec.textContent = decimal;
+            }
+            
+            // Efecto flash más rápido
+            if (precioAnterior > 0) {
+                priceElements.heroPrice.classList.remove('price-flash-up', 'price-flash-down');
+                // Forzar reflow para reiniciar animación
+                void priceElements.heroPrice.offsetWidth;
+                if (price > precioAnterior) {
+                    priceElements.heroPrice.classList.add('price-flash-up');
+                } else if (price < precioAnterior) {
+                    priceElements.heroPrice.classList.add('price-flash-down');
+                }
+            }
+        }
+        
+        if (priceElements.priceValue) {
+            priceElements.priceValue.textContent = fmtRaw;
+        }
+        if (priceElements.priceValueMovil) {
+            priceElements.priceValueMovil.textContent = fmtRaw;
+        }
+        if (priceElements.predAct) {
+            priceElements.predAct.textContent = fmtRaw;
+        }
+    }
     
     wsPrice.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         const price = parseFloat(msg.p);
         precioAnterior = precioBTC;
         precioBTC = price;
-        priceHistory.push(price);
-        if (priceHistory.length > MAX_HISTORY) priceHistory.shift();
         
-        const now = Date.now();
-        if (now - lastUpdate > 100) {
-            lastUpdate = now;
-            requestAnimationFrame(() => {
-                actualizarDisplayPrecio(price);
-                sparklineCounter++;
-                if (sparklineCounter % 2 === 0) actualizarSparkline();
-                actualizarConversions(price);
-                actualizarOrderBookSim(price, parseFloat(msg.q));
-                actualizarDiferenciaPrediccion();
-            });
+        // Guardar historial
+        priceHistory.push(price);
+        if (priceHistory.length > MAX_HISTORY) {
+            priceHistory.shift();
         }
         
+        const now = performance.now(); // Usar performance.now() para mayor precisión
+        
+        // Actualizar cada 30ms en lugar de 100ms
+        if (now - lastUpdate >= PRICE_FLASH_INTERVAL) {
+            lastUpdate = now;
+            
+            // Usar requestAnimationFrame para sincronizar con el refresh de la pantalla
+            if (!frameRequested) {
+                frameRequested = true;
+                requestAnimationFrame(() => {
+                    frameRequested = false;
+                    
+                    // Actualizar precio
+                    updatePriceDisplay(price);
+                    
+                    // Sparkline más frecuente
+                    sparklineCounter++;
+                    if (sparklineCounter % 1 === 0) { // Actualizar cada frame
+                        actualizarSparkline();
+                    }
+                    
+                    // Actualizar conversiones y orderbook
+                    actualizarConversions(price);
+                    actualizarOrderBookSim(price, parseFloat(msg.q));
+                    actualizarDiferenciaPrediccion();
+                });
+            }
+        }
+        
+        // Actualizar input de simulación (solo si está vacío)
         const simCurrent = DOMCache.get('sim-current');
         if (simCurrent && !simCurrent.value) {
             simCurrent.value = Math.round(price);
         }
         
+        // Actualizar tendencia cada 10 ticks
         if (priceHistory.length >= 10 && now - lastUpdate > 500) {
             actualizarTendencia();
         }
@@ -1549,30 +1632,51 @@ function actualizarDisplayPrecio(price) {
 
 function actualizarSparkline() {
     if (priceHistory.length < 2) return;
+    
+    // Cache de elementos
     if (!window._sparklineElements) {
         window._sparklineElements = {
             svg: DOMCache.get('sparkline-path'),
             area: DOMCache.get('sparkline-area')
         };
     }
+    
     const { svg, area } = window._sparklineElements;
     if (!svg) return;
-    const min = Math.min(...priceHistory);
-    const max = Math.max(...priceHistory);
+    
+    // Calcular min/max una sola vez
+    let min = priceHistory[0];
+    let max = priceHistory[0];
+    const len = priceHistory.length;
+    
+    for (let i = 1; i < len; i++) {
+        const val = priceHistory[i];
+        if (val < min) min = val;
+        if (val > max) max = val;
+    }
+    
     const range = max - min || 1;
-    const points = priceHistory.map((p, i) => {
-        const x = (i / (MAX_HISTORY - 1)) * 80;
-        const y = 30 - ((p - min) / range) * 26 - 2;
-        return x + ',' + y;
-    }).join(' ');
-    svg.setAttribute('points', points);
+    const scaleX = 80 / (MAX_HISTORY - 1);
+    const scaleY = 26 / range;
+    
+    // Construir points de forma más eficiente
+    let points = '';
+    const first = priceHistory[0];
+    const last = priceHistory[len - 1];
+    
+    for (let i = 0; i < len; i++) {
+        const x = i * scaleX;
+        const y = 30 - ((priceHistory[i] - min) * scaleY) - 2;
+        points += x + ',' + y + ' ';
+    }
+    
+    svg.setAttribute('points', points.trim());
+    svg.setAttribute('stroke', last >= first ? '#22c55e' : '#ef4444');
+    
     if (area) {
-        const areaPoints = '0,30 ' + points + ' 80,30';
+        const areaPoints = '0,30 ' + points.trim() + ' 80,30';
         area.setAttribute('points', areaPoints);
     }
-    const first = priceHistory[0];
-    const last = priceHistory[priceHistory.length - 1];
-    svg.setAttribute('stroke', last >= first ? '#22c55e' : '#ef4444');
 }
 
 function actualizarTendencia() {
