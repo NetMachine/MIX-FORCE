@@ -1339,6 +1339,7 @@ const Prediction = {
             const duration = CONFIG.DURATIONS[periodKey] || 5 * 60 * 1000;
             const closesAt = new Date(Date.now() + duration);
             
+            // IMPORTANTE: Solo usamos columnas que existen en la tabla
             const { data, error } = await sb
                 .from('predicciones')
                 .insert({
@@ -1346,7 +1347,6 @@ const Prediction = {
                     periodo: periodKey,
                     voto: direction === 'up' ? 'sube' : 'baja',
                     precio_inicial: State.price.current,
-                    precio_entrada: State.price.current,
                     cierre: closesAt.toISOString(),
                     estado: 'activo',
                     creado: new Date().toISOString()
@@ -1383,7 +1383,7 @@ const Prediction = {
                 ${isUp ? '▲ SUBE' : '▼ BAJA'}
             </span>
         `;
-        document.getElementById('entry-price').textContent = Utils.formatPrice(pred.precio_entrada);
+        document.getElementById('entry-price').textContent = Utils.formatPrice(pred.precio_inicial);
     },
     
     startCountdown: () => {
@@ -1403,8 +1403,8 @@ const Prediction = {
             document.getElementById('active-countdown').textContent = Utils.formatDuration(diff);
             document.getElementById('current-price-pred').textContent = Utils.formatPrice(State.price.current);
             
-            const variation = State.activePrediction.precio_entrada > 0 
-                ? ((State.price.current - State.activePrediction.precio_entrada) / State.activePrediction.precio_entrada) * 100 
+            const variation = State.activePrediction.precio_inicial > 0 
+                ? ((State.price.current - State.activePrediction.precio_inicial) / State.activePrediction.precio_inicial) * 100 
                 : 0;
             const varEl = document.getElementById('price-variation');
             varEl.textContent = (variation >= 0 ? '+' : '') + variation.toFixed(2) + '%';
@@ -1426,7 +1426,7 @@ const Prediction = {
         
         const pred = State.activePrediction;
         const finalPrice = State.price.current;
-        const initialPrice = pred.precio_entrada;
+        const initialPrice = pred.precio_inicial;
         const wentUp = finalPrice > initialPrice;
         const won = (pred.voto === 'sube' && wentUp) || (pred.voto === 'baja' && !wentUp);
         
@@ -1593,7 +1593,7 @@ const Prediction = {
                                 <span class="text-xs text-gray-500">${period?.label || p.periodo}</span>
                             </div>
                             <div class="text-xs text-gray-600 font-mono mt-0.5">
-                                ${new Date(p.creado).toLocaleDateString()} · ${Utils.formatPrice(p.precio_entrada)}
+                                ${new Date(p.creado).toLocaleDateString()} · ${Utils.formatPrice(p.precio_inicial)}
                             </div>
                         </div>
                     </div>
@@ -2008,7 +2008,7 @@ const Live = {
                     </div>
                     <div class="flex items-center gap-2 mt-0.5">
                         <span class="text-xs font-bold ${isUp ? 'text-green-400' : 'text-red-400'}">${isUp ? '▲ SUBE' : '▼ BAJA'}</span>
-                        <span class="text-[10px] text-gray-600">@ ${Utils.formatPrice(prediction.precio_entrada)}</span>
+                        <span class="text-[10px] text-gray-600">@ ${Utils.formatPrice(prediction.precio_inicial)}</span>
                     </div>
                 </div>
             </div>
