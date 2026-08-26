@@ -27,6 +27,12 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <script>
+        const SUPABASE_URL = 'https://smdxexgrtdpniphtnvab.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtZHhleGdydGRwbmlwaHRudmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjY0MjcsImV4cCI6MjEwMjk0MjQyN30.f7-gHQynQiI4yE9XH9k6yZA_a-x9tlo93jjq3vwQm3g';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+    
+    <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -960,27 +966,6 @@ const CONFIG = {
 };
 
 // ==========================================
-// SUPABASE CLIENT
-// ==========================================
-let supabase;
-try {
-    if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-        const { createClient } = window.supabase;
-        supabase = createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-        console.log('✅ Supabase inicializado');
-    } else {
-        throw new Error('Supabase no disponible');
-    }
-} catch (e) {
-    console.error('Error Supabase:', e);
-    supabase = {
-        auth: { signUp: () => Promise.reject('No disponible'), signInWithPassword: () => Promise.reject('No disponible'), getUser: () => Promise.reject('No disponible'), signOut: () => Promise.reject('No disponible') },
-        from: () => ({ select: () => ({ eq: () => ({ single: () => Promise.reject('No disponible') }) }), insert: () => Promise.reject('No disponible'), update: () => Promise.reject('No disponible') }),
-        channel: () => ({ on: () => ({ subscribe: () => ({}) }) })
-    };
-}
-
-// ==========================================
 // ESTADO GLOBAL
 // ==========================================
 const State = {
@@ -1249,7 +1234,7 @@ const Auth = {
                     return;
                 }
                 
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await sb.auth.signUp({
                     email,
                     password,
                     options: { data: { username } }
@@ -1260,7 +1245,7 @@ const Auth = {
                     return;
                 }
                 
-                await supabase.from('usuarios').insert({
+                await sb.from('usuarios').insert({
                     uid: data.user.id,
                     email,
                     username,
@@ -1274,7 +1259,7 @@ const Auth = {
                 
                 UI.toast('Cuenta creada exitosamente', 'success');
             } else {
-                const { data, error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await sb.auth.signInWithPassword({
                     email,
                     password
                 });
@@ -1295,10 +1280,10 @@ const Auth = {
     
     loadUser: async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await sb.auth.getUser();
             
             if (user) {
-                const { data: profile } = await supabase
+                const { data: profile } = await sb
                     .from('usuarios')
                     .select('*')
                     .eq('uid', user.id)
@@ -1340,7 +1325,7 @@ const Auth = {
     
     logout: async () => {
         try {
-            await supabase.auth.signOut();
+            await sb.auth.signOut();
             State.user = null;
             await Auth.loadUser();
             UI.toast('Sesión cerrada', 'info');
@@ -1385,7 +1370,7 @@ const Prediction = {
         }
         
         try {
-            const { data: existing } = await supabase
+            const { data: existing } = await sb
                 .from('predicciones')
                 .select('*')
                 .eq('usuario_id', State.user.id)
@@ -1406,7 +1391,7 @@ const Prediction = {
             
             const closesAt = new Date(Date.now() + duration);
             
-            const { data, error } = await supabase
+            const { data, error } = await sb
                 .from('predicciones')
                 .insert({
                     usuario_id: State.user.id,
@@ -1504,7 +1489,7 @@ const Prediction = {
         const points = won ? Math.round(basePoints * multiplier * streakBonus) : 0;
         
         try {
-            await supabase
+            await sb
                 .from('predicciones')
                 .update({
                     estado: 'cerrado',
@@ -1520,7 +1505,7 @@ const Prediction = {
             const newPoints = (State.user?.points || 0) + points;
             
             if (State.user) {
-                await supabase
+                await sb
                     .from('usuarios')
                     .update({
                         puntos: newPoints,
@@ -1588,7 +1573,7 @@ const Prediction = {
         if (newAchievements.length > 0) {
             try {
                 const updated = [...State.achievements, ...newAchievements];
-                await supabase
+                await sb
                     .from('usuarios')
                     .update({ logros: updated })
                     .eq('uid', State.user.id);
@@ -1612,7 +1597,7 @@ const Prediction = {
         if (!State.user) return;
         
         try {
-            const { data } = await supabase
+            const { data } = await sb
                 .from('predicciones')
                 .select('*')
                 .eq('usuario_id', State.user.id)
@@ -1911,7 +1896,7 @@ const Chart = {
 const Ranking = {
     load: async () => {
         try {
-            const { data: users } = await supabase
+            const { data: users } = await sb
                 .from('usuarios')
                 .select('uid, username, puntos, aciertos, total_votos, racha, mejor_racha')
                 .order('puntos', { ascending: false })
@@ -1996,7 +1981,7 @@ const Ranking = {
 const Live = {
     init: () => {
         try {
-            supabase
+            sb
                 .channel('predictions-live')
                 .on('postgres_changes', {
                     event: '*',
@@ -2023,7 +2008,7 @@ const Live = {
     
     loadFeed: async () => {
         try {
-            const { data } = await supabase
+            const { data } = await sb
                 .from('predicciones')
                 .select('*, usuarios(username)')
                 .order('creado', { ascending: false })
@@ -2096,10 +2081,10 @@ const Live = {
     
     updateStats: async () => {
         try {
-            const { count: total } = await supabase.from('predicciones').select('*', { count: 'exact', head: true });
-            const { count: active } = await supabase.from('predicciones').select('*', { count: 'exact', head: true }).eq('estado', 'activo');
-            const { count: users } = await supabase.from('usuarios').select('*', { count: 'exact', head: true });
-            const { data: bullish } = await supabase.from('predicciones').select('*', { count: 'exact' }).eq('voto', 'sube').eq('estado', 'activo');
+            const { count: total } = await sb.from('predicciones').select('*', { count: 'exact', head: true });
+            const { count: active } = await sb.from('predicciones').select('*', { count: 'exact', head: true }).eq('estado', 'activo');
+            const { count: users } = await sb.from('usuarios').select('*', { count: 'exact', head: true });
+            const { data: bullish } = await sb.from('predicciones').select('*', { count: 'exact' }).eq('voto', 'sube').eq('estado', 'activo');
             
             document.getElementById('live-total-predictions').textContent = total?.toLocaleString() || '--';
             document.getElementById('live-active-predictions').textContent = active?.toLocaleString() || '--';
@@ -2191,7 +2176,7 @@ const App = {
             
             if (State.user) {
                 try {
-                    const { data: active } = await supabase
+                    const { data: active } = await sb
                         .from('predicciones')
                         .select('*')
                         .eq('usuario_id', State.user.id)
