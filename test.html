@@ -6,8 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#080B12" />
-    <title>BTCPredict -- Predice Bitcoin</title>
-    <meta name="description" content="Plataforma social de predicción de Bitcoin. Competencia, ranking y recompensas en tiempo real." />
+    <title>BTCPredict Pro -- Bitcoin Prediction Platform</title>
+    <meta name="description" content="Plataforma social de predicción de Bitcoin. Compite, gana puntos y sube en el ranking." />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,7 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
 
     <!-- Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js">
@@ -25,7 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
 
-    <!-- Confetti (carga diferida) -->
+    <!-- Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
     </script>
 
@@ -67,8 +68,8 @@
         :root {
             --bg-primary: #080B12;
             --bg-secondary: #0D111C;
-            --bg-card: rgba(17, 24, 39, 0.85);
-            --border: rgba(148, 163, 184, 0.08);
+            --bg-card: rgba(17, 24, 39, 0.88);
+            --border: rgba(148, 163, 184, 0.07);
             --accent: #f7931a;
             --accent-hover: #e8850f;
             --success: #22c55e;
@@ -78,7 +79,7 @@
             --text-muted: #64748b;
         }
 
-        /* ===== COMPONENTES ===== */
+        /* ===== GLASS ===== */
         .glass {
             background: var(--bg-card);
             backdrop-filter: blur(20px);
@@ -101,22 +102,23 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(247, 147, 26, 0.25), transparent);
-            opacity: 0.6;
+            background: linear-gradient(90deg, transparent, rgba(247, 147, 26, 0.2), transparent);
+            opacity: 0.5;
         }
 
+        /* ===== BUTTONS ===== */
         .btn-primary {
             background: linear-gradient(135deg, #f7931a, #e8850f);
             color: #000;
             font-weight: 700;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 20px rgba(247, 147, 26, 0.3);
         }
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(247, 147, 26, 0.4);
+            box-shadow: 0 8px 35px rgba(247, 147, 26, 0.4);
         }
-        .btn-primary:active {
+        .btn-primary:active:not(:disabled) {
             transform: translateY(0);
         }
         .btn-primary:disabled {
@@ -173,15 +175,30 @@
 
         /* ===== PERIOD BUTTONS ===== */
         .period-btn {
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             border: 1px solid rgba(148, 163, 184, 0.08);
             background: rgba(17, 24, 39, 0.6);
             border-radius: 12px;
             padding: 14px 8px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .period-btn:hover {
+        .period-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(247, 147, 26, 0.08), transparent);
+            transition: left 0.6s;
+        }
+        .period-btn:hover::after {
+            left: 100%;
+        }
+        .period-btn:hover:not(:disabled):not(.selected) {
             border-color: rgba(247, 147, 26, 0.3);
             background: rgba(247, 147, 26, 0.06);
             transform: translateY(-2px);
@@ -189,8 +206,8 @@
         .period-btn.selected {
             border-color: #f7931a;
             background: linear-gradient(135deg, rgba(247, 147, 26, 0.15), rgba(247, 147, 26, 0.04));
-            box-shadow: 0 0 30px rgba(247, 147, 26, 0.12);
-            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(247, 147, 26, 0.12), inset 0 1px 0 rgba(247, 147, 26, 0.2);
+            transform: translateY(-2px) scale(1.02);
         }
         .period-btn:disabled {
             opacity: 0.4;
@@ -203,19 +220,31 @@
             background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.04));
             border: 1px solid rgba(34, 197, 94, 0.25);
             color: #22c55e;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 20px 12px;
             border-radius: 14px;
             font-weight: 700;
             font-size: 18px;
             cursor: pointer;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .vote-up::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .vote-up:hover:not(:disabled)::after {
+            opacity: 1;
         }
         .vote-up:hover:not(:disabled) {
-            background: rgba(34, 197, 94, 0.2);
             border-color: #22c55e;
             transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(34, 197, 94, 0.15);
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.15);
         }
         .vote-up:disabled {
             opacity: 0.4;
@@ -227,19 +256,31 @@
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
             border: 1px solid rgba(239, 68, 68, 0.25);
             color: #ef4444;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 20px 12px;
             border-radius: 14px;
             font-weight: 700;
             font-size: 18px;
             cursor: pointer;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .vote-down::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .vote-down:hover:not(:disabled)::after {
+            opacity: 1;
         }
         .vote-down:hover:not(:disabled) {
-            background: rgba(239, 68, 68, 0.2);
             border-color: #ef4444;
             transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.15);
         }
         .vote-down:disabled {
             opacity: 0.4;
@@ -257,6 +298,7 @@
             background: rgba(34, 197, 94, 0.15);
             color: #4ade80;
             border: 1px solid rgba(34, 197, 94, 0.2);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
         }
         .badge-loss {
             background: rgba(239, 68, 68, 0.15);
@@ -268,26 +310,42 @@
         .tier-bronce {
             background: linear-gradient(135deg, #8B6914, #CD7F32);
             color: #000;
+            box-shadow: 0 0 20px rgba(205, 127, 50, 0.2);
         }
         .tier-plata {
             background: linear-gradient(135deg, #8899a6, #c0c0c0);
             color: #000;
+            box-shadow: 0 0 20px rgba(192, 192, 192, 0.2);
         }
         .tier-oro {
             background: linear-gradient(135deg, #DAA520, #FFD700);
             color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
         .tier-platino {
             background: linear-gradient(135deg, #E5E4E2, #B0C4DE);
             color: #000;
+            box-shadow: 0 0 20px rgba(176, 196, 222, 0.2);
         }
         .tier-maestro {
             background: linear-gradient(135deg, #4B0082, #8A2BE2);
             color: #fff;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
         }
         .tier-leyenda {
             background: linear-gradient(135deg, #FF4500, #FFD700);
             color: #000;
+            box-shadow: 0 0 30px rgba(255, 69, 0, 0.4);
+            animation: legendPulse 2s ease-in-out infinite;
+        }
+        @keyframes legendPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(255, 69, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 69, 0, 0.6);
+            }
         }
 
         /* ===== STAT CARD ===== */
@@ -296,11 +354,28 @@
             border: 1px solid rgba(148, 163, 184, 0.06);
             border-radius: 12px;
             padding: 14px 16px;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(247, 147, 26, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .stat-card:hover::before {
+            opacity: 1;
         }
         .stat-card:hover {
             border-color: rgba(247, 147, 26, 0.15);
             transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
         }
 
         /* ===== ORDER ROW ===== */
@@ -322,6 +397,7 @@
             height: 100%;
             opacity: 0.12;
             z-index: 0;
+            transition: width 0.3s;
         }
         .order-row .content {
             position: relative;
@@ -329,6 +405,18 @@
             display: flex;
             justify-content: space-between;
             width: 100%;
+        }
+
+        /* ===== PREDICTION ROW ===== */
+        .pred-row {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 2px solid transparent;
+            cursor: default;
+        }
+        .pred-row:hover {
+            background: rgba(247, 147, 26, 0.04);
+            border-left-color: rgba(247, 147, 26, 0.3);
+            transform: translateX(4px);
         }
 
         /* ===== ANIMATIONS ===== */
@@ -357,7 +445,7 @@
             }
         }
         .slide-up {
-            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes flashUp {
@@ -365,7 +453,7 @@
                 text-shadow: 0 0 0 transparent;
             }
             30% {
-                text-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
+                text-shadow: 0 0 40px rgba(34, 197, 94, 0.8);
                 color: #4ade80;
             }
             100% {
@@ -377,7 +465,7 @@
                 text-shadow: 0 0 0 transparent;
             }
             30% {
-                text-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+                text-shadow: 0 0 40px rgba(239, 68, 68, 0.8);
                 color: #f87171;
             }
             100% {
@@ -408,10 +496,22 @@
             background: #22c55e;
             border-radius: 50%;
             animation: pulse 2s infinite;
-            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
         }
 
-        @keyframes glow {
+        @keyframes ticker {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        .ticker-anim {
+            animation: ticker 45s linear infinite;
+        }
+
+        @keyframes glowPulse {
             0%,
             100% {
                 opacity: 0.4;
@@ -421,42 +521,22 @@
             }
         }
         .glow-pulse {
-            animation: glow 2s ease-in-out infinite;
+            animation: glowPulse 2s ease-in-out infinite;
         }
 
-        @keyframes confetti-burst {
+        @keyframes shimmer {
             0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
+                background-position: -200% 0;
             }
             100% {
-                transform: scale(1);
-                opacity: 1;
+                background-position: 200% 0;
             }
         }
-        .confetti-burst {
-            animation: confetti-burst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes levelUp {
-            0% {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.15);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-        .level-up {
-            animation: levelUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255,
+                    255, 0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s ease-in-out infinite;
         }
 
         /* ===== TOAST ===== */
@@ -480,9 +560,10 @@
             border-radius: 12px;
             padding: 12px 20px;
             pointer-events: auto;
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             max-width: 420px;
             width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         }
 
         /* ===== MODAL ===== */
@@ -514,7 +595,7 @@
             max-width: 420px;
             position: relative;
             box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(247, 147, 26, 0.08);
-            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -546,6 +627,27 @@
             color: #f1f5f9;
         }
 
+        /* ===== NOTIFICATION PANEL ===== */
+        .notif-panel {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 340px;
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 50;
+        }
+        .notif-panel.open {
+            display: block;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 640px) {
             .period-btn {
@@ -564,6 +666,10 @@
             .stat-card {
                 padding: 10px 12px;
             }
+            .notif-panel {
+                width: calc(100vw - 32px);
+                right: -8px;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -573,6 +679,9 @@
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
+            }
+            .ticker-anim {
+                animation: none;
             }
         }
 
@@ -587,7 +696,7 @@
             overflow: hidden;
         }
         .scroll-area {
-            max-height: 400px;
+            max-height: 420px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -597,6 +706,27 @@
         }
         .touch-scroll {
             -webkit-overflow-scrolling: touch;
+        }
+
+        /* ===== HERO GLOW ===== */
+        .hero-glow {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(247, 147, 26, 0.04), transparent 60%);
+            pointer-events: none;
+            animation: heroGlow 12s ease-in-out infinite;
+        }
+        @keyframes heroGlow {
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.1) rotate(180deg);
+            }
         }
     </style>
 </head>
@@ -660,7 +790,7 @@
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold tracking-tight">BTCPredict <span class="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">beta</span></h1>
+                    <h1 class="text-lg font-bold tracking-tight">BTCPredict <span class="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">Pro</span></h1>
                 </div>
             </div>
 
@@ -671,6 +801,7 @@
                 </div>
                 <span class="text-amber-400 font-mono font-bold text-lg tracking-tight" id="header-price">--</span>
                 <span id="header-change" class="text-xs px-2.5 py-1 rounded-lg font-bold"></span>
+                <span class="text-xs text-gray-600 font-mono" id="header-range"></span>
             </div>
 
             <div id="auth-buttons" class="flex gap-2">
@@ -683,10 +814,19 @@
                     <div id="user-name" class="font-semibold text-sm text-gray-200"></div>
                     <div id="user-tier" class="text-[10px] font-medium mt-0.5 px-2 py-0.5 rounded-lg"></div>
                 </div>
-                <button onclick="toggleNotifications()" class="relative p-2.5 rounded-xl hover:bg-white/5 transition no-select">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 rounded-full text-[10px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30">0</span>
-                </button>
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="relative p-2.5 rounded-xl hover:bg-white/5 transition no-select">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span id="notif-badge" class="hidden absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 rounded-full text-[10px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30">0</span>
+                    </button>
+                    <div id="notif-panel" class="notif-panel">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-semibold text-gray-300 uppercase tracking-wider">Notificaciones</span>
+                            <button onclick="clearNotifications()" class="text-[10px] text-gray-500 hover:text-gray-300 transition">Limpiar</button>
+                        </div>
+                        <div id="notif-list" class="space-y-2"></div>
+                    </div>
+                </div>
                 <button onclick="handleLogout()" class="p-2.5 rounded-xl hover:bg-red-500/10 text-red-400 transition no-select" title="Cerrar sesión">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                 </button>
@@ -696,26 +836,25 @@
 
     <!-- ===== TICKER ===== -->
     <div class="bg-black/40 border-b border-white/5 py-2 overflow-hidden relative">
-        <div id="ticker-content" class="flex whitespace-nowrap animate-[ticker_40s_linear_infinite]">
+        <div class="flex whitespace-nowrap ticker-anim" id="ticker-content">
             <span class="ticker-item px-6 text-xs text-gray-500">Cargando mercado...</span>
         </div>
     </div>
     <style>
-        @keyframes ticker {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }
         .ticker-item {
             padding: 0 20px;
             font-size: 11px;
             color: #94a3b8;
+            white-space: nowrap;
         }
-        .ticker-item span {
-            font-weight: 600;
+        .ticker-item .positive {
+            color: #22c55e;
+        }
+        .ticker-item .negative {
+            color: #ef4444;
+        }
+        .ticker-item .price {
+            color: #64748b;
         }
     </style>
 
@@ -733,6 +872,8 @@
             <button class="tab-btn" data-tab="market" onclick="switchTab('market')">📊 Mercado</button>
             <button class="tab-btn" data-tab="orderbook" onclick="switchTab('orderbook')">📚 Order Book</button>
             <button class="tab-btn" data-tab="ranking" onclick="switchTab('ranking')">🏆 Ranking</button>
+            <button class="tab-btn" data-tab="global" onclick="switchTab('global')">🌐 En Vivo</button>
+            <button class="tab-btn" data-tab="analysis" onclick="switchTab('analysis')">📈 Análisis</button>
             <button class="tab-btn" data-tab="achievements" onclick="switchTab('achievements')">🎯 Logros</button>
             <button class="tab-btn" data-tab="calculator" onclick="switchTab('calculator')">🧮 Calc</button>
             <button class="tab-btn" data-tab="bots" onclick="switchTab('bots')">🤖 Bots</button>
@@ -746,24 +887,24 @@
 
         <!-- HERO -->
         <div class="glass-card rounded-2xl p-6 md:p-8 mb-6 text-center relative overflow-hidden">
-            <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-accent/5 to-transparent pointer-events-none"></div>
+            <div class="hero-glow"></div>
             <div class="relative z-10">
-                <div class="flex items-center justify-center gap-2 mb-2">
+                <div class="flex items-center justify-center gap-2 mb-2 flex-wrap">
                     <div class="live-dot"></div>
                     <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">BTC / USD</span>
                     <span id="market-status" class="text-[10px] px-2 py-0.5 rounded-md bg-success/10 text-success font-bold border border-success/20">SPOT</span>
                     <span id="market-trend" class="text-[10px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 font-bold border border-blue-500/20">TENDENCIA</span>
+                    <span class="text-[10px] text-gray-600 font-mono" id="hero-time"></span>
                 </div>
-                <div class="relative">
+                <div class="relative inline-block">
                     <span class="text-5xl md:text-7xl font-black font-mono tracking-tighter text-accent" id="hero-price">--</span>
                     <span class="text-lg text-gray-500 font-mono ml-2" id="hero-price-dec"></span>
                 </div>
                 <div class="flex items-center justify-center gap-4 mt-4 flex-wrap">
                     <span id="hero-change" class="text-sm px-4 py-1.5 rounded-lg font-bold font-mono"></span>
                     <span class="text-xs text-gray-600 font-mono" id="hero-range"></span>
-                    <span class="text-xs text-gray-600 font-mono" id="hero-time"></span>
                 </div>
-                <svg id="hero-sparkline" class="w-full h-12 max-w-[200px] mx-auto mt-4" viewBox="0 0 100 40">
+                <svg id="hero-sparkline" class="w-full max-w-[300px] h-12 mx-auto mt-4" viewBox="0 0 100 40">
                     <defs>
                         <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stop-color="rgba(247,147,26,0.3)"/>
@@ -773,6 +914,10 @@
                     <polygon id="spark-area" fill="url(#sparkGrad)" points=""/>
                     <polyline id="spark-path" fill="none" stroke="#f7931a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points=""/>
                 </svg>
+                <div class="mt-3 flex justify-center gap-4 text-xs text-gray-600 font-mono flex-wrap">
+                    <span id="hero-low-label">L --</span>
+                    <span id="hero-high-label">H --</span>
+                </div>
             </div>
         </div>
 
@@ -798,18 +943,18 @@
 
         <!-- FEAR & GREED -->
         <div class="glass-card rounded-2xl p-6 mb-6">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                 <div>
                     <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400">Índice Miedo & Codicia</h3>
                     <p class="text-xs text-gray-600 mt-0.5">Sentimiento del mercado en tiempo real</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span id="fng-value" class="text-3xl font-black font-mono text-accent">--</span>
-                    <span id="fng-label" class="text-xs font-bold px-2 py-1 rounded-md"></span>
+                <div class="flex items-center gap-3">
+                    <span id="fng-value" class="text-3xl font-black font-mono">--</span>
+                    <span id="fng-label" class="text-xs font-bold px-3 py-1 rounded-md"></span>
                 </div>
             </div>
             <div class="relative h-4 rounded-full overflow-hidden bg-gray-800">
-                <div id="fng-bar" class="h-full rounded-full" style="width:0%;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);"></div>
+                <div id="fng-bar" class="h-full rounded-full transition-all duration-1000" style="width:0%;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);"></div>
                 <div class="absolute inset-0 flex justify-between items-center px-3">
                     <span class="text-[8px] text-gray-600 font-bold">EXTREMO MIEDO</span>
                     <span class="text-[8px] text-gray-600 font-bold">NEUTRAL</span>
@@ -885,18 +1030,18 @@
             <div id="period-info" class="hidden text-center text-sm text-amber-400 font-semibold mb-4"></div>
 
             <!-- Active Prediction -->
-            <div id="active-prediction" class="hidden mb-4 p-5 rounded-xl bg-black/20 border border-accent/10">
+            <div id="active-prediction" class="hidden mb-4 p-5 rounded-xl bg-black/30 border border-accent/10">
                 <div class="flex flex-wrap justify-between items-center gap-3">
                     <div>
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Tu Voto</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider">Tu Voto</span>
                         <div id="my-vote" class="font-bold text-base mt-1"></div>
                     </div>
                     <div class="text-center">
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Tiempo Restante</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider">Tiempo Restante</span>
                         <div id="time-remaining" class="font-bold text-amber-400 font-mono text-lg mt-1">--</div>
                     </div>
                     <div>
-                        <span class="text-xs text-gray-500 uppercase tracking-wider">Estado</span>
+                        <span class="text-[10px] text-gray-500 uppercase tracking-wider">Estado</span>
                         <div id="pred-status" class="mt-1"></div>
                     </div>
                 </div>
@@ -904,6 +1049,9 @@
                     <span>Inicio: <span id="pred-start-price" class="text-gray-300">--</span></span>
                     <span>Actual: <span id="pred-current-price" class="text-amber-400">--</span></span>
                     <span id="pred-diff">--</span>
+                </div>
+                <div class="mt-3 w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="pred-progress" class="h-full bg-gradient-to-r from-accent to-accent-hover rounded-full transition-all duration-1000" style="width:0%"></div>
                 </div>
             </div>
 
@@ -927,6 +1075,13 @@
 
             <div id="pred-message" class="mt-4 text-gray-400 text-sm min-h-[20px] text-center"></div>
 
+            <!-- Streak Multiplier Display -->
+            <div id="streak-display" class="hidden mt-4 text-center">
+                <span class="text-xs text-gray-500">Multiplicador de racha:</span>
+                <span id="streak-multiplier" class="text-lg font-bold text-purple-400 font-mono">×1.0</span>
+                <span id="streak-count" class="text-xs text-gray-500 ml-2">(Racha: 0)</span>
+            </div>
+
             <!-- User Stats -->
             <div id="user-pred-stats" class="hidden mt-6 pt-4 border-t border-white/5">
                 <div class="grid grid-cols-3 gap-4">
@@ -949,7 +1104,7 @@
 
         <!-- Mis Predicciones -->
         <div class="mt-8">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Mis Predicciones</h3>
                 <div class="flex gap-1">
                     <button onclick="filterMyPreds('todos')" class="px-3 py-1.5 rounded-lg text-xs bg-accent/20 text-accent font-medium no-select" data-filter="todos">Todos</button>
@@ -1028,6 +1183,17 @@
             </div>
         </div>
 
+        <!-- Heatmap de Liquidaciones -->
+        <div class="glass-card rounded-2xl p-5 mb-6">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mapa de Calor de Liquidaciones</h3>
+            <div id="liq-heatmap" class="grid grid-cols-5 gap-1"></div>
+            <div class="flex justify-between mt-3 text-[10px] text-gray-600 font-mono">
+                <span>Soporte Fuerte</span>
+                <span>Precio Actual</span>
+                <span>Resistencia Fuerte</span>
+            </div>
+        </div>
+
         <div class="glass-card rounded-2xl p-5">
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <div>
@@ -1049,7 +1215,7 @@
                     <span id="ob-buy-pressure">50%</span>
                 </div>
                 <div class="h-2 rounded-full overflow-hidden bg-gray-800">
-                    <div id="ob-pressure-bar" class="h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width:50%"></div>
+                    <div id="ob-pressure-bar" class="h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-500" style="width:50%"></div>
                 </div>
             </div>
         </div>
@@ -1065,27 +1231,28 @@
         </div>
 
         <div class="flex flex-wrap justify-center gap-2 mb-6">
-            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-bronce">BRONCE 0+</span>
-            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-plata">PLATA 50+</span>
-            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-oro">ORO 200+</span>
-            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-platino">PLATINO 500+</span>
-            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-maestro">MAESTRO 1000+</span>
-            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-leyenda">LEYENDA 5000+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-bronce">🥉 BRONCE 0+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-plata">🥈 PLATA 50+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-oro">🥇 ORO 200+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-platino">💎 PLATINO 500+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-maestro">👑 MAESTRO 1000+</span>
+            <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold tier-leyenda">🌟 LEYENDA 5000+</span>
         </div>
 
-        <div id="user-position" class="hidden glass-card rounded-xl p-5 mb-6">
+        <div id="user-position" class="hidden glass-card rounded-xl p-5 mb-6 border border-accent/20">
             <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-3">Tu Posición</h3>
-            <div class="flex items-center gap-4">
-                <div class="text-3xl font-bold text-amber-400 font-mono" id="my-rank-pos">--</div>
-                <div class="flex-1">
+            <div class="flex items-center gap-4 flex-wrap">
+                <div class="text-3xl font-bold text-accent font-mono" id="my-rank-pos">--</div>
+                <div class="flex-1 min-w-[150px]">
                     <div class="flex justify-between text-xs mb-1.5">
-                        <span class="text-gray-500">Progreso al siguiente nivel</span>
+                        <span class="text-gray-500" id="rank-next-tier">Próximo: --</span>
                         <span class="text-amber-400 font-mono" id="rank-progress-text">--</span>
                     </div>
                     <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-amber-400 rounded-full transition-all duration-1000" id="rank-progress-bar" style="width:0%"></div>
+                        <div class="h-full bg-gradient-to-r from-accent to-accent-hover rounded-full transition-all duration-1000" id="rank-progress-bar" style="width:0%"></div>
                     </div>
                 </div>
+                <div id="rank-points-to-next" class="text-xs text-gray-500"></div>
             </div>
         </div>
 
@@ -1108,6 +1275,104 @@
                         <tr><td colspan="8" class="text-center py-8 text-gray-500">Cargando ranking...</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- ===== TAB: GLOBAL (En Vivo) ===== -->
+    <!-- ============================================================ -->
+    <section id="tab-global" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-bold tracking-tight">Predicciones en Vivo</h2>
+            <p class="text-sm text-gray-500 mt-1">Actividad de la comunidad en tiempo real</p>
+        </div>
+
+        <div id="global-stats" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div class="stat-card text-center">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider">Total</div>
+                <div class="text-xl font-bold text-gray-200 font-mono" id="g-total">0</div>
+            </div>
+            <div class="stat-card text-center">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider">Activas</div>
+                <div class="text-xl font-bold text-amber-400 font-mono" id="g-activas">0</div>
+            </div>
+            <div class="stat-card text-center">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider">Winrate</div>
+                <div class="text-xl font-bold text-green-400 font-mono" id="g-winrate">0%</div>
+            </div>
+            <div class="stat-card text-center">
+                <div class="text-[10px] text-gray-500 uppercase tracking-wider">Usuarios</div>
+                <div class="text-xl font-bold text-blue-400 font-mono" id="g-usuarios">0</div>
+            </div>
+        </div>
+
+        <div class="flex gap-1 mb-4 flex-wrap">
+            <button onclick="filterGlobal('todos')" class="px-3 py-1.5 rounded-lg text-xs bg-accent/20 text-accent font-medium no-select" data-gfilter="todos">Todos</button>
+            <button onclick="filterGlobal('activos')" class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" data-gfilter="activos">Activos</button>
+            <button onclick="filterGlobal('cerrados')" class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" data-gfilter="cerrados">Cerrados</button>
+            <button onclick="filterGlobal('sube')" class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" data-gfilter="sube">▲ Subidas</button>
+            <button onclick="filterGlobal('baja')" class="px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select" data-gfilter="baja">▼ Bajadas</button>
+        </div>
+
+        <div id="global-preds" class="space-y-2 scroll-area">
+            <p class="text-gray-600 text-center py-6 text-sm">Cargando predicciones globales...</p>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- ===== TAB: ANÁLISIS ===== -->
+    <!-- ============================================================ -->
+    <section id="tab-analysis" class="max-w-6xl mx-auto px-4 py-6 hidden relative z-10">
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-bold tracking-tight">Análisis de la Comunidad</h2>
+            <p class="text-sm text-gray-500 mt-1">Estadísticas y tendencias globales</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Total Preds</div><div class="text-lg font-bold text-gray-200 font-mono" id="a-total">0</div></div>
+            <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Winrate Global</div><div class="text-lg font-bold text-green-400 font-mono" id="a-winrate">0%</div></div>
+            <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Activas</div><div class="text-lg font-bold text-amber-400 font-mono" id="a-activas">0</div></div>
+            <div class="stat-card text-center"><div class="text-[10px] text-gray-500 uppercase tracking-wider">Usuarios</div><div class="text-lg font-bold text-blue-400 font-mono" id="a-usuarios">0</div></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div class="glass-card rounded-2xl p-5">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Distribución de Votos</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-green-400">▲ SUBE</span>
+                            <span class="font-mono" id="dist-sube-pct">50%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-500 rounded-full transition-all duration-1000" id="dist-sube-bar" style="width:50%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-red-400">▼ BAJA</span>
+                            <span class="font-mono" id="dist-baja-pct">50%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-red-500 rounded-full transition-all duration-1000" id="dist-baja-bar" style="width:50%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-5">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Mejores Períodos</h3>
+                <div id="best-periods" class="space-y-2">
+                    <p class="text-gray-600 text-sm">Cargando datos...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-5">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Últimos Resultados</h3>
+            <div id="latest-results" class="space-y-1.5">
+                <p class="text-gray-600 text-sm">Cargando resultados...</p>
             </div>
         </div>
     </section>
@@ -1205,7 +1470,6 @@
             </div>
         </div>
 
-        <!-- Conversiones rápidas -->
         <div class="glass-card rounded-2xl p-6 mt-4">
             <h3 class="font-bold text-sm uppercase tracking-wider text-gray-400 mb-4">Conversiones Rápidas</h3>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1367,7 +1631,7 @@
         // ================================================================
         //  ESTADO GLOBAL
         // ================================================================
-        let state = {
+        const state = {
             user: null,
             btcPrice: 0,
             prevPrice: 0,
@@ -1376,10 +1640,13 @@
             activePrediction: null,
             predictions: [],
             filterMyPreds: 'todos',
+            filterGlobal: 'todos',
             ranking: [],
+            globalPreds: [],
             botList: [],
             orderBook: { bids: [], asks: [] },
             achievements: [],
+            notifications: [],
             timeframe: '5s',
             chart: null,
             candleSeries: null,
@@ -1388,60 +1655,30 @@
             wsChart: null,
             wsOrderBook: null,
             predInterval: null,
-            tickInterval: null,
-            toasts: [],
-            notifications: [],
-            notifChannel: null,
-            predChannel: null,
+            notifCount: 0,
+            chartResize: null,
         };
 
         // ================================================================
         //  UTILIDADES
         // ================================================================
-        function $(id) { return document.getElementById(id); }
-
-        function fmtCurrency(n, d = 2) {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: d,
-                    maximumFractionDigits: d }).format(n);
-        }
-
-        function fmtCompact(n) {
-            if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
-            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-            return n.toFixed(2);
-        }
-
-        function fmtPercent(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
-
-        function fmtNumber(n) { return new Intl.NumberFormat('en-US').format(n); }
-
-        function getTier(points) {
-            let t = TIERS[0];
-            for (const x of TIERS) { if (points >= x.min) t = x; }
-            return t;
-        }
-
-        function getStreakMultiplier(streak) {
-            if (streak >= 10) return 3.0;
-            if (streak >= 5) return 2.0;
-            if (streak >= 3) return 1.5;
-            return 1.0;
-        }
-
-        function timeRemaining(cierre) {
-            const diff = new Date(cierre).getTime() - Date.now();
-            if (diff <= 0) return 'Finalizado';
-            const s = Math.floor(diff / 1000);
-            const m = Math.floor(s / 60);
-            const h = Math.floor(m / 60);
-            const d = Math.floor(h / 24);
-            if (d > 0) return d + 'd ' + (h % 24) + 'h ' + (m % 60) + 'm';
-            if (h > 0) return h + 'h ' + (m % 60) + 'm ' + (s % 60) + 's';
-            if (m > 0) return m + 'm ' + (s % 60) + 's';
-            return s + 's';
-        }
+        const $ = id => document.getElementById(id);
+        const fmtCurrency = (n, d = 2) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD',
+            minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+        const fmtCompact = n => { if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T'; if (n >= 1e9) return (n / 1e9)
+                .toFixed(2) + 'B'; if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M'; if (n >= 1e3) return (n / 1e3).toFixed(
+                1) + 'K'; return n.toFixed(2); };
+        const fmtPercent = n => (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+        const fmtNumber = n => new Intl.NumberFormat('en-US').format(n);
+        const getTier = p => { let t = TIERS[0]; for (const x of TIERS) { if (p >= x.min) t = x; } return t; };
+        const getStreakMultiplier = s => { if (s >= 10) return 3.0; if (s >= 5) return 2.0; if (s >= 3) return 1.5; return 1.0; };
+        const timeRemaining = c => { const d = new Date(c).getTime() - Date.now(); if (d <= 0) return 'Finalizado'; const s =
+                Math.floor(d / 1000),
+                m = Math.floor(s / 60),
+                h = Math.floor(m / 60),
+                day = Math.floor(h / 24); if (day > 0) return day +
+                'd ' + (h % 24) + 'h ' + (m % 60) + 'm'; if (h > 0) return h + 'h ' + (m % 60) + 'm ' + (s % 60) +
+                's'; if (m > 0) return m + 'm ' + (s % 60) + 's'; return s + 's'; };
 
         function showToast(title, message, type = 'info') {
             const container = $('toast-container');
@@ -1485,10 +1722,14 @@
                         state.notifChannel = null; }
                     if (state.predInterval) { clearInterval(state.predInterval);
                         state.predInterval = null; }
-                    $('my-predictions').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+                    $('my-predictions').innerHTML =
+                        '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
                     $('active-prediction').classList.add('hidden');
                     $('user-pred-stats').classList.add('hidden');
+                    $('streak-display').classList.add('hidden');
                     renderAchievements();
+                    loadGlobalPreds();
+                    loadRanking();
                 }
             });
         }
@@ -1531,8 +1772,11 @@
                 loadRanking();
                 loadActivePrediction();
                 renderAchievements();
+                updateStreakDisplay();
                 subscribePredChanges();
                 subscribeNotifications();
+                loadGlobalPreds();
+                loadAnalysis();
             } catch (e) { console.error('Error loading user:', e); }
         }
 
@@ -1574,9 +1818,11 @@
             state.user = null;
             state.achievements = [];
             updateUI();
-            $('my-predictions').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+            $('my-predictions').innerHTML =
+                '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
             $('active-prediction').classList.add('hidden');
             $('user-pred-stats').classList.add('hidden');
+            $('streak-display').classList.add('hidden');
             renderAchievements();
             showToast('Sesión cerrada', 'Hasta pronto', 'info');
         }
@@ -1601,7 +1847,7 @@
             modal.classList.remove('visible');
             modal.style.display = 'none';
             ['login-email', 'login-pass', 'register-username', 'register-email', 'register-pass'].forEach(id => $(id).value =
-            '');
+                '');
         }
 
         function switchAuthForm(type) {
@@ -1620,7 +1866,7 @@
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
 
         // ================================================================
-        //  PRECIO EN TIEMPO REAL (WebSocket)
+        //  PRECIO EN TIEMPO REAL
         // ================================================================
         function initPriceWS() {
             if (state.wsPrice) { state.wsPrice.close();
@@ -1666,7 +1912,6 @@
             }
 
             // Sparkline
-            const svg = $('hero-sparkline');
             const path = $('spark-path');
             const area = $('spark-area');
             if (state.priceHistory.length > 1) {
@@ -1691,9 +1936,12 @@
                 const h = Math.max(...r);
                 const l = Math.min(...r);
                 $('hero-range').textContent = 'H ' + fmtCurrency(h, 0) + ' / L ' + fmtCurrency(l, 0);
+                $('hero-high-label').textContent = 'H ' + fmtCurrency(h, 0);
+                $('hero-low-label').textContent = 'L ' + fmtCurrency(l, 0);
+                $('header-range').textContent = 'H ' + fmtCurrency(h, 0) + ' L ' + fmtCurrency(l, 0);
             }
 
-            // Actualizar predicción activa
+            // Active prediction
             if (state.activePrediction) {
                 const start = state.activePrediction.precio_inicial || 0;
                 if (start > 0) {
@@ -1707,8 +1955,8 @@
                 }
             }
 
-            // Conversiones
             updateConversions(price);
+            updateHeatmap(price);
         }
 
         function updateConversions(price) {
@@ -1720,8 +1968,26 @@
             });
         }
 
+        function updateHeatmap(price) {
+            const container = $('liq-heatmap');
+            if (!container || !price) return;
+            const range = price * 0.15;
+            let html = '';
+            for (let i = 0; i < 15; i++) {
+                const p = price - range + (i / 14) * range * 2;
+                const dist = Math.abs(p - price) / price;
+                const intensity = Math.max(0, 1 - dist * 6);
+                const bg = p < price ? `rgba(34,197,94,${intensity*0.5+0.05})` :
+                    `rgba(239,68,68,${intensity*0.5+0.05})`;
+                const isCurrent = Math.abs(p - price) < price * 0.005;
+                html +=
+                    `<div class="heatmap-cell rounded-lg p-1.5 text-[8px] font-mono text-center ${isCurrent?'ring-2 ring-accent ring-offset-2 ring-offset-background':''}" style="background:${bg};color:${isCurrent?'#f7931a':'#94a3b8'}">${(p/1000).toFixed(1)}K</div>`;
+            }
+            container.innerHTML = html;
+        }
+
         // ================================================================
-        //  MERCADO (Fetch + WebSocket Chart)
+        //  MERCADO
         // ================================================================
         async function fetchMarketData() {
             try {
@@ -1761,7 +2027,7 @@
                     else if (val >= 75) color = '#22c55e';
                     $('fng-value').style.color = color;
                     $('fng-bar').style.width = val + '%';
-                    let cls = 'text-xs font-bold px-2 py-1 rounded-md ';
+                    let cls = 'text-xs font-bold px-3 py-1 rounded-md ';
                     if (val <= 20) cls += 'bg-red-500/20 text-red-400 border border-red-500/20';
                     else if (val <= 40) cls += 'bg-orange-500/20 text-orange-400 border border-orange-500/20';
                     else if (val <= 60) cls += 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/20';
@@ -1773,8 +2039,25 @@
             } catch (e) { console.log('Fear & Greed error:', e); }
         }
 
+        async function loadTicker() {
+            try {
+                const r = await fetch(
+                    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h'
+                    );
+                const data = await r.json();
+                let html = '';
+                data.forEach(c => {
+                    const ch = c.price_change_percentage_24h || 0;
+                    const cls = ch >= 0 ? 'positive' : 'negative';
+                    html +=
+                        `<span class="ticker-item">${c.symbol.toUpperCase()} <span class="${cls}">${(ch>=0?'+':'')+ch.toFixed(1)}%</span> <span class="price">${fmtCurrency(c.current_price,0)}</span></span>`;
+                });
+                $('ticker-content').innerHTML = html + html;
+            } catch (e) { console.log('Ticker error:', e); }
+        }
+
         // ================================================================
-        //  GRÁFICO DE VELAS (Lightweight Charts)
+        //  GRÁFICO DE VELAS
         // ================================================================
         let chartInitialized = false;
 
@@ -1813,13 +2096,12 @@
             loadChartData(state.timeframe);
             connectChartWS(state.timeframe);
 
-            const ro = new ResizeObserver(() => {
+            state.chartResize = new ResizeObserver(() => {
                 if (state.chart && container) {
                     state.chart.applyOptions({ width: container.clientWidth, height: container.clientHeight || 400 });
                 }
             });
-            ro.observe(container);
-            state._chartResize = ro;
+            state.chartResize.observe(container);
         }
 
         async function loadChartData(tf) {
@@ -1919,7 +2201,7 @@
         }
 
         // ================================================================
-        //  ORDER BOOK (WebSocket)
+        //  ORDER BOOK
         // ================================================================
         function initOrderBookWS() {
             if (state.wsOrderBook) { state.wsOrderBook.close();
@@ -1965,7 +2247,7 @@
             const imbalance = (totalBids - totalAsks) / (totalBids + totalAsks || 1);
             $('ob-imbalance').textContent = (imbalance * 100).toFixed(1) + '%';
             $('ob-imbalance').className = 'text-lg font-bold font-mono ' + (imbalance > 0.1 ? 'text-green-400' : imbalance <
-                -0.1 ? 'text-red-400' : 'text-gray-400');
+                -0.1 ? 'text-error' : 'text-gray-400');
 
             const pressure = (totalBids / (totalBids + totalAsks)) * 100;
             $('ob-buy-pressure').textContent = pressure.toFixed(1) + '%';
@@ -2055,27 +2337,38 @@
             $('pred-current-price').textContent = fmtCurrency(state.btcPrice || pred.precio_inicial, 0);
             $('vote-buttons').classList.add('hidden');
             document.querySelectorAll('.period-btn').forEach(b => b.disabled = true);
+            updatePredProgress(pred);
         }
 
         function updateActivePrediction(pred) {
             const tr = timeRemaining(pred.cierre);
             $('time-remaining').textContent = tr;
+            updatePredProgress(pred);
             if (tr === 'Finalizado') {
                 clearInterval(state.predInterval);
                 state.predInterval = null;
                 const badge = $('pred-status').querySelector('span');
                 if (badge) { badge.textContent = 'FINALIZANDO';
                     badge.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold badge-loss'; }
-                // Recargar después de un momento
                 setTimeout(() => { loadActivePrediction();
                     loadMyPredictions();
-                    loadRanking(); }, 3000);
+                    loadRanking();
+                    loadGlobalPreds();
+                    loadAnalysis(); }, 3000);
             }
+        }
+
+        function updatePredProgress(pred) {
+            const total = new Date(pred.cierre).getTime() - new Date(pred.creado).getTime();
+            const elapsed = Date.now() - new Date(pred.creado).getTime();
+            const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+            $('pred-progress').style.width = pct + '%';
         }
 
         async function loadMyPredictions() {
             if (!state.user) {
-                $('my-predictions').innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
+                $('my-predictions').innerHTML =
+                    '<p class="text-gray-600 text-center py-6 text-sm">Inicia sesión para ver tus predicciones</p>';
                 return;
             }
             try {
@@ -2095,7 +2388,8 @@
             else if (state.filterMyPreds === 'cerrados') list = list.filter(p => p.estado === 'cerrado');
 
             if (!list.length) {
-                container.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones en esta categoría</p>';
+                container.innerHTML =
+                    '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones en esta categoría</p>';
                 return;
             }
 
@@ -2109,19 +2403,19 @@
                     estadoTxt = '❌ FALLO'; }
                 const fecha = new Date(p.creado).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' ' +
                     new Date(p.creado).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                return `<div class="glass-card rounded-lg p-3.5 flex justify-between items-center fade-in">
-                    <div>
-                        <span class="font-bold text-sm">${p.periodo}</span>
-                        <span class="ml-2 ${dirCls} text-xs font-semibold">${p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA'}</span>
-                        <div class="text-[10px] text-gray-500 font-mono mt-0.5">${fmtCurrency(p.precio_inicial,0)} Inicio</div>
-                    </div>
-                    <div class="text-right">
-                        <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${estadoCls}">${estadoTxt}</span>
-                        ${activo ? `<div class="text-xs text-amber-400 font-mono">${timeRemaining(p.cierre)}</div>` : ''}
-                        ${p.precio_final ? `<div class="text-xs text-gray-400 font-mono">${fmtCurrency(p.precio_final,0)}</div>` : ''}
-                        <div class="text-[10px] text-gray-600 mt-1">${fecha}</div>
-                    </div>
-                </div>`;
+                return `<div class="pred-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in">
+                        <div>
+                            <span class="font-bold text-sm">${p.periodo}</span>
+                            <span class="ml-2 ${dirCls} text-xs font-semibold">${p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA'}</span>
+                            <div class="text-[10px] text-gray-500 font-mono mt-0.5">${fmtCurrency(p.precio_inicial,0)} Inicio</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${estadoCls}">${estadoTxt}</span>
+                            ${activo ? `<div class="text-xs text-amber-400 font-mono">${timeRemaining(p.cierre)}</div>` : ''}
+                            ${p.precio_final ? `<div class="text-xs text-gray-400 font-mono">${fmtCurrency(p.precio_final,0)}</div>` : ''}
+                            <div class="text-[10px] text-gray-600 mt-1">${fecha}</div>
+                        </div>
+                    </div>`;
             }).join('');
         }
 
@@ -2138,6 +2432,7 @@
         function updateUserStats() {
             if (!state.user) {
                 $('user-pred-stats').classList.add('hidden');
+                $('streak-display').classList.add('hidden');
                 return;
             }
             const total = state.predictions.filter(p => p.estado === 'cerrado').length;
@@ -2147,8 +2442,8 @@
             $('up-wins').textContent = wins;
             $('up-winrate').textContent = wr + '%';
             $('user-pred-stats').classList.remove('hidden');
+            updateStreakDisplay();
 
-            // Achievements preview
             const achEl = $('up-achievements');
             if (state.user.achievements && state.user.achievements.length > 0) {
                 const recent = state.user.achievements.slice(-3);
@@ -2161,8 +2456,24 @@
             }
         }
 
+        function updateStreakDisplay() {
+            if (!state.user) {
+                $('streak-display').classList.add('hidden');
+                return;
+            }
+            const mult = getStreakMultiplier(state.user.streak || 0);
+            $('streak-display').classList.remove('hidden');
+            $('streak-multiplier').textContent = '×' + mult.toFixed(1);
+            $('streak-count').textContent = '(Racha: ' + (state.user.streak || 0) + ')';
+            if (state.user.streak >= 3) {
+                $('streak-multiplier').className = 'text-lg font-bold text-purple-400 font-mono glow-pulse';
+            } else {
+                $('streak-multiplier').className = 'text-lg font-bold text-purple-400 font-mono';
+            }
+        }
+
         // ================================================================
-        //  SUSCRIPCIÓN REALTIME (Predicciones)
+        //  SUSCRIPCIÓN REALTIME
         // ================================================================
         function subscribePredChanges() {
             if (state.predChannel) { sb.removeChannel(state.predChannel);
@@ -2178,10 +2489,77 @@
                     loadActivePrediction();
                     loadMyPredictions();
                     loadRanking();
-                    // Verificar logros
-                    if (state.user) checkAchievements();
+                    loadGlobalPreds();
+                    loadAnalysis();
+                    if (payload.eventType === 'UPDATE' && payload.new.estado === 'cerrado') {
+                        const pred = payload.new;
+                        if (pred.resultado === 'acierto') {
+                            const pts = pred.puntos_ganados || 0;
+                            showToast('🎉 ¡Acierto!', '+' + pts + ' pts · Racha ' + (state.user?.streak || 0),
+                            'success');
+                            if ((state.user?.streak || 0) >= 3) triggerConfetti(60 + (state.user?.streak || 0) * 5);
+                            checkAchievements();
+                        } else {
+                            showToast('❌ Fallo', Math.abs(pred.puntos_ganados || 0) + ' pts perdidos', 'error');
+                            checkAchievements();
+                        }
+                    }
                 }
             }).subscribe();
+        }
+
+        function subscribeNotifications() {
+            if (state.notifChannel) { sb.removeChannel(state.notifChannel);
+                state.notifChannel = null; }
+            if (!state.user) return;
+            state.notifChannel = sb.channel('user-notifs').on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'notificaciones',
+                filter: 'usuario_id=eq.' + state.user.id
+            }, (payload) => {
+                const n = payload.new;
+                showToast(n.title || 'Notificación', n.message || '', n.type || 'info');
+                state.notifCount++;
+                updateNotifBadge();
+                addNotifToList(n);
+            }).subscribe();
+        }
+
+        function updateNotifBadge() {
+            const badge = $('notif-badge');
+            if (state.notifCount > 0) {
+                badge.textContent = state.notifCount > 9 ? '9+' : state.notifCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function toggleNotifications() {
+            const panel = $('notif-panel');
+            panel.classList.toggle('open');
+            if (panel.classList.contains('open')) {
+                state.notifCount = 0;
+                updateNotifBadge();
+            }
+        }
+
+        function addNotifToList(n) {
+            const list = $('notif-list');
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️', achievement: '🏆', level_up: '⬆️' };
+            const el = document.createElement('div');
+            el.className = 'text-xs p-2.5 rounded-lg bg-white/5 border border-white/5';
+            el.innerHTML =
+                `<div class="flex items-center gap-2"><span>${icons[n.type]||'ℹ️'}</span><span class="font-semibold">${n.title}</span><span class="text-gray-500 ml-auto">${new Date().toLocaleTimeString()}</span></div><div class="text-gray-400 mt-0.5">${n.message}</div>`;
+            list.prepend(el);
+            if (list.children.length > 20) list.removeChild(list.lastChild);
+        }
+
+        function clearNotifications() {
+            $('notif-list').innerHTML = '';
+            state.notifCount = 0;
+            updateNotifBadge();
         }
 
         // ================================================================
@@ -2223,7 +2601,8 @@
         function renderRanking() {
             const tbody = $('ranking-body');
             if (!state.ranking.length) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">Sin usuarios registrados</td></tr>';
+                tbody.innerHTML =
+                    '<tr><td colspan="8" class="text-center py-8 text-gray-500">Sin usuarios registrados</td></tr>';
                 return;
             }
 
@@ -2234,18 +2613,17 @@
                 const esYo = state.user && u.uid === state.user.id;
                 const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
                 return `<tr class="${esYo ? 'bg-accent/5' : ''} border-t border-white/5 hover:bg-white/[0.02] transition">
-                    <td class="py-3 px-4 font-bold text-xs ${i < 3 ? 'text-amber-400' : 'text-gray-500'}">${medal}</td>
-                    <td class="py-3 px-4"><span class="font-semibold text-sm">${u.username}</span>${u.isBot ? ' <span class="text-xs text-blue-400">🤖</span>' : ''}${esYo ? ' <span class="text-[10px] text-accent">TU</span>' : ''}</td>
-                    <td class="py-3 px-4 text-center hidden sm:table-cell"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${u.tier.cls}">${u.tier.icon} ${u.tier.name}</span></td>
-                    <td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">${u.points}</td>
-                    <td class="py-3 px-4 text-center text-green-400 font-mono text-sm hidden md:table-cell">${u.wins}</td>
-                    <td class="py-3 px-4 text-center text-gray-500 font-mono text-sm hidden lg:table-cell">${u.totalVotes}</td>
-                    <td class="py-3 px-4 text-center font-medium text-sm ${u.winrate >= 50 ? 'text-success' : 'text-error'}">${u.winrate.toFixed(1)}%</td>
-                    <td class="py-3 px-4 text-center hidden sm:table-cell text-xs text-gray-500">${u.streak > 0 ? (u.streak >= 5 ? '🔥' : '⚡') + ' ' + u.streak : '-'}</td>
-                </tr>`;
+                        <td class="py-3 px-4 font-bold text-xs ${i < 3 ? 'text-amber-400' : 'text-gray-500'}">${medal}</td>
+                        <td class="py-3 px-4"><span class="font-semibold text-sm">${u.username}</span>${u.isBot ? ' <span class="text-xs text-blue-400">🤖</span>' : ''}${esYo ? ' <span class="text-[10px] text-accent font-bold">TU</span>' : ''}</td>
+                        <td class="py-3 px-4 text-center hidden sm:table-cell"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${u.tier.cls}">${u.tier.icon} ${u.tier.name}</span></td>
+                        <td class="py-3 px-4 text-center font-bold text-amber-400 font-mono text-sm">${u.points}</td>
+                        <td class="py-3 px-4 text-center text-green-400 font-mono text-sm hidden md:table-cell">${u.wins}</td>
+                        <td class="py-3 px-4 text-center text-gray-500 font-mono text-sm hidden lg:table-cell">${u.totalVotes}</td>
+                        <td class="py-3 px-4 text-center font-medium text-sm ${u.winrate >= 50 ? 'text-success' : 'text-error'}">${u.winrate.toFixed(1)}%</td>
+                        <td class="py-3 px-4 text-center hidden sm:table-cell text-xs text-gray-500">${u.streak > 0 ? (u.streak >= 5 ? '🔥' : '⚡') + ' ' + u.streak : '-'}</td>
+                    </tr>`;
             }).join('');
 
-            // Posición del usuario
             if (myPos > 0 && state.user) {
                 const el = $('user-position');
                 el.classList.remove('hidden');
@@ -2255,15 +2633,158 @@
                 const next = idx < TIERS.length - 1 ? TIERS[idx + 1] : null;
                 if (next) {
                     const prog = Math.min(100, ((state.user.points || 0) / next.min) * 100);
+                    $('rank-next-tier').textContent = 'Próximo: ' + next.icon + ' ' + next.name;
                     $('rank-progress-text').textContent = (state.user.points || 0) + ' / ' + next.min + ' pts';
                     $('rank-progress-bar').style.width = prog + '%';
+                    $('rank-points-to-next').textContent = (next.min - (state.user.points || 0)) + ' pts para subir';
                 } else {
-                    $('rank-progress-text').textContent = 'NIVEL MÁXIMO';
+                    $('rank-next-tier').textContent = '🏆 Nivel Máximo';
+                    $('rank-progress-text').textContent = '100%';
                     $('rank-progress-bar').style.width = '100%';
+                    $('rank-points-to-next').textContent = '¡Leyenda!';
                 }
             } else {
                 $('user-position').classList.add('hidden');
             }
+        }
+
+        // ================================================================
+        //  PREDICCIONES GLOBALES
+        // ================================================================
+        async function loadGlobalPreds() {
+            try {
+                const { data, error } = await sb.from('predicciones').select('*').order('creado', { ascending: false })
+                    .limit(100);
+                if (error) throw error;
+                state.globalPreds = data || [];
+                renderGlobalPreds();
+                updateGlobalStats();
+            } catch (e) { console.error('Error loading global preds:', e); }
+        }
+
+        function renderGlobalPreds() {
+            const container = $('global-preds');
+            let list = state.globalPreds;
+            if (state.filterGlobal === 'activos') list = list.filter(p => p.estado === 'activo');
+            else if (state.filterGlobal === 'cerrados') list = list.filter(p => p.estado === 'cerrado');
+            else if (state.filterGlobal === 'sube') list = list.filter(p => p.voto === 'sube');
+            else if (state.filterGlobal === 'baja') list = list.filter(p => p.voto === 'baja');
+
+            if (!list.length) {
+                container.innerHTML = '<p class="text-gray-600 text-center py-6 text-sm">No hay predicciones que mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = list.slice(0, 50).map(p => {
+                const activo = p.estado === 'activo';
+                const esMio = state.user && p.usuario_id === state.user.id;
+                const dirCls = p.voto === 'sube' ? 'text-green-400' : 'text-red-400';
+                let estadoCls, estadoTxt;
+                if (activo) { estadoCls = 'badge-pending';
+                    estadoTxt = 'PENDIENTE'; } else if (p.resultado === 'acierto') { estadoCls = 'badge-win';
+                    estadoTxt = '✅ ACIERTO +' + (p.puntos_ganados || 0); } else { estadoCls = 'badge-loss';
+                    estadoTxt = '❌ FALLO'; }
+                const fecha = new Date(p.creado).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) + ' ' +
+                    new Date(p.creado).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                return `<div class="pred-row glass-card rounded-lg p-3.5 flex justify-between items-center fade-in">
+                        <div>
+                            <span class="font-bold text-sm">${p.periodo}</span>
+                            <span class="ml-2 ${dirCls} text-xs font-semibold">${p.voto === 'sube' ? '▲ SUBE' : '▼ BAJA'}</span>
+                            <div class="text-xs text-gray-500 mt-0.5">${p.usuario_id === state.user?.id ? 'Tú' : 'Usuario ' + p.usuario_id.slice(0,8)}${esMio ? ' <span class="text-accent text-[10px]">(tú)</span>' : ''}</div>
+                            <div class="text-[10px] text-gray-500 font-mono">${fmtCurrency(p.precio_inicial,0)} Inicio</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${estadoCls}">${estadoTxt}</span>
+                            ${activo ? `<div class="text-xs text-amber-400 font-mono">${timeRemaining(p.cierre)}</div>` : ''}
+                            ${p.precio_final ? `<div class="text-xs text-gray-400 font-mono">${fmtCurrency(p.precio_final,0)}</div>` : ''}
+                            <div class="text-[10px] text-gray-600 mt-1">${fecha}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function updateGlobalStats() {
+            const total = state.globalPreds.length;
+            const activas = state.globalPreds.filter(p => p.estado === 'activo').length;
+            const cerradas = state.globalPreds.filter(p => p.estado === 'cerrado');
+            const aciertos = cerradas.filter(p => p.resultado === 'acierto').length;
+            const wr = cerradas.length > 0 ? ((aciertos / cerradas.length) * 100).toFixed(1) : 0;
+            const usuarios = new Set(state.globalPreds.map(p => p.usuario_id)).size;
+            $('g-total').textContent = total;
+            $('g-activas').textContent = activas;
+            $('g-winrate').textContent = wr + '%';
+            $('g-usuarios').textContent = usuarios;
+        }
+
+        function filterGlobal(filter) {
+            state.filterGlobal = filter;
+            document.querySelectorAll('[data-gfilter]').forEach(b => {
+                b.className = b.dataset.gfilter === filter ?
+                    'px-3 py-1.5 rounded-lg text-xs bg-accent/20 text-accent font-medium no-select' :
+                    'px-3 py-1.5 rounded-lg text-xs bg-white/5 text-gray-500 hover:text-gray-300 transition no-select';
+            });
+            renderGlobalPreds();
+        }
+
+        // ================================================================
+        //  ANÁLISIS
+        // ================================================================
+        async function loadAnalysis() {
+            try {
+                const { data, error } = await sb.from('predicciones').select('*');
+                if (error) throw error;
+                const preds = data || [];
+                const total = preds.length;
+                const activas = preds.filter(p => p.estado === 'activo').length;
+                const cerradas = preds.filter(p => p.estado === 'cerrado');
+                const aciertos = cerradas.filter(p => p.resultado === 'acierto').length;
+                const wr = cerradas.length > 0 ? ((aciertos / cerradas.length) * 100).toFixed(1) : 0;
+                const usuarios = new Set(preds.map(p => p.usuario_id)).size;
+
+                $('a-total').textContent = total;
+                $('a-winrate').textContent = wr + '%';
+                $('a-activas').textContent = activas;
+                $('a-usuarios').textContent = usuarios;
+
+                // Distribución
+                const subidas = preds.filter(p => p.voto === 'sube').length;
+                const bajadas = preds.filter(p => p.voto === 'baja').length;
+                const totalV = subidas + bajadas;
+                if (totalV > 0) {
+                    const ps = ((subidas / totalV) * 100).toFixed(1);
+                    const pb = ((bajadas / totalV) * 100).toFixed(1);
+                    $('dist-sube-bar').style.width = ps + '%';
+                    $('dist-sube-pct').textContent = ps + '%';
+                    $('dist-baja-bar').style.width = pb + '%';
+                    $('dist-baja-pct').textContent = pb + '%';
+                }
+
+                // Mejores períodos
+                const periodStats = {};
+                cerradas.forEach(p => {
+                    if (!periodStats[p.periodo]) periodStats[p.periodo] = { total: 0, wins: 0 };
+                    periodStats[p.periodo].total++;
+                    if (p.resultado === 'acierto') periodStats[p.periodo].wins++;
+                });
+                const best = Object.entries(periodStats).map(([k, v]) => ({ periodo: k, wr: v.total > 0 ? ((v.wins / v
+                        .total) * 100).toFixed(1) : 0, total: v.total })).sort((a, b) => parseFloat(b.wr) - parseFloat(
+                    a.wr)).slice(0, 5);
+                $('best-periods').innerHTML = best.length > 0 ? best.map(p =>
+                    `<div class="flex justify-between items-center text-sm"><span class="text-gray-500">${p.periodo}</span><span class="font-bold font-mono ${p.wr >= 50 ? 'text-green-400' : 'text-red-400'}">${p.wr}% <span class="text-gray-600 text-xs">(${p.total})</span></span></div>`
+                    ).join('') : '<p class="text-gray-600 text-sm">Sin datos suficientes</p>';
+
+                // Últimos resultados
+                const latest = cerradas.sort((a, b) => new Date(b.cerrado || b.creado) - new Date(a.cerrado || a.creado))
+                    .slice(0, 10);
+                $('latest-results').innerHTML = latest.length > 0 ? latest.map(p => {
+                    const esA = p.resultado === 'acierto';
+                    return `<div class="flex justify-between items-center text-xs p-2.5 rounded-lg ${esA ? 'bg-green-500/5 border border-green-500/10' : 'bg-red-500/5 border border-red-500/10'}">
+                            <span class="text-gray-400">${p.periodo} - ${p.voto === 'sube' ? '▲' : '▼'}</span>
+                            <span class="${esA ? 'text-green-400' : 'text-red-400'} font-bold font-mono">${esA ? '+' + (p.puntos_ganados || 1) : 'FALLO'}</span>
+                        </div>`;
+                }).join('') : '<p class="text-gray-600 text-sm">Sin resultados aún</p>';
+
+            } catch (e) { console.error('Error loading analysis:', e); }
         }
 
         // ================================================================
@@ -2283,29 +2804,29 @@
             grid.innerHTML = ACHIEVEMENTS.map(a => {
                 const unlockedFlag = unlocked.includes(a.id);
                 const progress = unlockedFlag ? 100 : calcAchProgress(a);
-                return `<div class="glass-card rounded-xl p-4 ${unlockedFlag ? 'border-accent/20' : 'opacity-60'} transition hover:opacity-100">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg ${unlockedFlag ? 'bg-accent/20 text-accent' : 'bg-gray-800 text-gray-600'}">${a.icon}</div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-sm ${unlockedFlag ? 'text-accent' : 'text-gray-400'}">${a.name}</div>
-                                    <div class="text-xs text-gray-600 mt-0.5">${a.desc}</div>
+                return `<div class="glass-card rounded-xl p-4 ${unlockedFlag ? 'border-accent/20 bg-accent/5' : 'opacity-60'} transition hover:opacity-100">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg ${unlockedFlag ? 'bg-accent/20 text-accent' : 'bg-gray-800 text-gray-600'}">${a.icon}</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="font-bold text-sm ${unlockedFlag ? 'text-accent' : 'text-gray-400'}">${a.name}</div>
+                                        <div class="text-xs text-gray-600 mt-0.5">${a.desc}</div>
+                                    </div>
+                                    <div class="text-xs font-bold ${unlockedFlag ? 'text-accent' : 'text-gray-600'}">+${a.pts} pts</div>
                                 </div>
-                                <div class="text-xs font-bold ${unlockedFlag ? 'text-accent' : 'text-gray-600'}">+${a.pts} pts</div>
-                            </div>
-                            <div class="mt-2">
-                                <div class="flex justify-between text-[10px] text-gray-600 mb-1">
-                                    <span>${unlockedFlag ? '✅ DESBLOQUEADO' : 'EN PROGRESO'}</span>
-                                    <span>${Math.round(progress)}%</span>
-                                </div>
-                                <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                                    <div class="h-full ${unlockedFlag ? 'bg-accent' : 'bg-gray-600'} rounded-full transition-all duration-1000" style="width:${progress}%"></div>
+                                <div class="mt-2">
+                                    <div class="flex justify-between text-[10px] text-gray-600 mb-1">
+                                        <span>${unlockedFlag ? '✅ DESBLOQUEADO' : 'EN PROGRESO'}</span>
+                                        <span>${Math.round(progress)}%</span>
+                                    </div>
+                                    <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                                        <div class="h-full ${unlockedFlag ? 'bg-accent' : 'bg-gray-600'} rounded-full transition-all duration-1000" style="width:${progress}%"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>`;
+                    </div>`;
             }).join('');
         }
 
@@ -2415,10 +2936,9 @@
                 renderAchievements();
                 updateUserStats();
 
-                // Mostrar logros desbloqueados
                 newAch.forEach(a => {
                     showToast('🏆 ¡Logro desbloqueado!', a.name + ' +' + a.pts + ' pts', 'success');
-                    triggerConfetti(60);
+                    triggerConfetti(80);
                 });
             }
         }
@@ -2439,7 +2959,8 @@
         function renderBots() {
             const tbody = $('bots-body');
             if (!state.botList.length) {
-                tbody.innerHTML = '<tr><td colspan="10" class="text-center py-8 text-gray-500">No hay bots creados</td></tr>';
+                tbody.innerHTML =
+                    '<tr><td colspan="10" class="text-center py-8 text-gray-500">No hay bots creados</td></tr>';
                 return;
             }
             tbody.innerHTML = state.botList.map((b, i) => {
@@ -2448,17 +2969,17 @@
                 const personalityMap = { aggressive: '🔥 Agresiva', balanced: '⚖️ Balanceada', conservative: '🛡️ Conservadora',
                     random: '🎲 Aleatoria', whale: '🐋 Whale', newbie: '🐣 Novato' };
                 return `<tr class="border-t border-white/5 hover:bg-white/[0.02] transition">
-                    <td class="py-2.5 px-3"><span class="font-semibold text-sm">${b.username}</span> <span class="text-xs text-blue-400">🤖</span></td>
-                    <td class="py-2.5 px-3 text-xs text-gray-400">${personalityMap[b.personality] || b.personality}</td>
-                    <td class="py-2.5 px-3 text-center"><div class="flex items-center justify-center gap-1"><div class="w-12 h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:${Math.round((b.skill||0.5)*100)}%"></div></div><span class="text-[10px] text-gray-500">${Math.round((b.skill||0.5)*100)}%</span></div></td>
-                    <td class="py-2.5 px-3 text-center"><span class="text-xs font-bold ${b.is_active ? 'text-success' : 'text-gray-500'}">${b.is_active ? 'ACTIVO' : 'INACTIVO'}</span></td>
-                    <td class="py-2.5 px-3 text-center font-mono text-accent text-sm">${b.puntos || 0}</td>
-                    <td class="py-2.5 px-3 text-center font-mono text-green-400 text-sm">${b.aciertos || 0}</td>
-                    <td class="py-2.5 px-3 text-center font-mono text-gray-400 text-sm">${b.total_votos || 0}</td>
-                    <td class="py-2.5 px-3 text-center font-mono text-sm ${wr >= 50 ? 'text-green-400' : 'text-error'}">${wr.toFixed(1)}%</td>
-                    <td class="py-2.5 px-3 text-center text-xs text-gray-500">${b.racha > 0 ? (b.racha >= 5 ? '🔥' : '⚡') + ' ' + b.racha : '-'}</td>
-                    <td class="py-2.5 px-3 text-center"><button onclick="toggleBot('${b.uid}')" class="text-xs px-3 py-1.5 rounded-lg ${b.is_active ? 'bg-error/10 text-error hover:bg-error/20 border border-error/20' : 'bg-success/10 text-success hover:bg-success/20 border border-success/20'}">${b.is_active ? 'Pausar' : 'Reanudar'}</button></td>
-                </tr>`;
+                        <td class="py-2.5 px-3"><span class="font-semibold text-sm">${b.username}</span> <span class="text-xs text-blue-400">🤖</span></td>
+                        <td class="py-2.5 px-3 text-xs text-gray-400">${personalityMap[b.personality] || b.personality}</td>
+                        <td class="py-2.5 px-3 text-center"><div class="flex items-center justify-center gap-1"><div class="w-12 h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-accent rounded-full" style="width:${Math.round((b.skill||0.5)*100)}%"></div></div><span class="text-[10px] text-gray-500">${Math.round((b.skill||0.5)*100)}%</span></div></td>
+                        <td class="py-2.5 px-3 text-center"><span class="text-xs font-bold ${b.is_active ? 'text-success' : 'text-gray-500'}">${b.is_active ? 'ACTIVO' : 'INACTIVO'}</span></td>
+                        <td class="py-2.5 px-3 text-center font-mono text-accent text-sm">${b.puntos || 0}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-green-400 text-sm">${b.aciertos || 0}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-gray-400 text-sm">${b.total_votos || 0}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-sm ${wr >= 50 ? 'text-green-400' : 'text-error'}">${wr.toFixed(1)}%</td>
+                        <td class="py-2.5 px-3 text-center text-xs text-gray-500">${b.racha > 0 ? (b.racha >= 5 ? '🔥' : '⚡') + ' ' + b.racha : '-'}</td>
+                        <td class="py-2.5 px-3 text-center"><button onclick="toggleBot('${b.uid}')" class="text-xs px-3 py-1.5 rounded-lg ${b.is_active ? 'bg-error/10 text-error hover:bg-error/20 border border-error/20' : 'bg-success/10 text-success hover:bg-success/20 border border-success/20'}">${b.is_active ? 'Pausar' : 'Reanudar'}</button></td>
+                    </tr>`;
             }).join('');
         }
 
@@ -2574,44 +3095,6 @@
         }
 
         // ================================================================
-        //  NOTIFICACIONES
-        // ================================================================
-        let notifCount = 0;
-
-        function subscribeNotifications() {
-            if (state.notifChannel) { sb.removeChannel(state.notifChannel);
-                state.notifChannel = null; }
-            if (!state.user) return;
-            state.notifChannel = sb.channel('user-notifs').on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'notificaciones',
-                filter: 'usuario_id=eq.' + state.user.id
-            }, (payload) => {
-                const n = payload.new;
-                showToast(n.title || 'Notificación', n.message || '', n.type || 'info');
-                notifCount++;
-                updateNotifBadge();
-            }).subscribe();
-        }
-
-        function updateNotifBadge() {
-            const badge = $('notif-badge');
-            if (notifCount > 0) {
-                badge.textContent = notifCount > 9 ? '9+' : notifCount;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        function toggleNotifications() {
-            showToast('Notificaciones', notifCount + ' notificaciones pendientes', 'info');
-            notifCount = 0;
-            updateNotifBadge();
-        }
-
-        // ================================================================
         //  CALCULADORA
         // ================================================================
         function calcTrade() {
@@ -2669,6 +3152,7 @@
                 userMenu.classList.add('hidden');
                 userMenu.classList.remove('flex');
                 $('user-pred-stats').classList.add('hidden');
+                $('streak-display').classList.add('hidden');
             }
         }
 
@@ -2681,32 +3165,18 @@
                 b.classList.toggle('active', b.dataset.tab === tab);
             });
 
-            // Cargar datos según tab
-            if (tab === 'market') { initChart();
-                fetchMarketData(); }
-            if (tab === 'orderbook') { initOrderBookWS(); }
-            if (tab === 'ranking') loadRanking();
-            if (tab === 'bots') loadBots();
-            if (tab === 'achievements') renderAchievements();
-            if (tab === 'calculator') calcTrade();
-        }
-
-        // ================================================================
-        //  TICKER
-        // ================================================================
-        async function loadTicker() {
-            try {
-                const r = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h');
-                const data = await r.json();
-                let html = '';
-                data.forEach(c => {
-                    const ch = c.price_change_percentage_24h || 0;
-                    const col = ch >= 0 ? 'text-green-400' : 'text-red-400';
-                    html +=
-                        `<span class="ticker-item">${c.symbol.toUpperCase()} <span class="${col}">${(ch>=0?'+':'')+ch.toFixed(1)}%</span> <span class="text-gray-400">${fmtCurrency(c.current_price,0)}</span></span>`;
-                });
-                $('ticker-content').innerHTML = html + html;
-            } catch (e) { console.log('Ticker error:', e); }
+            setTimeout(() => {
+                if (tab === 'market') { initChart();
+                    fetchMarketData(); }
+                if (tab === 'orderbook') { initOrderBookWS();
+                    updateHeatmap(state.btcPrice); }
+                if (tab === 'ranking') loadRanking();
+                if (tab === 'global') loadGlobalPreds();
+                if (tab === 'analysis') loadAnalysis();
+                if (tab === 'bots') loadBots();
+                if (tab === 'achievements') renderAchievements();
+                if (tab === 'calculator') calcTrade();
+            }, 50);
         }
 
         // ================================================================
@@ -2728,17 +3198,19 @@
             loadTicker();
             loadRanking();
             loadBots();
+            loadGlobalPreds();
+            loadAnalysis();
             calcTrade();
 
             setInterval(fetchMarketData, 65000);
             setInterval(fetchFearGreed, 65000);
             setInterval(loadTicker, 65000);
             setInterval(updateClock, 1000);
+            setInterval(loadGlobalPreds, 15000);
+            setInterval(loadAnalysis, 30000);
 
-            // Habilitar period buttons después de carga
             document.querySelectorAll('.period-btn').forEach(b => b.disabled = false);
 
-            // Cargar predicciones si usuario ya está logueado
             setTimeout(() => {
                 if (state.user) {
                     loadMyPredictions();
@@ -2747,15 +3219,27 @@
                 }
             }, 1000);
 
-            console.log('🚀 BTCPredict iniciado');
+            console.log('🚀 BTCPredict Pro iniciado');
+            console.log('📊 ' + ACHIEVEMENTS.length + ' logros disponibles');
+            console.log('🎯 ' + Object.keys(PERIODS).length + ' períodos');
+            console.log('🔗 Conectado a Supabase');
+            console.log('📡 WebSocket de precio activo');
         }
 
-        // Iniciar cuando DOM esté listo
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
             init();
         }
+
+        // Cerrar notificaciones al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const panel = $('notif-panel');
+            const btn = e.target.closest('button[onclick="toggleNotifications()"]');
+            if (panel && panel.classList.contains('open') && !panel.contains(e.target) && !btn) {
+                panel.classList.remove('open');
+            }
+        });
     </script>
 </body>
 </html>
