@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="BTCPredict Pro - Plataforma profesional de predicción de Bitcoin">
-    <meta name="keywords" content="Bitcoin, BTC, predicción, trading, criptomonedas">
     <title>BTCPredict Pro</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,7 +108,6 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(247,147,26,0.4);
         }
-        .btn-primary:active { transform: translateY(0) scale(0.98); }
         
         .btn-secondary {
             background: rgba(255,255,255,0.05);
@@ -365,6 +363,77 @@
         
         @media (max-width: 768px) { .modal-content { padding: 24px; margin: 10px; } }
         @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } .ticker-content { animation: none; } }
+        
+        /* Marcador de predicción en el gráfico */
+        .prediction-marker {
+            position: absolute;
+            z-index: 20;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .prediction-marker .marker-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #f7931a;
+            background: rgba(247,147,26,0.3);
+            box-shadow: 0 0 20px rgba(247,147,26,0.5);
+            animation: pulse-marker 1.5s ease-in-out infinite;
+        }
+        .prediction-marker .marker-line {
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(to bottom, #f7931a, transparent);
+            opacity: 0.6;
+            margin-top: 2px;
+        }
+        .prediction-marker .marker-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #f7931a;
+            background: rgba(0,0,0,0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 2px;
+            white-space: nowrap;
+            border: 1px solid rgba(247,147,26,0.3);
+        }
+        .prediction-marker.win .marker-dot {
+            border-color: #22c55e;
+            background: rgba(34,197,94,0.3);
+            box-shadow: 0 0 20px rgba(34,197,94,0.5);
+        }
+        .prediction-marker.win .marker-label {
+            color: #22c55e;
+            border-color: rgba(34,197,94,0.3);
+        }
+        .prediction-marker.loss .marker-dot {
+            border-color: #ef4444;
+            background: rgba(239,68,68,0.3);
+            box-shadow: 0 0 20px rgba(239,68,68,0.5);
+        }
+        .prediction-marker.loss .marker-label {
+            color: #ef4444;
+            border-color: rgba(239,68,68,0.3);
+        }
+        .prediction-marker .marker-line.target {
+            height: 40px;
+            background: linear-gradient(to bottom, #8b5cf6, transparent);
+            opacity: 0.4;
+            border: 1px dashed rgba(139,92,246,0.3);
+        }
+        .prediction-marker .marker-label.target {
+            color: #8b5cf6;
+            border-color: rgba(139,92,246,0.3);
+        }
+        
+        @keyframes pulse-marker {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -374,7 +443,7 @@
 <div class="bg-orb bg-orb-1"></div>
 <div class="bg-orb bg-orb-2"></div>
 
-<!-- ========== HEADER ========== -->
+<!-- HEADER -->
 <header class="sticky top-0 z-40 glass border-b border-white/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -445,7 +514,7 @@
     </div>
 </header>
 
-<!-- ========== DESKTOP NAV ========== -->
+<!-- DESKTOP NAV -->
 <nav class="hidden lg:block sticky top-[73px] z-30 glass border-b border-white/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-1 py-1.5 overflow-x-auto">
@@ -473,7 +542,7 @@
     </div>
 </nav>
 
-<!-- ========== MAIN CONTENT ========== -->
+<!-- MAIN CONTENT -->
 <main class="mobile-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
 
     <!-- TAB: PREDECIR -->
@@ -670,12 +739,40 @@
                 </select>
             </div>
         </div>
-        <div class="glass rounded-2xl p-4 h-[400px] md:h-[500px] relative">
+        
+        <div class="glass rounded-2xl p-4 h-[400px] md:h-[500px] relative chart-wrapper" id="chart-wrapper">
             <div id="chart-container" class="w-full h-full"></div>
             <div id="chart-loading" class="absolute inset-0 flex items-center justify-center bg-surface-900/50 backdrop-blur-sm">
                 <div class="flex flex-col items-center gap-3">
                     <div class="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                     <span class="text-sm text-gray-500">Cargando gráfico...</span>
+                </div>
+            </div>
+            <!-- Contenedor para marcadores de predicción -->
+            <div id="prediction-markers" class="absolute inset-0 pointer-events-none" style="z-index: 15; overflow: hidden;"></div>
+        </div>
+        
+        <!-- Información de la predicción en el gráfico -->
+        <div id="chart-prediction-info" class="glass rounded-xl p-4 hidden">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500">Predicción:</span>
+                    <span id="chart-pred-direction" class="text-sm font-bold">--</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500">Entrada:</span>
+                    <span id="chart-pred-entry" class="text-sm font-mono text-orange-400">--</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500">Actual:</span>
+                    <span id="chart-pred-current" class="text-sm font-mono text-amber-400">--</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-gray-500">Variación:</span>
+                    <span id="chart-pred-change" class="text-sm font-mono">--</span>
+                </div>
+                <div id="chart-pred-result" class="hidden">
+                    <span class="badge badge-win">GANADA ✓</span>
                 </div>
             </div>
         </div>
@@ -796,7 +893,7 @@
     </section>
 </main>
 
-<!-- ========== MOBILE NAV ========== -->
+<!-- MOBILE NAV -->
 <nav class="mobile-nav lg:hidden">
     <div class="grid grid-cols-5 gap-0.5 p-1.5">
         <button onclick="App.Navigate.to('predict')" class="mobile-nav-btn active" data-tab="predict">
@@ -822,7 +919,7 @@
     </div>
 </nav>
 
-<!-- ========== AUTH MODAL ========== -->
+<!-- AUTH MODAL -->
 <div id="auth-modal" class="modal-overlay">
     <div class="modal-content">
         <div class="flex justify-between items-center mb-6">
@@ -861,10 +958,12 @@
     </div>
 </div>
 
-<!-- ========== TOAST ========== -->
+<!-- TOAST -->
 <div id="toast-container" class="toast-container"></div>
 
-<!-- ========== APPLICATION LOGIC ========== -->
+<!-- ========================================== -->
+<!-- APPLICATION LOGIC -->
+<!-- ========================================== -->
 <script>
 // ==========================================
 // CONFIGURACIÓN
@@ -931,7 +1030,8 @@ const State = {
     candleSeries: null,
     countdownInterval: null,
     filters: { history: 'all', live: 'all' },
-    ui: { currentView: 'predict' }
+    ui: { currentView: 'predict' },
+    chartMarkers: { entryLine: null, targetLine: null, resultLabel: null }
 };
 
 // ==========================================
@@ -1068,6 +1168,7 @@ const UI = {
         }
         
         UI.updateSparkline();
+        App.Chart.updatePredictionMarker();
     },
     
     updateSparkline: () => {
@@ -1323,7 +1424,6 @@ const Prediction = {
         try {
             const periodKey = State.selectedPeriod;
             
-            // Verificar si ya existe predicción activa en este período
             const { data: existing } = await sb
                 .from('predicciones')
                 .select('*')
@@ -1339,7 +1439,6 @@ const Prediction = {
             const duration = CONFIG.DURATIONS[periodKey] || 5 * 60 * 1000;
             const closesAt = new Date(Date.now() + duration);
             
-            // IMPORTANTE: Solo usamos columnas que existen en la tabla
             const { data, error } = await sb
                 .from('predicciones')
                 .insert({
@@ -1363,6 +1462,10 @@ const Prediction = {
             Prediction.showActiveState();
             UI.toast(`Predicción registrada: ${direction === 'up' ? 'SUBE' : 'BAJA'}`, 'success');
             Prediction.startCountdown();
+            
+            // Actualizar marcador en el gráfico
+            App.Chart.updatePredictionMarker();
+            
         } catch (error) {
             UI.toast('Error de conexión: ' + error.message, 'error');
             console.error('Vote error:', error);
@@ -1384,6 +1487,12 @@ const Prediction = {
             </span>
         `;
         document.getElementById('entry-price').textContent = Utils.formatPrice(pred.precio_inicial);
+        
+        // Mostrar info en el gráfico
+        document.getElementById('chart-prediction-info').classList.remove('hidden');
+        document.getElementById('chart-pred-direction').textContent = isUp ? '▲ SUBE' : '▼ BAJA';
+        document.getElementById('chart-pred-direction').className = `text-sm font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`;
+        document.getElementById('chart-pred-entry').textContent = Utils.formatPrice(pred.precio_inicial);
     },
     
     startCountdown: () => {
@@ -1409,6 +1518,11 @@ const Prediction = {
             const varEl = document.getElementById('price-variation');
             varEl.textContent = (variation >= 0 ? '+' : '') + variation.toFixed(2) + '%';
             varEl.className = variation >= 0 ? 'text-green-400' : 'text-red-400';
+            
+            // Actualizar info del gráfico
+            document.getElementById('chart-pred-current').textContent = Utils.formatPrice(State.price.current);
+            document.getElementById('chart-pred-change').textContent = (variation >= 0 ? '+' : '') + variation.toFixed(2) + '%';
+            document.getElementById('chart-pred-change').className = `text-sm font-mono ${variation >= 0 ? 'text-green-400' : 'text-red-400'}`;
         };
         
         update();
@@ -1474,6 +1588,10 @@ const Prediction = {
             
             await Prediction.checkAchievements();
             Prediction.showResult(won, points, newStreak);
+            
+            // Actualizar marcador en el gráfico con el resultado
+            App.Chart.updatePredictionMarker(won);
+            
         } catch (error) {
             UI.toast('Error al procesar resultado', 'error');
             console.error('Check result error:', error);
@@ -1487,6 +1605,11 @@ const Prediction = {
         document.getElementById('prediction-state-empty').classList.remove('hidden');
         document.getElementById('voting-buttons').classList.add('hidden');
         document.getElementById('prediction-message').textContent = '';
+        
+        // Ocultar info del gráfico después de un tiempo
+        setTimeout(() => {
+            document.getElementById('chart-prediction-info').classList.add('hidden');
+        }, 5000);
     },
     
     showResult: (won, points, streak) => {
@@ -1500,12 +1623,28 @@ const Prediction = {
             let message = `¡ACIERTO! +${points} puntos`;
             if (streak >= 3) message += ` 🔥 Racha x${streak}`;
             UI.toast(message, 'success');
+            
+            // Mostrar badge de ganado en el gráfico
+            const resultEl = document.getElementById('chart-pred-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = '<span class="badge badge-win">GANADA ✓</span>';
+            
         } else {
             UI.toast('Predicción incorrecta. ¡Inténtalo de nuevo!', 'error');
+            
+            // Mostrar badge de pérdida en el gráfico
+            const resultEl = document.getElementById('chart-pred-result');
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = '<span class="badge badge-loss">PERDIDA ✗</span>';
         }
         
         App.Prediction.loadHistory();
         App.Ranking.load();
+        
+        // Ocultar resultado después de 5 segundos
+        setTimeout(() => {
+            document.getElementById('chart-pred-result').classList.add('hidden');
+        }, 5000);
     },
     
     checkAchievements: async () => {
@@ -1762,7 +1901,7 @@ const Market = {
 };
 
 // ==========================================
-// MÓDULO: CHART
+// MÓDULO: CHART (con marcadores de predicción)
 // ==========================================
 const Chart = {
     init: () => {
@@ -1800,6 +1939,10 @@ const Chart = {
             });
             
             document.getElementById('chart-loading').classList.add('hidden');
+            
+            // Si hay una predicción activa, mostrar el marcador
+            setTimeout(() => Chart.updatePredictionMarker(), 500);
+            
         } catch (error) {
             console.error('Error inicializando chart:', error);
             document.getElementById('chart-loading').innerHTML = '<span class="text-sm text-red-400">Error al cargar el gráfico</span>';
@@ -1827,6 +1970,10 @@ const Chart = {
             
             State.candleSeries.setData(candles);
             if (State.chart) State.chart.timeScale().fitContent();
+            
+            // Actualizar marcador después de cargar datos
+            setTimeout(() => Chart.updatePredictionMarker(), 300);
+            
         } catch (e) {
             console.error('Chart data error:', e);
         }
@@ -1835,6 +1982,122 @@ const Chart = {
     setTimeframe: (tf) => {
         document.getElementById('chart-timeframe').value = tf;
         Chart.loadData(tf);
+    },
+    
+    // ==========================================
+    // MARCAR PREDICCIÓN EN EL GRÁFICO
+    // ==========================================
+    updatePredictionMarker: (result = null) => {
+        const container = document.getElementById('prediction-markers');
+        if (!container) return;
+        
+        // Limpiar marcadores anteriores
+        container.innerHTML = '';
+        
+        // Si no hay predicción activa y no hay resultado, ocultar
+        if (!State.activePrediction && result === null) {
+            document.getElementById('chart-prediction-info').classList.add('hidden');
+            return;
+        }
+        
+        const pred = State.activePrediction;
+        if (!pred) {
+            // Si no hay predicción activa pero hay resultado, mostrar resultado anterior
+            if (result !== null) {
+                // Mostrar un marcador de resultado en el último precio
+                Chart.addResultMarker(container, State.price.current, result);
+            }
+            return;
+        }
+        
+        // Mostrar info de la predicción
+        document.getElementById('chart-prediction-info').classList.remove('hidden');
+        const isUp = pred.voto === 'sube';
+        document.getElementById('chart-pred-direction').textContent = isUp ? '▲ SUBE' : '▼ BAJA';
+        document.getElementById('chart-pred-direction').className = `text-sm font-bold ${isUp ? 'text-green-400' : 'text-red-400'}`;
+        document.getElementById('chart-pred-entry').textContent = Utils.formatPrice(pred.precio_inicial);
+        document.getElementById('chart-pred-current').textContent = Utils.formatPrice(State.price.current);
+        
+        const variation = ((State.price.current - pred.precio_inicial) / pred.precio_inicial) * 100;
+        document.getElementById('chart-pred-change').textContent = (variation >= 0 ? '+' : '') + variation.toFixed(2) + '%';
+        document.getElementById('chart-pred-change').className = `text-sm font-mono ${variation >= 0 ? 'text-green-400' : 'text-red-400'}`;
+        
+        // Ocultar resultado anterior
+        document.getElementById('chart-pred-result').classList.add('hidden');
+        
+        // Crear marcadores en el gráfico usando el contenedor overlay
+        const wrapper = document.getElementById('chart-wrapper');
+        if (!wrapper) return;
+        
+        // Calcular posición en el gráfico (necesitamos las coordenadas)
+        // Como no podemos obtener fácilmente las coordenadas del gráfico directamente,
+        // usamos un enfoque con elementos posicionados relativamente al wrapper
+        
+        // Obtener la altura del contenedor del gráfico
+        const chartContainer = document.getElementById('chart-container');
+        if (!chartContainer) return;
+        
+        const rect = wrapper.getBoundingClientRect();
+        const chartRect = chartContainer.getBoundingClientRect();
+        
+        // Calcular posición Y basada en el precio
+        // Usamos la serie de velas para obtener el rango de precios visible
+        if (!State.candleSeries) return;
+        
+        // Crear un elemento de marcador de entrada
+        const markerDiv = document.createElement('div');
+        markerDiv.className = 'prediction-marker';
+        markerDiv.style.position = 'absolute';
+        markerDiv.style.left = '15%';
+        markerDiv.style.top = '70%';
+        
+        // Determinar color según dirección y resultado
+        let markerClass = '';
+        if (result === true) {
+            markerClass = 'win';
+        } else if (result === false) {
+            markerClass = 'loss';
+        }
+        
+        markerDiv.className = `prediction-marker ${markerClass}`;
+        
+        // Contenido del marcador
+        markerDiv.innerHTML = `
+            <div class="marker-dot"></div>
+            <div class="marker-line"></div>
+            <div class="marker-label">ENTRADA ${Utils.formatPrice(pred.precio_inicial)}</div>
+            <div class="marker-line target"></div>
+            <div class="marker-label target">OBJETIVO ${isUp ? '▲' : '▼'} ${Utils.formatPrice(pred.precio_inicial * (isUp ? 1.02 : 0.98))}</div>
+        `;
+        
+        container.appendChild(markerDiv);
+        
+        // Si hay resultado, mostrar badge de resultado
+        if (result !== null) {
+            const resultEl = document.getElementById('chart-pred-result');
+            resultEl.classList.remove('hidden');
+            if (result === true) {
+                resultEl.innerHTML = '<span class="badge badge-win">GANADA ✓</span>';
+                markerDiv.className = 'prediction-marker win';
+            } else {
+                resultEl.innerHTML = '<span class="badge badge-loss">PERDIDA ✗</span>';
+                markerDiv.className = 'prediction-marker loss';
+            }
+        }
+    },
+    
+    addResultMarker: (container, price, result) => {
+        const markerDiv = document.createElement('div');
+        markerDiv.className = `prediction-marker ${result === true ? 'win' : 'loss'}`;
+        markerDiv.style.position = 'absolute';
+        markerDiv.style.left = '50%';
+        markerDiv.style.top = '50%';
+        markerDiv.innerHTML = `
+            <div class="marker-dot"></div>
+            <div class="marker-line"></div>
+            <div class="marker-label">RESULTADO ${Utils.formatPrice(price)}</div>
+        `;
+        container.appendChild(markerDiv);
     }
 };
 
@@ -2096,7 +2359,13 @@ const Navigate = {
             }
         });
         
-        if (view === 'market') setTimeout(() => Chart.init(), 100);
+        if (view === 'market') {
+            setTimeout(() => {
+                Chart.init();
+                // Actualizar marcador cuando se carga el gráfico
+                setTimeout(() => Chart.updatePredictionMarker(), 500);
+            }, 100);
+        }
         if (view === 'ranking') Ranking.load();
         if (view === 'achievements') UI.renderAchievements();
     }
@@ -2135,6 +2404,8 @@ const App = {
                         State.activePrediction = active;
                         Prediction.showActiveState();
                         Prediction.startCountdown();
+                        // Marcar en el gráfico
+                        setTimeout(() => Chart.updatePredictionMarker(), 500);
                     }
                 } catch (e) {}
             }
