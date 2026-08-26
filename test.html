@@ -1,866 +1,312 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BTCPredict | Professional Bitcoin Prediction</title>
-
-<!-- Fonts: Inter (UI) & JetBrains Mono (Numbers) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
-<!-- Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BTCPredict - Predicciones Futuristas y Avanzadas</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- GSAP para animaciones -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <!-- Lightweight Charts -->
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@3.7.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-
-:root {
-/ Colors - Dark First Financial /
---bg-app: #0B0E14; / Deep Navy/Black /
---bg-surface: #151A25; / Card Surface /
---bg-surface-hover: #1C2333;
---border-color: #2A3245;
---border-light: #3A455C;
-
---text-primary: #F9FAFB;
---text-secondary: #9CA3AF;
---text-muted: #6B7280;
-
---accent-btc: #F7931A; / Bitcoin Orange /
---accent-bull: #22C55E; / Green /
---accent-bear: #EF4444; / Red /
---accent-info: #3B82F6; / Blue /
---accent-premium: #A855F7; /Purple/Violet /
-
-/ Spacing & Radius /
---radius-sm: 6px;
---radius-md: 12px;
---radius-lg: 16px;
---spacing-xs: 4px;
---spacing-sm: 8px;
---spacing-md: 16px;
---spacing-lg: 24px;
-
-/ Typography /
---font-ui: 'Inter', sans-serif;
---font-mono: 'JetBrains Mono', monospace;
-}
-
-{ box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-body {
-background-color: var(--bg-app);
-color: var(--text-primary);
-font-family: var(--font-ui);
-font-size: 14px;
-line-height: 1.5;
-overflow-x: hidden;
-min-height: 100vh;
-display: flex;
-flex-direction: column;
-}
-
-/ --- UTILITIES --- /
-.mono { font-family: var(--font-mono); }
-.text-bull { color: var(--accent-bull); }
-.text-bear { color: var(--accent-bear); }
-.text-muted { color: var(--text-muted); }
-.flex-center { display: flex; align-items: center; justify-content: center; }
-.hidden { display: none !important; }
-
-/ --- LAYOUT --- /
-#app {
-width: 100%;
-max-width: 1440px;
-margin: 0 auto;
-padding: 0 var(--spacing-md);
-flex: 1;
-display: flex;
-flex-direction: column;
-}
-
-/ --- HEADER --- /
-header {
-position: sticky;
-top: 0;
-z-index: 50;
-background: rgba(11, 14, 20, 0.85);
-backdrop-filter: blur(12px);
-border-bottom: 1px solid var(--border-color);
-padding: var(--spacing-sm) 0;
-}
-
-.header-content {
-display: flex;
-justify-content: space-between;
-align-items: center;
-height: 60px;
-}
-
-.brand {
-font-weight: 700;
-font-size: 1.2rem;
-color: var(--text-primary);
-display: flex;
-align-items: center;
-gap: 8px;
-}
-.brand i { color: var(--accent-btc); }
-
-.market-ticker {
-display: flex;
-gap: var(--spacing-lg);
-font-size: 0.9rem;
-}
-
-.ticker-item {
-display: flex;
-flex-direction: column;
-align-items: flex-end;
-}
-.ticker-label { font-size: 0.75rem; color: var(--text-muted); }
-.ticker-value { font-family: var(--font-mono); font-weight: 600; }
-
-.user-pill {
-background: var(--bg-surface);
-border: 1px solid var(--border-color);
-padding: 6px 12px;
-border-radius: 20px;
-display: flex;
-align-items: center;
-gap: 8px;
-cursor: pointer;
-transition: all 0.2s;
-}
-.user-pill:hover { border-color: var(--accent-btc); }
-.user-avatar { width: 24px; height: 24px; background: var(--accent-btc); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
-
-/ --- MAIN GRID --- /
-main {
-flex: 1;
-padding: var(--spacing-lg) 0;
-display: grid;
-grid-template-columns: 300px 1fr 320px; / Sidebar, Chart/Prediction, OrderBook/Rank /
-gap: var(--spacing-md);
-}
-
-@media (max-width: 1024px) {
-main { grid-template-columns: 1fr; }
-.sidebar-left, .sidebar-right { order: 2; }
-.main-content { order: 1; }
-}
-
-/ --- COMPONENTS: CARDS --- */
-.card {
-background: var(--bg-surface);
-border: 1px solid var(--border-color);
-border-radius: var(--radius-md);
-padding: var(--spacing-md);
-margin-bottom: var(--spacing-md);
-transition: transform 0.2s ease, box-shadow 0.2 ease, box-shadow 0.2s ease;
-}
-
-.card-header {
-font-size: 0.85rem;
-font-weight: 600;
-color: var(--text-secondary);
-text-transform: uppercase;
-letter-spacing: 0.05em;
-margin-bottom: var(--spacing-sm);
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-
-.card-value {
-font-family: var(--font-mono);
-font-size: 1.5rem;
-font-weight: 600;
-color: var(--text-primary);
-}
-
-/ --- COMPONENT: CHART --- /
-#chart-container {
-height: 400px;
-border-radius: var(--radius-md);
-overflow: hidden;
-position: relative;
-border: 1px solid var(--border-color);
-}
-
-/ --- COMPONENT: PREDICTION PANEL --- /
-.prediction-panel {
-background: linear-gradient(180deg, rgba(247, 147, 26, 0.05) 0%, rgba(21, 26, 37, 0) 100%);
-border-color: rgba(247, 147, 26, 0.3);
-}
-
-.timeframe-selector {
-display: grid;
-grid-template-columns: repeat(4, 1fr);
-gap: 8px;
-margin-bottom: var(--spacing-md);
-}
-
-.tf-btn {
-background: var(--bg-surface);
-border: 1px solid var(--border-color);
-color: var(--text-secondary);
-padding: 8px;
-border-radius: var(--radius-sm);
-font-family: var(--font-mono);
-font-size: 0.8rem;
-cursor: pointer;
-transition: all 0.2s;
-}
-
-.tf-btn:hover { border-color: var(--accent-btc); color: var(--text-primary); }
-.tf-btn.active {
-background: var(--accent-btc);
-color: #000;
-border-color: var(--accent-btc);
-font-weight: 600;
-}
-
-.prediction-actions {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: var(--spacing-md);
-}
-
-.btn-prediction {
-border: none;
-padding: 16px;
-border-radius: var(--radius-md);
-font-weight: 700;
-font-size: 1rem;
-cursor: pointer;
-transition: transform 0.1s, opacity 0.2s;
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 4px;
-}
-
-.btn-prediction:active { transform: scale(0.98); }
-
-.btn-up {
-background: rgba(34, 197, 94, 0.1);
-color: var(--accent-bull);
-border: 1px solid rgba(34, 197, 94, 0.3);
-}
-.btn-up:hover { background: rgba(34, 197, 94, 0.2); }
-
-.btn-down {
-background: rgba(239, 68, 68, 0.1);
-color: var(--accent-bear);
-border: 1px solid rgba(239, 68, 68, 0.3);
-}
-.btn-down:hover { background: rgba(239, 68, 68, 0.2); }
-
-.multiplier-info {
-font-size: 0.75rem;
-opacity: 0.8;
-font-family: var(--font-mono);
-}
-
-/ --- COMPONENT: RANKING & FEED --- /
-.feed-item {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 12px 0;
-border-bottom: 1px solid var(--border-color);
-font-size: 0.9rem;
-}
-.feed-user { display: flex; align-items: center; gap: 8px; }
-.feed-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
-.badge-up { background: rgba(34, 197, 94, 0.2); color: var(--accent-bull); }
-.badge-down { background: rgba(239, 68, 68, 0.2); color: var(--accent-bear); }
-
-/ --- FOOTER / MOBILE NAV --- /
-nav.mobile-nav {
-position: fixed;
-bottom: 0;
-left: 0;
-right: 0;
-background: var(--bg-surface);
-border-top: 1px solid var(--border-color);
-display: flex;
-justify-content: space-around;
-padding: 12px 0;
-z-index: 100;
-}
-
-@media (min-width: 1025px) {
-.mobile-nav { display: none; }
-}
-
-.nav-item {
-display: flex;
-flex-direction: column;
-align-items: center;
-color: var(--text-muted);
-font-size: 0.75rem;
-gap: 4px;
-cursor: pointer;
-}
-.nav-item.active { color: var(--accent-btc); }
-.nav-item i { font-size: 1.2rem; }
-
-/ --- MODAL --- /
-.modal-overlay {
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-background: rgba(0,0,0,0.7);
-backdrop-filter: blur(4px);
-z-index: 200;
-display: flex;
-align-items: center;
-justify-content: center;
-opacity: 0;
-pointer-events: none;
-transition: opacity 0.3s;
-}
-.modal-overlay.open { opacity: 1; pointer-events: all; }
-
-.modal-content {
-background: var(--bg-surface);
-border: 1px solid var(--border-color);
-padding: var(--spacing-lg);
-border-radius: var(--radius-lg);
-width: 90%;
-max-width: 400px;
-transform: translateY(20px);
-transition: transform 0.3s;
-}
-.modal-overlay.open .modal-content { transform: translateY(0); }
-
-/ --- ANIMATIONS --- /
-@keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-@keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-
-.flash-up { animation: pulse-green 0.5s ease-out; }
-.flash-down { animation: pulse-red 0.5s ease-out; }
-
-/ --- LOADING SKELETON --- /
-.skeleton {
-background: linear-gradient(90deg, var(--bg-surface) 25%, var(--bg-surface-hover) 50%, var(--bg-surface) 75%);
-background-size: 200% 100%;
-animation: shimmer 1.5s infinite;
-border-radius: 4px;
-}
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% 0; } 100% { background-position: -200% 0; } }
-
-/ --- RESPONSIVE ADJUSTMENTS --- /
-@media (max-width: 768px) {
-.container { padding: 0 16px; }
-.stats-grid { grid-template-columns: 1fr 1fr; }
-.prediction-actions { grid-template-columns: 1fr; gap: var(--spacing-sm); }
-.btn-prediction { flex-direction: row; justify-content: space-between; align-items: center; }
-#chart-container { height: 300px; }
-.hidden-mobile { display: none; }
-}
+  /* Personalización adicional */
+  @layer utilities {
+    .btn {
+      @apply px-4 py-2 rounded-lg font-semibold shadow-lg transition-transform;
+    }
+    .btn-primary {
+      @apply bg-primary text-white hover:scale-105 hover:shadow-xl;
+    }
+    .badge {
+      @apply px-2 py-1 rounded-full font-semibold text-xs;
+    }
+    .toast {
+      @apply fixed bottom-4 right-4 bg-gray-800 bg-opacity-80 text-white px-4 py-2 rounded-lg shadow-lg transition-all duration-300;
+    }
+  }
 </style>
 </head>
-<body>
-
-<!-- NAVIGATION -->
-<nav class="mobile-nav">
-<div class="nav-item active" onclick="switchTab('dashboard')">
-<i class="fas fa-chart-line"></i>
-<span>Trade</span>
-</div>
-<div class="nav-item" onclick="switchTab('ranking')">
-<i class="fas fa-trophy"></i>
-<span>Rank</span>
-</div>
-<div class="nav-item" onclick="openLeaderboard()">
-<i class="fas fa-crown"></i>
-<span>Top</span>
-</div>
-<div class="nav-item" onclick="toggleProfile()">
-<i class="fas fa-user-circle"></i>
-<span>Profile</span>
-</div>
-</nav>
-
-<!-- MAIN CONTAINER -->
-<div class="container">
+<body class="bg-background text-gray-100 font-sans min-h-screen flex flex-col">
 
 <!-- HEADER -->
-<header class="header">
-<div class="logo">
-<i class="fas fa-bolt" style="color: var(--accent-btc);"></i>
-<span>BTC<span class="text-accent">PRO</span></span>
-</div>
-<div class="balance-card" onclick="openBalance()">
-<span class="label">Balance</span>
-<span class="value" id="user-balance">$0.00</span>
-</div>
+<header class="flex justify-between items-center p-4 border-b border-gray-700 sticky top-0 z-50 bg-surface backdrop-blur-lg bg-opacity-80">
+  <div class="flex items-center space-x-3">
+    <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center rounded-xl shadow-lg shadow-amber-500/20 text-black font-bold text-lg">
+      <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+    </div>
+    <h1 class="text-xl font-bold tracking-tight">BTCPredict <span class="text-xs font-bold bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">Beta</span></h1>
+  </div>
+  <!-- Precio en vivo -->
+  <div class="hidden md:flex items-center space-x-2">
+    <div class="flex items-center space-x-1">
+      <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+      <span class="text-xs font-medium uppercase">BTC/USD</span>
+    </div>
+    <div class="font-mono text-lg font-bold" id="current-price">--</div>
+    <div id="price-trend" class="w-4 h-4"></div>
+  </div>
+  <!-- Botones de autenticación -->
+  <div class="flex gap-2" id="auth-buttons">
+    <button class="btn btn-outline" onclick="showModal('login')">Iniciar Sesión</button>
+    <button class="btn btn-primary" onclick="showModal('register')">Registrarse</button>
+  </div>
+  <!-- Menú usuario -->
+  <div class="hidden flex-col items-end" id="user-menu">
+    <div class="text-sm font-semibold" id="user-name">Usuario</div>
+    <div class="text-xs text-gray-400" id="user-tier">Nivel</div>
+    <button class="mt-2 btn btn-outline" onclick="logout()">Cerrar Sesión</button>
+  </div>
 </header>
 
-<!-- DASHBOARD TAB -->
-<main id="tab-dashboard" class="tab-content active">
-
-<!-- LIVE PRICE DISPLAY -->
-<section class="live-price-section">
-<div class="price-header">
-<div class="pair-info">
-<span class="pair-name">BTC/USD</span>
-<span class="live-indicator"><i class="fas fa-circle"></i> Live</span>
-</div>
-<div class="price-value" id="current-price">--.--</div>
-</div>
-<div class="price-change" id="price-change">
-<i class="fas fa-arrow-up"></i> <span id="change-percent">0.00%</span>
-</div>
-</section>
-
-<!-- CHART -->
-<section class="chart-section">
-<div id="chart-container">
-<!-- Canvas injected by JS -->
-</div>
-</section>
-
-<!-- ACTION PANEL -->
-<section class="action-panel">
-<div class="timeframe-selector">
-<button class="tf-btn active" data-tf="1m">1M</button>
-<button class="tf-btn" data-tf="5m">5M</button>
-<button class="tf-btn" data-tf="15m">15M</button>
-<button class="tf-btn" data-tf="1h">1H</button>
+<!-- Ticker de mercado -->
+<div class="overflow-hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700 relative">
+  <div id="market-ticker" class="flex whitespace-nowrap animate-marquee space-x-8 px-4 py-2 text-sm"></div>
 </div>
 
-<div class="prediction-actions">
-<button class="btn-prediction btn-up" onclick="placeBet('up')">
-<span>CALL UP</span>
-<span class="multiplier-info">x2.1</span>
-</button>
-<button class="btn-prediction btn-down" onclick="placeBet('down')">
-<span>PUT DOWN</span>
-<span class="multiplier-info">x2.1</span>
-</button>
-</div>
-</section>
+<!-- Main -->
+<main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto space-y-8">
 
-<!-- RECENT ACTIVITY -->
-<section class="activity-section">
-<h3>Recent Trades</h3>
-<div id="recent-trades">
-<!-- Populated by JS -->
-</div>
-</section>
+  <!-- Sección: Datos del mercado y gráfico -->
+  <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 bg-surface rounded-xl shadow-lg p-4">
+    <!-- Datos rápidos -->
+    <div class="flex flex-col space-y-2">
+      <h2 class="text-xl font-semibold mb-2">Resumen del Mercado</h2>
+      <div class="flex justify-between"><span>Precio:</span> <span class="font-mono" id="market-price2">--</span></div>
+      <div class="flex justify-between"><span>Volumen 24h:</span> <span class="font-mono" id="market-volume">--</span></div>
+      <div class="flex justify-between"><span>Máximo 24h:</span> <span class="font-mono" id="market-high">--</span></div>
+      <div class="flex justify-between"><span>Mínimo 24h:</span> <span class="font-mono" id="market-low">--</span></div>
+    </div>
+    <!-- Gráfico -->
+    <div class="col-span-2 lg:col-span-2 bg-gray-900 rounded-xl overflow-hidden shadow-md" id="chart-container" style="height:300px;"></div>
+  </section>
+
+  <!-- Sección: Predicciones -->
+  <section class="bg-surface rounded-xl shadow-lg p-4">
+    <h2 class="text-xl font-semibold mb-4">¿Qué crees que hará Bitcoin?</h2>
+    <div class="flex gap-4 mb-4 justify-center">
+      <button class="btn btn-green" onclick="predict('up')">Subirá</button>
+      <button class="btn btn-red" onclick="predict('down')">Bajará</button>
+    </div>
+    <!-- Confirmación rápida -->
+    <div id="prediction-confirm" class="hidden bg-gray-800 p-4 rounded-lg mb-4 flex items-center justify-between border border-gray-600">
+      <div class="text-sm">Confirmar predicción: <span id="pred-direction"></span></div>
+      <button class="btn btn-primary" onclick="confirmPrediction()">Confirmar</button>
+    </div>
+  </section>
+
+  <!-- Sección: Feed en vivo -->
+  <section class="bg-surface rounded-xl shadow-lg p-4">
+    <h2 class="text-xl font-semibold mb-4">Predicciones en Tiempo Real</h2>
+    <div id="feed" class="divide-y divide-gray-700 max-h-96 overflow-y-auto space-y-2"></div>
+  </section>
+
+  <!-- Sección: Predicción en progreso -->
+  <section class="bg-surface rounded-xl shadow-lg p-4" id="prediction-status-section" hidden>
+    <h2 class="text-xl font-semibold mb-4">Predicción en Progreso</h2>
+    <div class="flex justify-between items-center mb-2">
+      <div>Voto:</div>
+      <div id="my-vote" class="font-semibold"></div>
+    </div>
+    <div class="flex justify-between items-center mb-2">
+      <div>Tiempo restante:</div>
+      <div id="prediction-timer" class="font-mono"></div>
+    </div>
+    <div class="flex justify-between items-center mb-2">
+      <div>Estado:</div>
+      <div id="prediction-status" class="font-semibold"></div>
+    </div>
+  </section>
+
 </main>
 
-<!-- RANKING TAB -->
-<main id="tab-ranking" class="tab-content">
-<h2>Global Leaderboard</h2>
-<div class="feed-list" id="global-feed">
-<!-- Populated by JS -->
-</div>
-</main>
-
-</div>
-
-<!-- MODALS -->
-
-<!-- Balance Modal -->
-<div class="modal-overlay" id="balance-modal">
-<div class="modal-content">
-<h3>Wallet Balance</h3>
-<div class="balance-display">
-<span id="modal-balance">$0.00</span>
-</div>
-<div class="action-buttons">
-<button class="btn-primary" onclick="deposit()">Deposit</button>
-<button class="btn-secondary" onclick="closeModal('balance-modal')">Close</button>
-</div>
-</div>
+<!-- Modales -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-900 rounded-xl p-6 w-full max-w-md relative">
+    <h3 class="text-xl mb-4" id="modal-title">Título</h3>
+    <div id="modal-content"></div>
+    <button class="absolute top-2 right-2 text-gray-400 hover:text-white" onclick="closeModal()">×</button>
+  </div>
 </div>
 
-<!-- Trade Confirmation Modal -->
-<div class="modal-overlay" id="trade-modal">
-<div class="modal-content">
-<h3>Confirm Trade</h3>
-<p>Direction: <strong id="trade-dir" style="text-transform: uppercase;">UP</strong></p>
-<p>Entry Price: <strong id="trade-entry">--</strong></p>
-<p>Potential Payout: <strong id="trade-payout" style="color: var(--accent-bull);">+$0.00</strong></p>
-
-<div class="input-group">
-<label>Amount (USDT)</label>
-<input type="number" id="bet-amount" value="10" min="1">
-</div>
-
-<div class="action-buttons">
-<button class="btn-primary" onclick="confirmTrade()">Confirm</button>
-<button class="btn-secondary" onclick="closeModal('trade-modal')">Cancel</button>
-</div>
-</div>
-</div>
+<!-- Toast notifications -->
+<div id="toasts" class="fixed bottom-4 right-4 flex flex-col space-y-2 z-50"></div>
 
 <!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// --- STATE MANAGEMENT ---
-const state = {
-balance: 1000.00,
-currentPrice: 64250.00,
-priceHistory: [],
-timeframe: '1m',
-pendingTrade: null,
-trades: [],
-users: [
-{ name: 'CryptoKing', balance: 15400, wins: 89 },
-{ name: 'MoonShot', balance: 12300, wins: 76 },
-{ name: 'Satoshi_Fan', balance: 9800, wins: 65 },
-{ name: 'WhaleAlert', balance: 45000, wins: 120 },
-{ name: 'DiamondHands', balance: 5600, wins: 45 }
-]
-};
+  // Variables globales
+  let marketChart = null;
+  let predictionProgressInterval = null;
+  let currentPredictionId = null;
+  let predictions = [];
+  let userPrediction = null;
 
-// --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
-initChart();
-updateUI();
-startPriceSimulation();
-loadFeed();
+  // Función para cargar datos de mercado simulados
+  function loadMarketData() {
+    // Datos simulados, reemplazar con fetch real
+    const price = (Math.random() * 50000 + 20000);
+    const volume = Math.random() * 5000 + 1000;
+    const high24 = price * (1 + Math.random() * 0.05);
+    const low24 = price * (1 - Math.random() * 0.05);
+    document.getElementById('market-price2').textContent = `$${price.toFixed(2)}`;
+    document.getElementById('market-volume').textContent = volume.toFixed(0);
+    document.getElementById('market-high').textContent = `$${high24.toFixed(2)}`;
+    document.getElementById('market-low').textContent = `$${low24.toFixed(2)}`;
+    // Actualizar gráfico
+    updateChart([price * 0.98, price * 1.02, price * 0.97, price * 1.03]);
+  }
 
-// Timeframe listeners
-document.querySelectorAll('.tf-btn').forEach(btn => {
-btn.addEventListener('click', (e) => {
-document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-e.target.classList.add('active');
-state.timeframe = e.target.dataset.tf;
-resetChartData();
-});
-});
-});
+  // Función para crear gráfico
+  function updateChart(data) {
+    if (!marketChart) {
+      const container = document.getElementById('chart-container');
+      marketChart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 300,
+        layout: { backgroundColor: 'transparent', textColor: '#ffffff' },
+        grid: { vertLines: { color: '#333' }, horzLines: { color: '#333' } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        rightPriceScale: { borderColor: '#555' },
+        timeScale: { borderColor: '#555' },
+      });
+      const candlestickSeries = marketChart.addCandlestickSeries({
+        upColor: '#22c55e', downColor: '#ef4444', borderUpColor: '#22c55e', borderDownColor: '#ef4444', wickUpColor: '#22c55e', wickDownColor: '#ef4444'
+      });
+      // Simulación de datos
+      const now = Math.floor(Date.now() / 1000);
+      const candles = [];
+      for (let i = 0; i < 50; i++) {
+        candles.push({
+          time: now - (50 - i) * 60,
+          open: data[0],
+          high: data[1],
+          low: data[2],
+          close: data[3],
+        });
+      }
+      candlestickSeries.setData(candles);
+    } else {
+      // Actualizar datos en gráfico real
+    }
+  }
 
-// --- CHARTING ---
-let chartInstance = null;
+  // Función para predecir
+  function predict(direction) {
+    // Guardar predicción
+    userPrediction = {
+      id: Date.now(),
+      direction: direction,
+      timestamp: Date.now(),
+    };
+    document.getElementById('pred-direction').textContent = direction.toUpperCase();
+    document.getElementById('prediction-confirm').classList.remove('hidden');
+    document.getElementById('prediction-status-section').hidden = false;
+    startPredictionProgress();
+  }
 
-function initChart() {
-const ctx = document.getElementById('chart-container').getContext('2d');
+  // Confirmar predicción
+  function confirmPrediction() {
+    // Añadir a feed
+    addPredictionToFeed(userPrediction);
+    showToast(`Predicción registrada: ${userPrediction.direction.toUpperCase()}`, 'success');
+    // Reiniciar
+    document.getElementById('prediction-confirm').classList.add('hidden');
+    clearInterval(predictionProgressInterval);
+    document.getElementById('prediction-status-section').hidden = true;
+    // Limpiar
+    userPrediction = null;
+  }
 
-// Gradient fill
-const gradientUp = ctx.createLinearGradient(0, 0, 0, 400);
-gradientUp.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
-gradientUp.addColorStop(1, 'rgba(34, 197, 94, 0)');
+  // Función para añadir predicción al feed
+  function addPredictionToFeed(pred) {
+    const feed = document.getElementById('feed');
+    const item = document.createElement('div');
+    item.className = 'p-2 hover:bg-gray-800 transition rounded-lg flex justify-between items-center';
+    item.innerHTML = `
+      <div>
+        <div class="text-sm text-info">${pred.id}</div>
+        <div class="${pred.direction==='up'?'text-green-400':'text-red-400'} font-semibold">${pred.direction.toUpperCase()}</div>
+      </div>
+      <div class="text-xs font-mono">${new Date(pred.timestamp).toLocaleTimeString()}</div>
+    `;
+    feed.prepend(item);
+  }
 
-const gradientDown = ctx.createLinearGradient(0, 0, 0, 400);
-gradientDown.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
-gradientDown.addColorStop(1, 'rgba(239, 68, 68, 0)');
+  // Función para mostrar toast
+  function showToast(text, type='info') {
+    const toastContainer = document.getElementById('toasts');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type==='success'?'bg-green-600':'bg-gray-700'}`;
+    toast.innerText = text;
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
 
-chartInstance = new Chart(ctx, {
-type: 'line',
-data: {
-labels: [],
-datasets: [{
-label: 'BTC/USD',
-data: [],
-borderColor: '#22c55e',
-backgroundColor: gradientUp,
-borderWidth: 2,
-pointRadius: 0,
-pointHoverRadius: 4,
-fill: true,
-tension: 0.4
-}]
-},
-options: {
-responsive: true,
-maintainAspectRatio: false,
-plugins: {
-legend: { display: false },
-tooltip: {
-mode: 'index',
-intersect: false,
-callbacks: {
-label: function(context) {
-return '$' + context.parsed.y.toFixed(2);
-}
-}
-}
-},
-scales: {
-x: {
-display: true,
-grid: { display: false },
-ticks: { color: '#6b7280', maxTicksLimit: 6 }
-},
-y: {
-position: 'right',
-grid: { color: '#1f2937', borderDash: [5, 5] },
-ticks: { color: '#6b7280' }
-}
-},
-interaction: {
-mode: 'nearest',
-axis: 'x',
-intersect: false
-}
-}
-});
-}
+  // Función para modal
+  function showModal(tipo) {
+    const modal = document.getElementById('modal');
+    const title = modal.querySelector('h3');
+    if (tipo==='login') {
+      title.innerText='Iniciar Sesión';
+      document.getElementById('modal-content').innerHTML = `
+        <input class="w-full p-2 mb-2 bg-gray-800 rounded" placeholder="Email" id="email" type="email"/>
+        <input class="w-full p-2 mb-2 bg-gray-800 rounded" placeholder="Contraseña" id="password" type="password"/>
+        <button class="btn btn-primary w-full mt-2" onclick="fakeLogin()">Entrar</button>
+      `;
+    } else {
+      title.innerText='Registrarse';
+      document.getElementById('modal-content').innerHTML = `
+        <input class="w-full p-2 mb-2 bg-gray-800 rounded" placeholder="Email" id="reg-email" type="email"/>
+        <input class="w-full p-2 mb-2 bg-gray-800 rounded" placeholder="Contraseña" id="reg-password" type="password"/>
+        <button class="btn btn-primary w-full mt-2" onclick="fakeRegister()">Crear</button>
+      `;
+    }
+    modal.classList.remove('hidden');
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+  }
 
-function updateChartData(price, timeLabel) {
-if (!chartInstance) return;
+  // Funciones fake login/register
+  function fakeLogin() {
+    showToast('Sesión iniciada', 'success');
+    document.getElementById('auth-buttons').classList.add('hidden');
+    document.getElementById('user-menu').classList.remove('hidden');
+    document.getElementById('user-name').innerText='UsuarioDemo';
+    closeModal();
+  }
+  function fakeRegister() {
+    showToast('Registrado! Inicia sesión', 'success');
+    closeModal();
+  }
 
-const data = chartInstance.data;
-const dataset = data.datasets[0];
+  // Funciones para predicciones en progreso
+  function startPredictionProgress() {
+    let progress = 0;
+    clearInterval(predictionProgressInterval);
+    predictionProgressInterval = setInterval(() => {
+      progress += Math.random()*5;
+      if (progress>=100) {
+        progress=100;
+        clearInterval(predictionProgressInterval);
+      }
+      document.getElementById('prediction-timer').innerText=progress.toFixed(0)+'%';
+    }, 300);
+  }
 
-// Add new data point
-data.labels.push(timeLabel);
-dataset.data.push(price);
+  // Función para logout
+  function logout() {
+    showToast('Sesión cerrada', 'info');
+    document.getElementById('auth-buttons').classList.remove('hidden');
+    document.getElementById('user-menu').classList.add('hidden');
+  }
 
-// Keep only last 20 points for performance and visual clarity
-if (data.labels.length > 20) {
-data.labels.shift();
-dataset.data.shift();
-}
-
-// Update color based on trend
-const firstPrice = dataset.data[0];
-const lastPrice = price;
-
-if (lastPrice >= firstPrice) {
-dataset.borderColor = '#22c55e';
-dataset.backgroundColor = 'rgba(34, 197, 94, 0.2)';
-} else {
-dataset.borderColor = '#ef4444';
-dataset.backgroundColor = 'rgba(239, 68, 68, 0.2)';
-}
-
-chartInstance.update('none'); // 'none' mode for smooth animation
-}
-
-function resetChartData() {
-state.priceHistory = [];
-state.currentPrice = 64250.00; // Reset to base for demo
-updateUI();
-if (chartInstance) {
-chartInstance.data.labels = [];
-chartInstance.data.datasets[0].data = [];
-chartInstance.update();
-}
-}
-
-// --- PRICE SIMULATION ---
-function startPriceSimulation() {
-let lastTime = Date.now();
-
-setInterval(() => {
-const now = Date.now();
-const delta = (now - lastTime) / 1000; // seconds
-lastTime = now;
-
-// Random walk volatility
-const volatility = 0.0002; 
-const change = state.currentPrice volatility (Math.random() - 0.5) 2;
-state.currentPrice += change;
-
-// Ensure price doesn't go negative or too low
-if (state.currentPrice < 1000) state.currentPrice = 1000;
-
-const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-updateChartData(state.currentPrice, timeLabel);
-updateHeaderPrice();
-}, 1000); // Update every second
-}
-
-function updateHeaderPrice() {
-const priceEl = document.getElementById('current-price');
-const changeEl = document.getElementById('change-percent');
-const changeIcon = document.querySelector('.price-change i');
-const changeContainer = document.querySelector('.price-change');
-
-priceEl.textContent = '$' + state.currentPrice.toFixed(2);
-
-// Calculate fake percentage change from start of session
-const startPrice = 64250.00;
-const percentChange = ((state.currentPrice - startPrice) / startPrice) 100;
-
-changeEl.textContent = Math.abs(percentChange).toFixed(2) + '%';
-
-if (percentChange >= 0) {
-changeContainer.style.color = 'var(--accent-bull)';
-changeIcon.className = 'fas fa-arrow-up';
-} else {
-changeContainer.style.color = 'var(--accent-bear)';
-changeIcon.className = 'fas fa-arrow-down';
-}
-}
-
-// --- UI UPDATES ---
-function updateUI() {
-document.getElementById('user-balance').textContent = '$' + state.balance.toFixed(2);
-document.getElementById('modal-balance').textContent = '$' + state.balance.toFixed(2);
-renderRecentTrades();
-}
-
-function renderRecentTrades() {
-const container = document.getElementById('recent-trades');
-container.innerHTML = '';
-
-if (state.trades.length === 0) {
-container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">No trades yet. Start trading!</p>';
-return;
-}
-
-// Show last 5 trades
-const recent = state.trades.slice(-5).reverse();
-
-recent.forEach(trade => {
-const div = document.createElement('div');
-div.className = 'trade-item';
-
-const isWin = trade.status === 'WIN';
-const statusColor = isWin ? 'var(--accent-bull)' : 'var(--accent-bear)';
-const statusText = isWin ? 'WIN' : 'LOSS';
-const amountClass = isWin ? 'text-bull' : 'text-bear';
-const sign = isWin ? '+' : '-';
-
-div.innerHTML = 
-<div class="trade-header">
-<span class="trade-direction ${trade.direction === 'up' ? 'direction-up' : 'direction-down'}">
-${trade.direction === 'up' ? '▲ CALL UP' : '▼ PUT DOWN'}
-</span>
-<span class="trade-time">${trade.time}</span>
-</div>
-<div class="trade-details">
-<span>Entry: $${trade.entryPrice.toFixed(2)}</span>
-<span>Amount: $${trade.amount.toFixed(2)}</span>
-</div>
-<div class="trade-result ${amountClass}">
-${statusText}: ${sign}$${Math.abs(trade.pnl).toFixed(2)}
-</div>
-;
-container.appendChild(div);
-});
-}
-
-// --- TRADING LOGIC ---
-let tempTradeData = {};
-
-function placeBet(direction) {
-tempTradeData = {
-direction: direction,
-entryPrice: state.currentPrice,
-timestamp: new Date().toLocaleTimeString()
-};
-
-document.getElementById('trade-dir').textContent = direction;
-document.getElementById('trade-entry').textContent = '$' + state.currentPrice.toFixed(2);
-
-// Calculate potential payout (simplified x2.1 logic)
-const multiplier = 2.1;
-const defaultAmount = 10;
-const potentialPayout = (defaultAmount * multiplier) - defaultAmount;
-
-document.getElementById('trade-payout').textContent = '+$' + potentialPayout.toFixed(2);
-
-openModal('trade-modal');
-}
-
-function confirmTrade() {
-const amountInput = document.getElementById('bet-amount');
-const amount = parseFloat(amountInput.value);
-
-if (isNaN(amount) || amount <= 0) {
-alert('Please enter a valid amount.');
-return;
-}
-
-if (amount > state.balance) {
-alert('Insufficient balance.');
-return;
-}
-
-// Deduct balance immediately
-state.balance -= amount;
-
-// Create trade object
-const trade = {
-id: Date.now(),
-direction: tempTradeData.direction,
-entryPrice: tempTradeData.entryPrice,
-amount: amount,
-time: tempTradeData.timestamp,
-status: 'PENDING',
-pnl: 0
-};
-
-state.trades.push(trade);
-closeModal('trade-modal');
-updateUI();
-
-// Simulate result after 3 seconds
-setTimeout(() => {
-resolveTrade(trade);
-}, 3000);
-}
-
-function resolveTrade(trade) {
-// Simple random outcome for simulation
-const isWin = Math.random() > 0.5;
-const multiplier = 2.1;
-
-if (isWin) {
-const profit = (trade.amount * multiplier) - trade.amount;
-trade.status = 'WIN';
-trade.pnl = profit;
-state.balance += (trade.amount + profit);
-} else {
-trade.status = 'LOSS';
-trade.pnl = -trade.amount;
-}
-
-// Remove the pending trade from the array and add the resolved one? 
-// Or just update it. Let's update it in place.
-const index = state.trades.findIndex(t => t.id === trade.id);
-if (index !== -1) {
-state.trades[index] = trade;
-}
-
-updateUI();
-}
-
-// --- MODAL HANDLING ---
-function openModal(modalId) {
-document.getElementById(modalId).classList.add('active');
-}
-
-function closeModal(modalId) {
-document.getElementById(modalId).classList.remove('active');
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-if (event.target.classList.contains('modal')) {
-event.target.classList.remove('active');
-}
-};
-
-// --- EVENT LISTENERS ---
-document.getElementById('btn-up').addEventListener('click', () => placeBet('up'));
-document.getElementById('btn-down').addEventListener('click', () => placeBet('down'));
-
-document.getElementById('confirm-trade-btn').addEventListener('click', confirmTrade);
-
-document.getElementById('close-trade-modal').addEventListener('click', () => closeModal('trade-modal'));
-document.getElementById('close-profile-modal').addEventListener('click', () => closeModal('profile-modal'));
-
-// Initialize
-initChart();
-startPriceSimulation();
-updateUI();
-
+  // Inicialización
+  loadMarketData();
+  setInterval(loadMarketData, 15000);
 </script>
 </body>
 </html>
