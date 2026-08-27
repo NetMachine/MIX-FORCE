@@ -2,911 +2,658 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#020617">
-    <meta name="description" content="OptiMill OS - Consola Prescriptiva de Molienda SAG & Bolas">
-    <title>OptiMill OS | Consola Industrial de Molienda</title>
+    <meta name="description" content="OptiMill OS - Consola Táctil de Molienda SAG & Bolas">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>OptiMill OS | Consola Táctil Industrial</title>
     <style>
-        /* ========== RESET & VARIABLES ========== */
+        /* ========== VARIABLES TÁCTILES ========== */
         :root {
             --bg: #020617;
             --bg-card: #0f172a;
             --bg-card-hover: #1e293b;
             --border: #1e293b;
-            --border-glow: #334155;
             --text: #e2e8f0;
             --text-bright: #f8fafc;
             --text-muted: #94a3b8;
             --amber: #fbbf24;
-            --amber-glow: rgba(251, 191, 36, 0.4);
             --emerald: #34d399;
-            --emerald-glow: rgba(52, 211, 153, 0.4);
             --cyan: #22d3ee;
-            --cyan-glow: rgba(34, 211, 238, 0.4);
             --rose: #f43f5e;
-            --rose-glow: rgba(244, 63, 94, 0.4);
             --violet: #a78bfa;
-            --font-mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
-            --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            --radius: 14px;
-            --radius-sm: 8px;
+            --font-mono: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            --radius: 16px;
+            --radius-sm: 10px;
             --shadow: 0 8px 32px rgba(0,0,0,0.6);
-            --shadow-glow: 0 0 20px var(--amber-glow);
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            --ring: 0 0 0 3px rgba(251, 191, 36, 0.2);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            /* TÁCTIL */
+            --touch-target: 56px;
+            --touch-target-sm: 48px;
+            --touch-slider: 44px;
+            --touch-spacing: 12px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        html {
-            scroll-behavior: smooth;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        html { scroll-behavior:smooth; }
         body {
-            font-family: var(--font-sans);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
+            font-family:var(--font-sans);
+            background:var(--bg);
+            color:var(--text);
+            min-height:100vh;
+            overflow-x:hidden;
+            overscroll-behavior:none;
+            touch-action:manipulation;
+            -webkit-user-select:none;
+            user-select:none;
             background-image:
-                radial-gradient(ellipse at 20% 50%, rgba(251, 191, 36, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(34, 211, 238, 0.03) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(52, 211, 153, 0.02) 0%, transparent 50%);
-            background-attachment: fixed;
+                radial-gradient(ellipse at 20% 50%, rgba(251,191,36,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(34,211,238,0.04) 0%, transparent 50%);
         }
-        ::selection { background: var(--amber); color: #020617; }
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: rgba(2,6,23,0.8); }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 6px; border: 2px solid #020617; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        input, textarea, select { -webkit-user-select:text; user-select:text; }
+        ::selection { background:var(--amber); color:#020617; }
+        ::-webkit-scrollbar { width:6px; height:6px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#1e293b; border-radius:3px; }
 
-        /* ========== ANIMATIONS ========== */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px var(--amber-glow); }
-            50% { box-shadow: 0 0 40px var(--amber-glow); }
-        }
-        @keyframes rotate-mill {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes flow-dash {
-            from { stroke-dashoffset: 0; }
-            to { stroke-dashoffset: -32; }
-        }
-        @keyframes blink-bg {
-            0%, 100% { background-color: rgba(244,63,94,0.1); }
-            50% { background-color: rgba(244,63,94,0.3); }
-        }
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        @keyframes scanline {
-            0% { top: -10%; }
-            100% { top: 110%; }
+        /* ========== ANIMACIONES ========== */
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+        @keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px var(--amber-glow);} 50%{box-shadow:0 0 50px var(--amber-glow);} }
+        @keyframes rotate-mill { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+        @keyframes flow-dash { from{stroke-dashoffset:0;} to{stroke-dashoffset:-32;} }
+        @keyframes ripple { to { transform:scale(4); opacity:0; } }
+        @keyframes touch-feedback {
+            0% { transform:scale(1); }
+            50% { transform:scale(0.92); }
+            100% { transform:scale(1); }
         }
 
-        /* ========== LAYOUT ========== */
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            max-width: 1700px;
-            margin: 0 auto;
-            position: relative;
-            background: rgba(2,6,23,0.7);
-            backdrop-filter: blur(10px);
-            border-left: 1px solid rgba(30,41,59,0.5);
-            border-right: 1px solid rgba(30,41,59,0.5);
-            overflow: hidden;
+        /* ========== LAYOUT PRINCIPAL ========== */
+        .app-shell {
+            display:flex;
+            flex-direction:column;
+            height:100vh;
+            height:100dvh;
+            max-width:1700px;
+            margin:0 auto;
+            position:relative;
+            overflow:hidden;
+            background:rgba(2,6,23,0.6);
         }
         .app-header {
-            background: rgba(2,6,23,0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 100;
-            flex-shrink: 0;
-            min-height: 70px;
-            position: relative;
-            overflow: hidden;
+            background:rgba(2,6,23,0.95);
+            border-bottom:1px solid var(--border);
+            padding:8px 16px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            flex-shrink:0;
+            min-height:60px;
+            z-index:50;
         }
-        .app-header::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(180deg, transparent, rgba(251,191,36,0.05), transparent);
-            animation: scanline 8s linear infinite;
-            pointer-events: none;
-        }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+        .logo-container { display:flex; align-items:center; gap:12px; }
         .logo-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--amber), #b45309);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: #020617;
-            font-size: 1.4rem;
-            box-shadow: 0 0 30px var(--amber-glow);
-            transition: var(--transition);
-            cursor: pointer;
+            width:44px; height:44px; border-radius:12px;
+            background:linear-gradient(135deg,var(--amber),#b45309);
+            display:flex; align-items:center; justify-content:center;
+            font-weight:900; color:#020617; font-size:1.3rem;
+            box-shadow:0 0 25px rgba(251,191,36,0.4);
+            transition:var(--transition);
         }
-        .logo-icon:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 50px var(--amber-glow);
-        }
+        .logo-icon:active { transform:scale(0.9); }
         .app-title {
-            font-weight: 700;
-            font-size: 1.4rem;
-            letter-spacing: 0.03em;
-            color: var(--text-bright);
-            background: linear-gradient(90deg, var(--amber), var(--cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight:700; font-size:1.15rem; letter-spacing:0.02em;
+            color:var(--text-bright);
+            background:linear-gradient(90deg,var(--amber),var(--cyan));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
         }
-        .app-subtitle {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
+        .app-subtitle { font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
         .status-pill {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(52,211,153,0.1);
-            border: 1px solid rgba(52,211,153,0.3);
-            color: var(--emerald);
-            padding: 8px 18px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            white-space: nowrap;
-            animation: fadeInUp 0.5s ease;
-            box-shadow: 0 0 20px rgba(52,211,153,0.2);
+            display:flex; align-items:center; gap:8px;
+            background:rgba(52,211,153,0.12);
+            border:1px solid rgba(52,211,153,0.35);
+            color:var(--emerald);
+            padding:8px 14px; border-radius:50px;
+            font-size:0.7rem; font-weight:600;
+            letter-spacing:0.04em; text-transform:uppercase;
+            white-space:nowrap;
         }
         .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--emerald);
-            box-shadow: 0 0 15px var(--emerald);
-            animation: pulse 1.5s infinite;
+            width:10px; height:10px; border-radius:50%;
+            background:var(--emerald); box-shadow:0 0 15px var(--emerald);
+            animation:pulse 1.5s infinite;
         }
 
-        /* ========== TAB BAR ========== */
-        .tab-bar {
-            display: flex;
-            gap: 4px;
-            background: rgba(2,6,23,0.9);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 16px;
-            overflow-x: auto;
-            flex-shrink: 0;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-            position: relative;
-        }
-        .tab-bar::-webkit-scrollbar { display: none; }
-        .tab-btn {
-            flex-shrink: 0;
-            padding: 12px 20px;
-            border-radius: 10px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            font-family: var(--font-sans);
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            white-space: nowrap;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            position: relative;
-            overflow: hidden;
-        }
-        .tab-btn::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--amber);
-            transition: var(--transition);
-            transform: translateX(-50%);
-        }
-        .tab-btn:hover {
-            background: rgba(255,255,255,0.03);
-            color: var(--text-bright);
-        }
-        .tab-btn.active {
-            color: var(--amber);
-            background: rgba(251,191,36,0.05);
-        }
-        .tab-btn.active::before {
-            width: 80%;
-        }
-        .tab-btn svg {
-            width: 20px;
-            height: 20px;
-            flex-shrink: 0;
-        }
-        .tab-btn .badge-count {
-            background: var(--rose);
-            color: white;
-            border-radius: 50%;
-            font-size: 0.65rem;
-            font-weight: 700;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 4px;
-        }
-
-        /* ========== MAIN CONTENT ========== */
+        /* ========== CONTENIDO PRINCIPAL ========== */
         .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            scroll-behavior: smooth;
-            position: relative;
+            flex:1;
+            overflow-y:auto;
+            padding:16px;
+            padding-bottom:calc(80px + var(--safe-bottom));
+            scroll-behavior:smooth;
+            -webkit-overflow-scrolling:touch;
+            overscroll-behavior:contain;
         }
-        .tab-panel {
-            display: none;
-            animation: fadeInUp 0.5s ease;
+        .tab-panel { display:none; animation:fadeInUp 0.35s ease; }
+        .tab-panel.active { display:block; }
+
+        /* ========== BARRA DE NAVEGACIÓN INFERIOR (TÁCTIL) ========== */
+        .bottom-nav {
+            position:fixed;
+            bottom:0;
+            left:0;
+            right:0;
+            background:rgba(2,6,23,0.97);
+            backdrop-filter:blur(20px);
+            border-top:1px solid var(--border);
+            display:flex;
+            justify-content:space-around;
+            align-items:center;
+            padding:6px 4px;
+            padding-bottom:calc(6px + var(--safe-bottom));
+            z-index:200;
+            max-width:1700px;
+            margin:0 auto;
+            box-shadow:0 -4px 20px rgba(0,0,0,0.5);
         }
-        .tab-panel.active {
-            display: block;
+        .nav-btn {
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:4px;
+            padding:6px 12px;
+            min-width:64px;
+            min-height:56px;
+            border:none;
+            background:transparent;
+            color:var(--text-muted);
+            font-size:0.6rem;
+            font-weight:600;
+            letter-spacing:0.04em;
+            text-transform:uppercase;
+            cursor:pointer;
+            transition:var(--transition);
+            border-radius:12px;
+            position:relative;
+            -webkit-tap-highlight-color:transparent;
+        }
+        .nav-btn svg { width:24px; height:24px; transition:var(--transition); }
+        .nav-btn.active {
+            color:var(--amber);
+            background:rgba(251,191,36,0.08);
+        }
+        .nav-btn.active svg { transform:scale(1.15); }
+        .nav-btn:active { transform:scale(0.9); }
+        .nav-btn .nav-badge {
+            position:absolute;
+            top:2px;
+            right:10px;
+            background:var(--rose);
+            color:white;
+            font-size:0.6rem;
+            font-weight:700;
+            min-width:18px;
+            height:18px;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow:0 0 10px var(--rose);
         }
 
-        /* ========== CARDS ========== */
+        /* ========== TARJETAS ========== */
         .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:16px;
+            box-shadow:var(--shadow);
+            transition:var(--transition);
+            position:relative;
+            overflow:hidden;
+            margin-bottom:16px;
         }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
-            opacity: 0;
-            transition: var(--transition);
-        }
-        .card:hover {
-            border-color: #334155;
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-        }
-        .card:hover::before {
-            opacity: 1;
-        }
+        .card:active { transform:scale(0.98); }
         .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            gap: 12px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:14px;
+            gap:10px;
+            flex-wrap:wrap;
         }
         .card-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size:0.75rem;
+            font-weight:700;
+            letter-spacing:0.08em;
+            text-transform:uppercase;
+            color:var(--text-muted);
+            display:flex;
+            align-items:center;
+            gap:8px;
         }
-        .card-title svg {
-            width: 18px;
-            height: 18px;
-            color: var(--amber);
-        }
+        .card-title svg { width:20px; height:20px; color:var(--amber); }
         .card-value {
-            font-family: var(--font-mono);
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-bright);
-            line-height: 1.1;
-            transition: color 0.3s;
-            text-shadow: 0 0 20px currentColor;
+            font-family:var(--font-mono);
+            font-size:clamp(1.6rem, 4vw, 2.4rem);
+            font-weight:700;
+            color:var(--text-bright);
+            line-height:1.15;
+            transition:color 0.3s;
         }
-        .card-value.amber { color: var(--amber); text-shadow: 0 0 20px var(--amber-glow); }
-        .card-value.emerald { color: var(--emerald); text-shadow: 0 0 20px var(--emerald-glow); }
-        .card-value.cyan { color: var(--cyan); text-shadow: 0 0 20px var(--cyan-glow); }
-        .card-value.rose { color: var(--rose); text-shadow: 0 0 20px var(--rose-glow); }
+        .card-value.amber { color:var(--amber); text-shadow:0 0 20px rgba(251,191,36,0.4); }
+        .card-value.emerald { color:var(--emerald); text-shadow:0 0 20px rgba(52,211,153,0.4); }
+        .card-value.cyan { color:var(--cyan); text-shadow:0 0 20px rgba(34,211,238,0.4); }
+        .card-value.rose { color:var(--rose); text-shadow:0 0 20px rgba(244,63,94,0.4); }
 
-        .grid {
-            display: grid;
-            gap: 20px;
-        }
-        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
-        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
-        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .grid { display:grid; gap:16px; }
+        .grid-2 { grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); }
+        .grid-4 { grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); }
 
-        /* ========== SLIDERS ========== */
-        .slider-group {
-            margin-bottom: 20px;
-        }
+        /* ========== SLIDERS TÁCTILES ========== */
+        .slider-group { margin-bottom:18px; }
         .slider-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 8px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.03em;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:8px;
+            font-size:0.8rem;
+            color:var(--text-muted);
+            font-weight:600;
+            letter-spacing:0.02em;
+            flex-wrap:wrap;
+            gap:6px;
         }
         .slider-value {
-            font-family: var(--font-mono);
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: var(--text-bright);
-            min-width: 80px;
-            text-align: right;
-            transition: color 0.3s;
+            font-family:var(--font-mono);
+            font-weight:700;
+            font-size:1.2rem;
+            color:var(--text-bright);
+            min-width:70px;
+            text-align:right;
+            background:rgba(255,255,255,0.06);
+            padding:4px 10px;
+            border-radius:8px;
+            border:1px solid var(--border);
         }
+        /* Slider personalizado táctil */
         input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 40px;
-            background: transparent;
-            cursor: pointer;
-            position: relative;
+            -webkit-appearance:none;
+            width:100%;
+            height:44px;
+            background:transparent;
+            cursor:pointer;
+            position:relative;
+            touch-action:pan-y;
         }
         input[type="range"]::-webkit-slider-runnable-track {
-            height: 10px;
-            border-radius: 5px;
-            background: linear-gradient(90deg, #1e293b, #334155);
-            border: 1px solid #334155;
+            height:10px;
+            border-radius:5px;
+            background:linear-gradient(90deg,#1e293b,#334155);
+            border:1px solid #334155;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, var(--amber), #b45309);
-            border: 4px solid #020617;
-            box-shadow: 0 0 30px var(--amber-glow), inset 0 -2px 6px rgba(0,0,0,0.5);
-            margin-top: -11px;
-            cursor: grab;
-            transition: transform 0.2s;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+            -webkit-appearance:none;
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            background:radial-gradient(circle at 30% 30%, var(--amber), #b45309);
+            border:4px solid #020617;
+            box-shadow:0 0 25px rgba(251,191,36,0.5), inset 0 -2px 6px rgba(0,0,0,0.5);
+            margin-top:-13px;
+            cursor:grab;
+            transition:transform 0.15s;
         }
         input[type="range"]::-webkit-slider-thumb:active {
-            cursor: grabbing;
-            transform: scale(1.4);
+            cursor:grabbing;
+            transform:scale(1.35);
+            box-shadow:0 0 40px rgba(251,191,36,0.7);
         }
         input[type="range"]::-moz-range-track {
-            height: 10px;
-            border-radius: 5px;
-            background: #1e293b;
-            border: 1px solid #334155;
+            height:10px; border-radius:5px; background:#1e293b; border:1px solid #334155;
         }
         input[type="range"]::-moz-range-thumb {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--amber);
-            border: 4px solid #020617;
-            box-shadow: 0 0 30px var(--amber-glow);
-            cursor: grab;
+            width:36px; height:36px; border-radius:50%;
+            background:var(--amber); border:4px solid #020617;
+            box-shadow:0 0 25px rgba(251,191,36,0.5); cursor:grab;
         }
 
-        /* ========== ACTION CARD ========== */
+        /* ========== TARJETA DE ACCIÓN ========== */
         .action-card {
-            background: linear-gradient(135deg, rgba(244,63,94,0.15), rgba(244,63,94,0.03));
-            border: 2px solid var(--rose);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-top: 16px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 40px var(--rose-glow);
-            animation: pulse-glow 2s infinite;
+            background:linear-gradient(135deg, rgba(244,63,94,0.15), rgba(244,63,94,0.03));
+            border:2px solid var(--rose);
+            border-radius:var(--radius);
+            padding:20px;
+            margin-top:14px;
+            position:relative;
+            overflow:hidden;
+            box-shadow:0 0 35px rgba(244,63,94,0.3);
+            animation:pulse-glow 2s infinite;
         }
-        .action-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(244,63,94,0.1), transparent, rgba(244,63,94,0.1), transparent);
-            animation: rotate 6s linear infinite;
-            pointer-events: none;
-        }
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        .action-card:active { transform:scale(0.97); }
         .action-label {
-            font-size: 0.7rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--rose);
-            font-weight: 700;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
+            font-size:0.65rem;
+            letter-spacing:0.2em;
+            text-transform:uppercase;
+            color:var(--rose);
+            font-weight:700;
+            margin-bottom:8px;
         }
         .action-text {
-            font-family: var(--font-mono);
-            font-size: clamp(1.3rem, 3vw, 2.2rem);
-            font-weight: 900;
-            color: #fff;
-            line-height: 1.2;
-            position: relative;
-            z-index: 1;
-            text-shadow: 0 0 40px var(--rose-glow);
+            font-family:var(--font-mono);
+            font-size:clamp(1.1rem, 2.5vw, 1.8rem);
+            font-weight:900;
+            color:#fff;
+            line-height:1.25;
+            text-shadow:0 0 30px rgba(244,63,94,0.5);
         }
         .action-subtext {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-top: 10px;
-            position: relative;
-            z-index: 1;
-            line-height: 1.5;
+            color:var(--text-muted);
+            font-size:0.8rem;
+            margin-top:8px;
+            line-height:1.5;
         }
 
-        /* ========== P&ID DIAGRAM ========== */
+        /* ========== P&ID ========== */
         .pid-container {
-            width: 100%;
-            background: #020617;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            padding: 16px;
-            position: relative;
-            overflow: hidden;
+            width:100%;
+            background:#020617;
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border);
+            padding:8px;
+            overflow:hidden;
+            touch-action:pan-x pan-y;
         }
-        .pid-svg {
-            width: 100%;
-            height: auto;
-            display: block;
-            user-select: none;
-        }
-        .molino-group {
-            transform-origin: center;
-            animation: rotate-mill 5s linear infinite;
-        }
+        .pid-svg { width:100%; height:auto; display:block; user-select:none; pointer-events:none; }
+        .molino-group { transform-origin:center; animation:rotate-mill 5s linear infinite; }
         .flow-path {
-            stroke-dasharray: 12 8;
-            animation: flow-dash 1.5s linear infinite;
-            transition: stroke 0.3s;
+            stroke-dasharray:12 8;
+            animation:flow-dash 1.5s linear infinite;
+            transition:stroke 0.3s;
         }
-        .pipe-low { stroke: var(--cyan); filter: drop-shadow(0 0 6px var(--cyan-glow)); }
-        .pipe-opt { stroke: var(--emerald); filter: drop-shadow(0 0 6px var(--emerald-glow)); }
-        .pipe-high { stroke: var(--rose); filter: drop-shadow(0 0 8px var(--rose-glow)); animation-duration: 0.5s; }
+        .pipe-low { stroke:var(--cyan); filter:drop-shadow(0 0 6px rgba(34,211,238,0.5)); }
+        .pipe-opt { stroke:var(--emerald); filter:drop-shadow(0 0 6px rgba(52,211,153,0.5)); }
+        .pipe-high { stroke:var(--rose); filter:drop-shadow(0 0 8px rgba(244,63,94,0.6)); animation-duration:0.5s; }
 
-        /* ========== CHART ========== */
-        .chart-container {
-            width: 100%;
-            height: 180px;
-            position: relative;
-            background: #020617;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .chart-svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .sparkline-container {
-            height: 40px;
-            width: 100%;
-            position: relative;
-            margin-top: 8px;
-        }
-
-        /* ========== DIAGNOSTIC ========== */
+        /* ========== DIAGNÓSTICO ========== */
         .diag-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 24px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-bottom:16px;
         }
         .diag-btn {
-            padding: 12px 18px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            min-height: 48px;
-            text-align: left;
-            flex: 1 1 200px;
-            letter-spacing: 0.03em;
-            position: relative;
+            padding:14px 16px;
+            border-radius:var(--radius-sm);
+            border:1px solid var(--border);
+            background:transparent;
+            color:var(--text-muted);
+            font-size:0.75rem;
+            font-weight:600;
+            cursor:pointer;
+            transition:var(--transition);
+            min-height:48px;
+            text-align:left;
+            flex:1 1 180px;
+            letter-spacing:0.02em;
+            -webkit-tap-highlight-color:transparent;
         }
-        .diag-btn:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: #475569;
-            color: var(--text-bright);
-            transform: translateY(-2px);
-        }
+        .diag-btn:active { transform:scale(0.95); background:rgba(255,255,255,0.05); }
         .diag-btn.active {
-            background: rgba(251,191,36,0.1);
-            border-color: var(--amber);
-            color: var(--amber);
-            box-shadow: 0 0 20px var(--amber-glow);
+            background:rgba(251,191,36,0.12);
+            border-color:var(--amber);
+            color:var(--amber);
+            box-shadow:0 0 15px rgba(251,191,36,0.25);
         }
-        .diag-steps {
-            display: grid;
-            gap: 16px;
-        }
+        .diag-steps { display:grid; gap:12px; }
         .diag-step {
-            display: flex;
-            gap: 16px;
-            padding: 18px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 10px;
-            border-left: 4px solid var(--amber);
-            align-items: flex-start;
-            transition: var(--transition);
-        }
-        .diag-step:hover {
-            background: rgba(255,255,255,0.04);
-            transform: translateX(5px);
+            display:flex;
+            gap:14px;
+            padding:16px;
+            background:rgba(255,255,255,0.02);
+            border-radius:var(--radius-sm);
+            border-left:4px solid var(--amber);
+            align-items:flex-start;
         }
         .diag-step-number {
-            font-family: var(--font-mono);
-            font-weight: 900;
-            color: var(--amber);
-            font-size: 1.4rem;
-            flex-shrink: 0;
-            line-height: 1;
-            text-shadow: 0 0 10px var(--amber-glow);
-        }
-        .diag-step-content {
-            flex: 1;
+            font-family:var(--font-mono);
+            font-weight:900;
+            color:var(--amber);
+            font-size:1.3rem;
+            flex-shrink:0;
+            line-height:1;
         }
         .diag-step-title {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-muted);
-            font-weight: 700;
-            margin-bottom: 6px;
+            font-size:0.65rem;
+            text-transform:uppercase;
+            letter-spacing:0.1em;
+            color:var(--text-muted);
+            font-weight:700;
+            margin-bottom:4px;
         }
-        .diag-step-text {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--text);
-        }
+        .diag-step-text { font-size:0.85rem; line-height:1.55; color:var(--text); }
 
-        /* ========== BITÁCORA ========== */
-        .log-form {
-            display: grid;
-            gap: 18px;
-        }
+        /* ========== FORMULARIOS ========== */
+        .log-form { display:grid; gap:14px; }
         .log-input, .log-textarea, .log-select {
-            width: 100%;
-            padding: 14px 16px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text-bright);
-            font-family: var(--font-sans);
-            font-size: 0.9rem;
-            min-height: 52px;
-            transition: var(--transition);
-            outline: none;
-            resize: vertical;
+            width:100%;
+            padding:14px 16px;
+            background:rgba(255,255,255,0.04);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            color:var(--text-bright);
+            font-family:var(--font-sans);
+            font-size:0.9rem;
+            min-height:52px;
+            transition:var(--transition);
+            outline:none;
+            resize:vertical;
+            -webkit-user-select:text;
+            user-select:text;
         }
         .log-input:focus, .log-textarea:focus, .log-select:focus {
-            border-color: var(--amber);
-            box-shadow: var(--ring);
-            background: rgba(255,255,255,0.05);
-        }
-        .log-input::placeholder, .log-textarea::placeholder {
-            color: #64748b;
+            border-color:var(--amber);
+            box-shadow:0 0 0 3px rgba(251,191,36,0.2);
+            background:rgba(255,255,255,0.06);
         }
         .btn-primary {
-            background: linear-gradient(135deg, var(--amber), #d97706);
-            color: #020617;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: var(--transition);
-            min-height: 52px;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            box-shadow: 0 8px 30px var(--amber-glow);
-            position: relative;
-            overflow: hidden;
+            background:linear-gradient(135deg, var(--amber), #d97706);
+            color:#020617;
+            border:none;
+            padding:16px 24px;
+            border-radius:var(--radius-sm);
+            font-weight:700;
+            font-size:0.9rem;
+            cursor:pointer;
+            transition:var(--transition);
+            min-height:56px;
+            letter-spacing:0.04em;
+            text-transform:uppercase;
+            box-shadow:0 8px 25px rgba(251,191,36,0.35);
+            -webkit-tap-highlight-color:transparent;
+            width:100%;
         }
-        .btn-primary:hover {
-            box-shadow: 0 12px 40px var(--amber-glow);
-            transform: translateY(-3px);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 20px var(--amber-glow);
-        }
-        .btn-primary.loading {
-            pointer-events: none;
-            opacity: 0.8;
-        }
-        .btn-primary.loading::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: shimmer 1.5s infinite;
-        }
+        .btn-primary:active { transform:scale(0.95); box-shadow:0 4px 15px rgba(251,191,36,0.25); }
+        .btn-primary.loading { pointer-events:none; opacity:0.7; }
 
         /* ========== MODAL ========== */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(2,6,23,0.85);
-            backdrop-filter: blur(16px);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
+            position:fixed;
+            top:0; left:0; right:0; bottom:0;
+            background:rgba(2,6,23,0.85);
+            backdrop-filter:blur(10px);
+            z-index:300;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:16px;
+            animation:fadeIn 0.25s ease;
         }
         .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px;
-            max-width: 800px;
-            width: 100%;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-            animation: fadeInUp 0.4s ease;
-            position: relative;
+            background:var(--bg-card);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
+            padding:20px;
+            max-width:700px;
+            width:100%;
+            max-height:90vh;
+            max-height:90dvh;
+            overflow-y:auto;
+            box-shadow:0 25px 60px rgba(0,0,0,0.8);
+            animation:fadeInUp 0.35s ease;
         }
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:16px;
         }
         .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.8rem;
-            cursor: pointer;
-            min-width: 48px;
-            min-height: 48px;
-            border-radius: 50%;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background:none;
+            border:none;
+            color:var(--text-muted);
+            font-size:1.8rem;
+            cursor:pointer;
+            min-width:48px;
+            min-height:48px;
+            border-radius:50%;
+            transition:var(--transition);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            -webkit-tap-highlight-color:transparent;
         }
-        .modal-close:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-bright);
-            transform: rotate(90deg);
-        }
+        .modal-close:active { background:rgba(255,255,255,0.1); transform:scale(0.9); }
         .report-sheet {
-            background: #fff;
-            color: #1e293b;
-            padding: 28px;
-            border-radius: 6px;
-            font-family: 'Times New Roman', serif;
-            font-size: 0.9rem;
-            line-height: 1.7;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+            background:#fff;
+            color:#1e293b;
+            padding:20px;
+            border-radius:6px;
+            font-family:'Times New Roman', serif;
+            font-size:0.85rem;
+            line-height:1.6;
         }
-        .report-sheet h3 {
-            text-align: center;
-            font-size: 1.4rem;
-            margin-bottom: 6px;
-            color: #1e293b;
-            letter-spacing: 0.05em;
+        .report-sheet h3 { text-align:center; font-size:1.2rem; margin-bottom:4px; }
+        .report-sheet .report-meta { text-align:center; font-size:0.75rem; color:#475569; border-bottom:2px solid #1e293b; padding-bottom:8px; margin-bottom:14px; }
+        .report-sheet table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+        .report-sheet th, .report-sheet td { padding:8px 10px; text-align:left; border:1px solid #cbd5e1; font-size:0.8rem; }
+        .report-sheet th { background:#f1f5f9; font-weight:700; }
+
+        /* ========== BADGES ========== */
+        .badge {
+            display:inline-block;
+            padding:5px 12px;
+            border-radius:50px;
+            font-size:0.65rem;
+            font-weight:700;
+            letter-spacing:0.05em;
+            text-transform:uppercase;
         }
-        .report-sheet .report-meta {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #475569;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #1e293b;
-            padding-bottom: 12px;
-        }
-        .report-sheet table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 18px;
-        }
-        .report-sheet th, .report-sheet td {
-            padding: 10px 14px;
-            text-align: left;
-            border: 1px solid #cbd5e1;
-            font-size: 0.85rem;
-        }
-        .report-sheet th {
-            background: #f1f5f9;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-size: 0.75rem;
-        }
-        .print-btn {
-            margin-top: 16px;
-            width: 100%;
-            background: #1e293b;
-            color: white;
-        }
-        .print-btn:hover {
-            background: #334155;
+        .badge-ok { background:rgba(52,211,153,0.15); color:var(--emerald); border:1px solid rgba(52,211,153,0.4); }
+        .badge-warn { background:rgba(251,191,36,0.15); color:var(--amber); border:1px solid rgba(251,191,36,0.4); }
+        .badge-danger { background:rgba(244,63,94,0.15); color:var(--rose); border:1px solid rgba(244,63,94,0.4); }
+
+        /* ========== UTILIDADES ========== */
+        .text-muted { color:var(--text-muted); }
+        .mt-12 { margin-top:12px; }
+        .mt-16 { margin-top:16px; }
+        .flex-between { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+
+        /* ========== FEEDBACK TÁCTIL (RIPPLE) ========== */
+        .ripple {
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,0.3);
+            transform:scale(0);
+            animation:ripple 0.6s ease-out;
+            pointer-events:none;
         }
 
-        /* ========== TOOLTIP / HINTS ========== */
-        .hint-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            color: var(--text-muted);
-            font-size: 0.7rem;
-            cursor: help;
-            margin-left: 4px;
-            transition: var(--transition);
-        }
-        .hint-icon:hover {
-            background: rgba(255,255,255,0.2);
-            color: var(--text-bright);
+        /* ========== SPARKLINE ========== */
+        .sparkline-container {
+            height:40px;
+            width:100%;
+            position:relative;
+            margin-top:8px;
         }
 
         /* ========== RESPONSIVE ========== */
-        @media (max-width: 768px) {
-            .app-header { padding: 10px 14px; }
-            .app-title { font-size: 1.1rem; }
-            .main-content { padding: 14px; }
-            .card { padding: 16px; }
-            .card-value { font-size: 1.6rem; }
-            .tab-btn { padding: 10px 14px; font-size: 0.7rem; }
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-            .action-text { font-size: 1.2rem; }
+        @media (min-width: 768px) {
+            .bottom-nav { display:none; }
+            .main-content { padding-bottom:24px; }
+            .tab-bar-desktop {
+                display:flex;
+                gap:4px;
+                padding:8px 16px;
+                border-bottom:1px solid var(--border);
+                background:rgba(2,6,23,0.9);
+                flex-shrink:0;
+            }
         }
-        @media (max-width: 480px) {
-            .app-title { font-size: 0.95rem; }
-            .status-pill { font-size: 0.6rem; padding: 5px 10px; }
-            .card { padding: 12px; }
-            .slider-label { font-size: 0.7rem; }
+        @media (max-width: 767px) {
+            .tab-bar-desktop { display:none; }
+            .app-header { padding:6px 12px; min-height:52px; }
+            .app-title { font-size:1rem; }
+            .logo-icon { width:38px; height:38px; font-size:1.1rem; }
+            .card { padding:14px; }
+            .card-value { font-size:1.5rem; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr; }
+            .action-text { font-size:1.05rem; }
+            .slider-value { font-size:1rem; padding:3px 8px; }
         }
-
-        /* Print styles */
-        @media print {
-            .app-header, .tab-bar, .modal-close, .print-btn, .btn-primary, .hint-icon {
-                display: none !important;
-            }
-            .modal-overlay {
-                position: static;
-                background: none;
-                backdrop-filter: none;
-                padding: 0;
-            }
-            .modal-content {
-                box-shadow: none;
-                border: none;
-                max-height: none;
-                overflow: visible;
-                padding: 0;
-            }
-            .report-sheet {
-                border: 1px solid #ccc;
-            }
-            body { background: #fff; }
-            .main-content { display: none; }
+        @media (max-width: 380px) {
+            .app-title { font-size:0.9rem; }
+            .status-pill { font-size:0.55rem; padding:5px 8px; }
+            .card { padding:10px; }
+            .slider-label { font-size:0.7rem; }
+            .nav-btn { min-width:52px; font-size:0.5rem; }
+        }
+        /* Orientación horizontal */
+        @media (orientation: landscape) and (max-width: 900px) {
+            .grid-2 { grid-template-columns:1fr 1fr; }
+            .card-value { font-size:1.3rem; }
+            .main-content { padding:10px; }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
+    <div class="app-shell">
         <!-- HEADER -->
         <header class="app-header">
             <div class="logo-container">
-                <div class="logo-icon" title="OptiMill OS">⚙️</div>
+                <div class="logo-icon" id="logoIcon">⚙️</div>
                 <div>
                     <div class="app-title">OptiMill OS</div>
-                    <div class="app-subtitle">Consola Prescriptiva de Molienda SAG & Bolas</div>
+                    <div class="app-subtitle">Consola Táctil · SAG & Bolas</div>
                 </div>
             </div>
             <div class="status-pill">
                 <span class="status-dot"></span>
-                <span>En línea · SAG-01 · Turno A</span>
+                <span>En línea · SAG-01</span>
             </div>
         </header>
 
-        <!-- TAB BAR -->
-        <nav class="tab-bar" id="tabBar">
-            <button class="tab-btn active" data-tab="proceso">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+        <!-- TAB BAR PARA DESKTOP -->
+        <nav class="tab-bar-desktop" id="tabBarDesktop" style="display:none;">
+            <button class="tab-btn active" data-tab="proceso" style="padding:12px 20px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
                 Proceso
             </button>
-            <button class="tab-btn" data-tab="control">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m8 7V10m8 11V3"/></svg>
+            <button class="tab-btn" data-tab="control" style="padding:12px 20px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
                 Control
-                <span class="badge-count" id="controlAlertBadge" style="display:none;">1</span>
             </button>
-            <button class="tab-btn" data-tab="activo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <button class="tab-btn" data-tab="activo" style="padding:12px 20px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
                 Activo
             </button>
-            <button class="tab-btn" data-tab="diagnostico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+            <button class="tab-btn" data-tab="diagnostico" style="padding:12px 20px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
                 Diagnóstico
             </button>
-            <button class="tab-btn" data-tab="bitacora">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <button class="tab-btn" data-tab="bitacora" style="padding:12px 20px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
                 Bitácora
             </button>
         </nav>
@@ -920,12 +667,12 @@
                         <div class="card-header">
                             <span class="card-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                                Diagrama de Proceso · P&ID
+                                Diagrama de Proceso
                             </span>
                             <span class="badge" id="pidStatusBadge">Flujo Normal</span>
                         </div>
                         <div class="pid-container">
-                            <svg class="pid-svg" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+                            <svg class="pid-svg" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
                                 <defs>
                                     <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
                                         <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0f172a" stroke-width="0.5"/>
@@ -934,66 +681,52 @@
                                         <stop offset="0%" stop-color="#475569"/>
                                         <stop offset="100%" stop-color="#1e293b"/>
                                     </linearGradient>
-                                    <filter id="glow">
-                                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                        <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                    </filter>
                                 </defs>
-                                <rect width="800" height="320" fill="url(#gridPattern)"/>
-
+                                <rect width="800" height="280" fill="url(#gridPattern)"/>
                                 <!-- Ore feed -->
-                                <rect x="30" y="110" width="50" height="30" rx="6" fill="#334155" stroke="#475569" stroke-width="2" filter="url(#glow)"/>
-                                <text x="55" y="130" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="monospace">ALIM</text>
-                                <line x1="80" y1="125" x2="140" y2="125" stroke="#475569" stroke-width="3"/>
-
-                                <!-- SAG Mill (rotating) -->
-                                <g class="molino-group" style="transform-origin: 210px 125px;">
-                                    <circle cx="210" cy="125" r="55" fill="url(#millGrad)" stroke="#64748b" stroke-width="3"/>
-                                    <circle cx="210" cy="125" r="40" fill="none" stroke="#475569" stroke-width="2"/>
-                                    <line x1="210" y1="70" x2="210" y2="180" stroke="#475569" stroke-width="1.5" opacity="0.6"/>
-                                    <line x1="155" y1="125" x2="265" y2="125" stroke="#475569" stroke-width="1.5" opacity="0.6"/>
-                                    <circle cx="210" cy="125" r="8" fill="#94a3b8"/>
+                                <rect x="30" y="100" width="50" height="30" rx="6" fill="#334155" stroke="#475569" stroke-width="2"/>
+                                <text x="55" y="120" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="monospace">ALIM</text>
+                                <line x1="80" y1="115" x2="140" y2="115" stroke="#475569" stroke-width="3"/>
+                                <!-- SAG Mill -->
+                                <g class="molino-group" style="transform-origin:210px 115px;">
+                                    <circle cx="210" cy="115" r="50" fill="url(#millGrad)" stroke="#64748b" stroke-width="3"/>
+                                    <circle cx="210" cy="115" r="35" fill="none" stroke="#475569" stroke-width="2"/>
+                                    <line x1="210" y1="65" x2="210" y2="165" stroke="#475569" stroke-width="1.5" opacity="0.6"/>
+                                    <line x1="160" y1="115" x2="260" y2="115" stroke="#475569" stroke-width="1.5" opacity="0.6"/>
+                                    <circle cx="210" cy="115" r="7" fill="#94a3b8"/>
                                 </g>
-                                <text x="210" y="205" fill="#64748b" font-size="10" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
-
+                                <text x="210" y="190" fill="#64748b" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
                                 <!-- Trommel -->
-                                <rect x="270" y="110" width="50" height="30" rx="4" fill="#334155" stroke="#475569" stroke-width="2"/>
-                                <text x="295" y="130" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">TROMMEL</text>
-
-                                <!-- Flow line to pump box -->
-                                <line id="pipe1" x1="320" y1="125" x2="410" y2="125" stroke-width="5" class="flow-path pipe-opt" stroke-linecap="round"/>
-
+                                <rect x="270" y="100" width="50" height="30" rx="4" fill="#334155" stroke="#475569" stroke-width="2"/>
+                                <text x="295" y="120" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">TROMMEL</text>
+                                <!-- Pipe 1 -->
+                                <line id="pipe1" x1="320" y1="115" x2="410" y2="115" stroke-width="5" class="flow-path pipe-opt" stroke-linecap="round"/>
                                 <!-- Pump box -->
-                                <rect x="410" y="110" width="60" height="30" rx="6" fill="#334155" stroke="#475569" stroke-width="2"/>
-                                <text x="440" y="130" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">CAJÓN</text>
-
-                                <!-- Flow line to cyclones -->
-                                <line id="pipe2" x1="470" y1="125" x2="570" y2="125" stroke-width="5" class="flow-path pipe-opt" stroke-linecap="round"/>
-
-                                <!-- Cyclone cluster -->
+                                <rect x="410" y="100" width="60" height="30" rx="6" fill="#334155" stroke="#475569" stroke-width="2"/>
+                                <text x="440" y="120" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">CAJÓN</text>
+                                <!-- Pipe 2 -->
+                                <line id="pipe2" x1="470" y1="115" x2="570" y2="115" stroke-width="5" class="flow-path pipe-opt" stroke-linecap="round"/>
+                                <!-- Cyclones -->
                                 <g>
-                                    <polygon points="570,95 600,95 605,120 570,120" fill="#334155" stroke="#475569" stroke-width="2"/>
-                                    <polygon points="605,95 635,95 640,120 605,120" fill="#334155" stroke="#475569" stroke-width="2"/>
-                                    <polygon points="635,95 665,95 670,120 635,120" fill="#334155" stroke="#475569" stroke-width="2"/>
-                                    <text x="620" y="145" fill="#64748b" font-size="9" text-anchor="middle" font-family="monospace">NIDO DE CICLONES</text>
+                                    <polygon points="570,85 600,85 605,110 570,110" fill="#334155" stroke="#475569" stroke-width="2"/>
+                                    <polygon points="605,85 635,85 640,110 605,110" fill="#334155" stroke="#475569" stroke-width="2"/>
+                                    <polygon points="635,85 665,85 670,110 635,110" fill="#334155" stroke="#475569" stroke-width="2"/>
+                                    <text x="620" y="135" fill="#64748b" font-size="9" text-anchor="middle" font-family="monospace">CICLONES</text>
                                 </g>
-
-                                <!-- Overflow line -->
-                                <line x1="670" y1="107" x2="730" y2="50" stroke="#475569" stroke-width="3" stroke-dasharray="6 4" class="flow-path pipe-opt" id="overflowPipe"/>
-                                <text x="710" y="45" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">OVERFLOW</text>
-
-                                <!-- Underflow line -->
-                                <line x1="670" y1="110" x2="740" y2="190" stroke="#475569" stroke-width="3" stroke-dasharray="6 4" class="flow-path pipe-opt" id="underflowPipe"/>
-                                <text x="720" y="205" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">UNDERFLOW</text>
-
-                                <!-- Water addition -->
-                                <line x1="150" y1="190" x2="210" y2="180" stroke="#22d3ee" stroke-width="3" stroke-dasharray="4 4" class="flow-path"/>
-                                <text x="140" y="205" fill="#22d3ee" font-size="9" font-family="monospace">AGUA</text>
+                                <!-- Overflow -->
+                                <line x1="670" y1="97" x2="730" y2="45" stroke="#475569" stroke-width="3" stroke-dasharray="6 4" class="flow-path pipe-opt" id="overflowPipe"/>
+                                <text x="710" y="38" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">OVERFLOW</text>
+                                <!-- Underflow -->
+                                <line x1="670" y1="100" x2="740" y2="175" stroke="#475569" stroke-width="3" stroke-dasharray="6 4" class="flow-path pipe-opt" id="underflowPipe"/>
+                                <text x="720" y="190" fill="#94a3b8" font-size="8" text-anchor="middle" font-family="monospace">UNDERFLOW</text>
+                                <!-- Water -->
+                                <line x1="150" y1="175" x2="210" y2="165" stroke="#22d3ee" stroke-width="3" stroke-dasharray="4 4" class="flow-path"/>
+                                <text x="140" y="190" fill="#22d3ee" font-size="9" font-family="monospace">AGUA</text>
                             </svg>
                         </div>
-                        <div class="flex-between mt-16">
-                            <span class="text-muted" style="font-size:0.8rem;">Cp Actual: <strong id="pidCpValue" class="card-value cyan" style="font-size:1.2rem;">--%</strong></span>
-                            <span class="text-muted" style="font-size:0.8rem;">RPM: <strong id="pidRpmValue" class="card-value emerald" style="font-size:1.2rem;">--</strong></span>
+                        <div class="flex-between mt-12">
+                            <span class="text-muted" style="font-size:0.75rem;">Cp: <strong id="pidCpValue" class="card-value cyan" style="font-size:1.1rem;">--%</strong></span>
+                            <span class="text-muted" style="font-size:0.75rem;">RPM: <strong id="pidRpmValue" class="card-value emerald" style="font-size:1.1rem;">--</strong></span>
                         </div>
                     </div>
                     <div class="card">
@@ -1004,36 +737,34 @@
                             </span>
                             <span class="badge badge-ok" id="stabilityBadge">Estable</span>
                         </div>
-                        <div class="grid grid-2" style="gap:16px;">
+                        <div class="grid grid-2" style="gap:12px;">
                             <div>
-                                <div class="slider-label">Tonelaje Seco</div>
+                                <div class="slider-label">Tonelaje</div>
                                 <div class="card-value amber" id="metricTph">--</div>
-                                <div class="text-muted" style="font-size:0.7rem;">t/h</div>
+                                <div class="text-muted" style="font-size:0.65rem;">t/h</div>
                             </div>
                             <div>
-                                <div class="slider-label">Agua Adición</div>
+                                <div class="slider-label">Agua</div>
                                 <div class="card-value cyan" id="metricWater">--</div>
-                                <div class="text-muted" style="font-size:0.7rem;">m³/h</div>
+                                <div class="text-muted" style="font-size:0.65rem;">m³/h</div>
                             </div>
                             <div>
                                 <div class="slider-label">% Sólidos</div>
                                 <div class="card-value emerald" id="metricCp">--</div>
-                                <div class="text-muted" style="font-size:0.7rem;">Cp</div>
+                                <div class="text-muted" style="font-size:0.65rem;">Cp</div>
                             </div>
                             <div>
                                 <div class="slider-label">Potencia</div>
                                 <div class="card-value rose" id="metricPower">--</div>
-                                <div class="text-muted" style="font-size:0.7rem;">MW</div>
+                                <div class="text-muted" style="font-size:0.65rem;">MW</div>
                             </div>
                         </div>
-                        <div class="mt-16">
-                            <div class="slider-label">Dureza (W<sub>i</sub>)</div>
-                            <div class="card-value" style="font-size:1.5rem;" id="metricWi">--</div>
-                            <div class="text-muted" style="font-size:0.7rem;">kWh/t</div>
+                        <div class="mt-12">
+                            <div class="slider-label">Dureza (Wi)</div>
+                            <div class="card-value" style="font-size:1.3rem;" id="metricWi">--</div>
+                            <div class="text-muted" style="font-size:0.65rem;">kWh/t</div>
                         </div>
-                        <!-- Sparkline for Cp trend -->
-                        <div class="mt-16">
-                            <div class="slider-label">Tendencia Densidad (últimos 5 min)</div>
+                        <div class="sparkline-container">
                             <canvas id="sparklineCp" width="400" height="40" style="width:100%;height:40px;"></canvas>
                         </div>
                     </div>
@@ -1047,40 +778,40 @@
                         <div class="card-header">
                             <span class="card-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m8 7V10m8 11V3"/></svg>
-                                Parámetros de Operación
+                                Parámetros
                             </span>
                         </div>
                         <div class="slider-group">
                             <div class="slider-label">
-                                <span>Tonelaje Seco (TPH)</span>
+                                <span>Tonelaje (TPH)</span>
                                 <span class="slider-value" id="sliderTphVal">1500</span>
                             </div>
                             <input type="range" id="sliderTph" min="500" max="3000" step="10" value="1500" aria-label="Tonelaje Seco">
                         </div>
                         <div class="slider-group">
                             <div class="slider-label">
-                                <span>Agua de Adición (m³/h)</span>
+                                <span>Agua (m³/h)</span>
                                 <span class="slider-value" id="sliderWaterVal">400</span>
                             </div>
                             <input type="range" id="sliderWater" min="100" max="1500" step="5" value="400" aria-label="Agua de Adición">
                         </div>
                         <div class="slider-group">
                             <div class="slider-label">
-                                <span>Dureza del Mineral (W<sub>i</sub> kWh/t)</span>
+                                <span>Dureza (W<sub>i</sub>)</span>
                                 <span class="slider-value" id="sliderWiVal">14.0</span>
                             </div>
                             <input type="range" id="sliderWi" min="8" max="22" step="0.1" value="14" aria-label="Dureza del Mineral">
                         </div>
                         <div class="slider-group">
                             <div class="slider-label">
-                                <span>Sólidos Objetivo (%Cp<sub>Target</sub>)</span>
+                                <span>Cp Objetivo (%)</span>
                                 <span class="slider-value" id="sliderCpTargetVal">68</span>
                             </div>
                             <input type="range" id="sliderCpTarget" min="55" max="78" step="1" value="68" aria-label="Sólidos Objetivo">
                         </div>
                         <div class="slider-group">
                             <div class="slider-label">
-                                <span>Potencia Molino (MW)</span>
+                                <span>Potencia (MW)</span>
                                 <span class="slider-value" id="sliderPowerVal">20</span>
                             </div>
                             <input type="range" id="sliderPower" min="5" max="35" step="0.5" value="20" aria-label="Potencia Molino">
@@ -1095,15 +826,15 @@
                             <span class="badge" id="actionBadge">--</span>
                         </div>
                         <div id="actionCardContainer">
-                            <div class="text-muted" style="text-align:center;padding:50px 0;font-size:1.1rem;">
-                                ⚙️ Ajuste los parámetros para recibir recomendaciones.
+                            <div class="text-muted" style="text-align:center;padding:40px 0;font-size:1rem;">
+                                ⚙️ Ajuste parámetros para ver recomendaciones
                             </div>
                         </div>
-                        <div class="mt-16">
+                        <div class="mt-12">
                             <div class="card-header">
-                                <span class="card-title">Análisis de Desviación</span>
+                                <span class="card-title">Desviación</span>
                             </div>
-                            <div id="deviationDetails" class="text-muted" style="font-size:0.85rem;line-height:1.7;">
+                            <div id="deviationDetails" class="text-muted" style="font-size:0.8rem;line-height:1.6;">
                                 Sin desviación significativa.
                             </div>
                         </div>
@@ -1118,51 +849,50 @@
                         <div class="card-header">
                             <span class="card-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                                Calculadora de Carga de Bolas (J<sub>b</sub>)
+                                Carga de Bolas
                             </span>
                         </div>
                         <div class="slider-group">
                             <div class="slider-label">
-                                <span>Última Adición de Bolas (t)</span>
+                                <span>Adición de Bolas (t)</span>
                                 <span class="slider-value" id="sliderBallsVal">50</span>
                             </div>
                             <input type="range" id="sliderBalls" min="0" max="200" step="1" value="50" aria-label="Última Adición de Bolas">
                         </div>
-                        <div class="grid grid-2 mt-16" style="gap:16px;">
+                        <div class="grid grid-2 mt-12" style="gap:12px;">
                             <div>
                                 <div class="slider-label">Consumo Energético</div>
-                                <div class="card-value cyan" id="energyConsumption">--</div>
-                                <div class="text-muted" style="font-size:0.7rem;">kWh/t</div>
+                                <div class="card-value cyan" id="energyConsumption" style="font-size:1.3rem;">--</div>
+                                <div class="text-muted" style="font-size:0.65rem;">kWh/t</div>
                             </div>
                             <div>
                                 <div class="slider-label">Adición Recomendada</div>
-                                <div class="card-value amber" id="recommendedBalls">--</div>
-                                <div class="text-muted" style="font-size:0.7rem;">t/día</div>
+                                <div class="card-value amber" id="recommendedBalls" style="font-size:1.3rem;">--</div>
+                                <div class="text-muted" style="font-size:0.65rem;">t/día</div>
                             </div>
                         </div>
-                        <div class="mt-16">
-                            <div class="slider-label">Pérdida por Impacto/Abrasión</div>
-                            <div class="card-value rose" id="ballLoss">--</div>
-                            <div class="text-muted" style="font-size:0.7rem;">g/t</div>
+                        <div class="mt-12">
+                            <div class="slider-label">Pérdida g/t</div>
+                            <div class="card-value rose" id="ballLoss" style="font-size:1.3rem;">--</div>
                         </div>
                     </div>
                     <div class="card">
                         <div class="card-header">
                             <span class="card-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                                Curva de Desgaste de Liners
+                                Desgaste de Liners
                             </span>
                             <span class="badge" id="linerBadge">Monitoreo</span>
                         </div>
-                        <div class="chart-container" id="linerChartContainer">
-                            <svg class="chart-svg" id="linerChartSvg" viewBox="0 0 400 160" preserveAspectRatio="none">
-                                <path id="linerCurvePath" d="M0,20 L400,140" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>
-                                <rect id="linerCurrentPoint" x="180" y="70" width="12" height="12" fill="#f43f5e" rx="2"/>
+                        <div class="chart-container" id="linerChartContainer" style="height:150px;">
+                            <svg class="chart-svg" id="linerChartSvg" viewBox="0 0 400 150" preserveAspectRatio="none">
+                                <path id="linerCurvePath" d="M0,18 L400,132" fill="none" stroke="#fbbf24" stroke-width="3"/>
+                                <rect id="linerCurrentPoint" x="170" y="65" width="12" height="12" fill="#f43f5e" rx="2"/>
                             </svg>
                         </div>
-                        <div class="flex-between mt-16">
-                            <span class="text-muted" style="font-size:0.8rem;">Espesor Restante: <strong id="linerThickness" class="card-value emerald" style="font-size:1.2rem;">--</strong> mm</span>
-                            <span class="text-muted" style="font-size:0.8rem;">Próximo Cambio: <strong id="linerCountdown" class="card-value amber" style="font-size:1.2rem;">--</strong></span>
+                        <div class="flex-between mt-12">
+                            <span class="text-muted" style="font-size:0.75rem;">Espesor: <strong id="linerThickness" class="card-value emerald" style="font-size:1.1rem;">--</strong> mm</span>
+                            <span class="text-muted" style="font-size:0.75rem;">Cambio: <strong id="linerCountdown" class="card-value amber" style="font-size:1.1rem;">--</strong></span>
                         </div>
                     </div>
                 </div>
@@ -1174,20 +904,18 @@
                     <div class="card-header">
                         <span class="card-title">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                            Matriz de Diagnóstico de Fallas
+                            Matriz de Diagnóstico
                         </span>
-                        <span class="badge badge-warn">Sistema Experto Local</span>
+                        <span class="badge badge-warn">Sistema Experto</span>
                     </div>
                     <div class="diag-selector" id="diagSelector">
-                        <button class="diag-btn active" data-anomaly="presion">Presión de hidrociclones cayendo</button>
-                        <button class="diag-btn" data-anomaly="vibracion">Vibración alta en descanso de entrada</button>
-                        <button class="diag-btn" data-anomaly="finos">Sobrecarga de finos en trommel</button>
-                        <button class="diag-btn" data-anomaly="temperatura">Alta temperatura en cojinetes</button>
-                        <button class="diag-btn" data-anomaly="ruido">Ruido anormal en molino</button>
+                        <button class="diag-btn active" data-anomaly="presion">Presión hidrociclones</button>
+                        <button class="diag-btn" data-anomaly="vibracion">Vibración descanso</button>
+                        <button class="diag-btn" data-anomaly="finos">Finos en trommel</button>
+                        <button class="diag-btn" data-anomaly="temperatura">Temp. cojinetes</button>
+                        <button class="diag-btn" data-anomaly="ruido">Ruido anormal</button>
                     </div>
-                    <div id="diagStepsContainer" class="diag-steps">
-                        <!-- Dynamically populated -->
-                    </div>
+                    <div id="diagStepsContainer" class="diag-steps"></div>
                 </div>
             </div>
 
@@ -1202,30 +930,28 @@
                             </span>
                         </div>
                         <form class="log-form" id="logForm">
-                            <div class="grid grid-2" style="gap:16px;">
-                                <div>
-                                    <label class="slider-label">Turno</label>
-                                    <select class="log-select" id="logTurno">
-                                        <option value="A">Turno A (06:00 - 14:00)</option>
-                                        <option value="B">Turno B (14:00 - 22:00)</option>
-                                        <option value="C">Turno C (22:00 - 06:00)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="slider-label">Operador Responsable</label>
-                                    <input type="text" class="log-input" id="logOperador" placeholder="Nombre del operador" required>
-                                </div>
+                            <div>
+                                <label class="slider-label">Turno</label>
+                                <select class="log-select" id="logTurno">
+                                    <option value="A">Turno A (06:00 - 14:00)</option>
+                                    <option value="B">Turno B (14:00 - 22:00)</option>
+                                    <option value="C">Turno C (22:00 - 06:00)</option>
+                                </select>
                             </div>
                             <div>
-                                <label class="slider-label">Novedades del Turno</label>
-                                <textarea class="log-textarea" id="logNovedades" placeholder="Describa las novedades operativas, eventos relevantes, etc."></textarea>
+                                <label class="slider-label">Operador</label>
+                                <input type="text" class="log-input" id="logOperador" placeholder="Nombre del operador" required>
                             </div>
                             <div>
-                                <label class="slider-label">Alertas del Sistema</label>
-                                <textarea class="log-textarea" id="logAlertas" placeholder="Registre alertas activas o resueltas durante el turno."></textarea>
+                                <label class="slider-label">Novedades</label>
+                                <textarea class="log-textarea" id="logNovedades" placeholder="Describa novedades operativas..."></textarea>
+                            </div>
+                            <div>
+                                <label class="slider-label">Alertas</label>
+                                <textarea class="log-textarea" id="logAlertas" placeholder="Registre alertas activas..."></textarea>
                             </div>
                             <button type="submit" class="btn-primary" id="generateReportBtn">
-                                ⚡ Generar y Firmar Informe de Turno
+                                ⚡ Generar Informe
                             </button>
                         </form>
                     </div>
@@ -1233,42 +959,67 @@
                         <div class="card-header">
                             <span class="card-title">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                                Resumen del Sistema
+                                Resumen
                             </span>
                         </div>
-                        <div id="systemSummary" class="text-muted" style="font-size:0.9rem;line-height:1.8;">
-                            <p><strong>Estado general:</strong> <span class="badge badge-ok">Operativo</span></p>
-                            <p><strong>Tonelaje actual:</strong> <span id="summaryTph">--</span> t/h</p>
+                        <div id="systemSummary" class="text-muted" style="font-size:0.85rem;line-height:1.8;">
+                            <p><strong>Estado:</strong> <span class="badge badge-ok">Operativo</span></p>
+                            <p><strong>Tonelaje:</strong> <span id="summaryTph">--</span> t/h</p>
                             <p><strong>% Sólidos:</strong> <span id="summaryCp">--</span>%</p>
                             <p><strong>Potencia:</strong> <span id="summaryPower">--</span> MW</p>
                             <p><strong>Dureza:</strong> <span id="summaryWi">--</span> kWh/t</p>
-                            <p><strong>Próximo cambio de liners:</strong> <span id="summaryLiner">--</span></p>
-                            <p><strong>Última adición de bolas:</strong> <span id="summaryBalls">--</span> t</p>
+                            <p><strong>Cambio liners:</strong> <span id="summaryLiner">--</span></p>
+                            <p><strong>Bolas:</strong> <span id="summaryBalls">--</span> t</p>
                         </div>
-                        <div class="mt-16">
+                        <div class="mt-12">
                             <div class="card-header">
                                 <span class="card-title">Alertas Activas</span>
                             </div>
                             <div id="activeAlerts" class="text-muted" style="font-size:0.85rem;">
-                                <p>✅ Sin alertas activas</p>
+                                <p>✅ Sin alertas</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+
+        <!-- NAVEGACIÓN INFERIOR TÁCTIL -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button class="nav-btn active" data-tab="proceso">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
+                Proceso
+            </button>
+            <button class="nav-btn" data-tab="control">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m8 7V10m8 11V3"/></svg>
+                Control
+                <span class="nav-badge" id="controlNavBadge" style="display:none;">1</span>
+            </button>
+            <button class="nav-btn" data-tab="activo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Activo
+            </button>
+            <button class="nav-btn" data-tab="diagnostico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                Diagnóstico
+            </button>
+            <button class="nav-btn" data-tab="bitacora">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Bitácora
+            </button>
+        </nav>
     </div>
 
     <!-- MODAL -->
     <div class="modal-overlay" id="reportModal" style="display:none;">
-        <div class="modal-content" id="reportModalContent">
+        <div class="modal-content">
             <div class="modal-header">
-                <h3 style="font-size:1.3rem;font-weight:700;">📄 Informe de Traspaso de Turno</h3>
+                <h3 style="font-size:1.2rem;font-weight:700;">📄 Informe de Turno</h3>
                 <button class="modal-close" id="closeModalBtn">&times;</button>
             </div>
             <div id="reportSheetContainer"></div>
-            <button class="btn-primary print-btn" id="printReportBtn">
-                🖨️ Imprimir / Guardar PDF
+            <button class="btn-primary print-btn" id="printReportBtn" style="margin-top:12px;">
+                🖨️ Imprimir / PDF
             </button>
         </div>
     </div>
@@ -1277,438 +1028,310 @@
         (function() {
             'use strict';
 
-            // ========== CONSTANTS & STATE ==========
-            const STORAGE_KEY = 'optiMillState';
+            // ========== ESTADO ==========
+            const STORAGE_KEY = 'optiMillState_v4';
             const state = {
-                tph: 1500,
-                water: 400,
-                wi: 14.0,
-                cpTarget: 68,
-                power: 20,
-                ballsAddition: 50,
-                linerThickness: 65,
-                linerHoursRemaining: 720,
-                lastUpdate: Date.now(),
-                cpHistory: []
+                tph: 1500, water: 400, wi: 14.0, cpTarget: 68, power: 20,
+                ballsAddition: 50, linerHoursRemaining: 720, cpHistory: []
             };
-
-            // Load saved state
-            function loadState() {
-                try {
-                    const saved = localStorage.getItem(STORAGE_KEY);
-                    if (saved) {
-                        const parsed = JSON.parse(saved);
-                        Object.assign(state, parsed);
-                    }
-                } catch (e) { console.warn('No se pudo cargar estado'); }
-            }
-            function saveState() {
-                try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                        tph: state.tph,
-                        water: state.water,
-                        wi: state.wi,
-                        cpTarget: state.cpTarget,
-                        power: state.power,
-                        ballsAddition: state.ballsAddition,
-                        linerHoursRemaining: state.linerHoursRemaining
-                    }));
-                } catch (e) { console.warn('No se pudo guardar estado'); }
-            }
+            function loadState() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
+            function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ tph:state.tph, water:state.water, wi:state.wi, cpTarget:state.cpTarget, power:state.power, ballsAddition:state.ballsAddition, linerHoursRemaining:state.linerHoursRemaining })); } catch(e){} }
             loadState();
 
-            // ========== DOM REFS ==========
-            const $ = (sel) => document.querySelector(sel);
-            const $$ = (sel) => document.querySelectorAll(sel);
-
-            // Sliders
-            const sliderTph = $('#sliderTph');
-            const sliderWater = $('#sliderWater');
-            const sliderWi = $('#sliderWi');
-            const sliderCpTarget = $('#sliderCpTarget');
-            const sliderPower = $('#sliderPower');
-            const sliderBalls = $('#sliderBalls');
-
-            // Value displays
-            const sliderTphVal = $('#sliderTphVal');
-            const sliderWaterVal = $('#sliderWaterVal');
-            const sliderWiVal = $('#sliderWiVal');
-            const sliderCpTargetVal = $('#sliderCpTargetVal');
-            const sliderPowerVal = $('#sliderPowerVal');
-            const sliderBallsVal = $('#sliderBallsVal');
-
-            // Metrics
-            const metricTph = $('#metricTph');
-            const metricWater = $('#metricWater');
-            const metricCp = $('#metricCp');
-            const metricPower = $('#metricPower');
-            const metricWi = $('#metricWi');
-
-            // P&ID
-            const pidCpValue = $('#pidCpValue');
-            const pidRpmValue = $('#pidRpmValue');
-            const pidStatusBadge = $('#pidStatusBadge');
-            const pipe1 = $('#pipe1');
-            const pipe2 = $('#pipe2');
-            const overflowPipe = $('#overflowPipe');
-            const underflowPipe = $('#underflowPipe');
-
-            // Action
-            const actionCardContainer = $('#actionCardContainer');
-            const actionBadge = $('#actionBadge');
-            const deviationDetails = $('#deviationDetails');
-            const controlAlertBadge = $('#controlAlertBadge');
-
-            // Activo
-            const energyConsumption = $('#energyConsumption');
-            const recommendedBalls = $('#recommendedBalls');
-            const ballLoss = $('#ballLoss');
-            const linerThicknessDisplay = $('#linerThickness');
-            const linerCountdown = $('#linerCountdown');
-            const linerBadge = $('#linerBadge');
-            const linerCurvePath = $('#linerCurvePath');
-            const linerCurrentPoint = $('#linerCurrentPoint');
-            const linerChartSvg = $('#linerChartSvg');
-
-            // Summary
-            const summaryTph = $('#summaryTph');
-            const summaryCp = $('#summaryCp');
-            const summaryPower = $('#summaryPower');
-            const summaryWi = $('#summaryWi');
-            const summaryLiner = $('#summaryLiner');
-            const summaryBalls = $('#summaryBalls');
+            // ========== DOM ==========
+            const $ = s => document.querySelector(s);
+            const $$ = s => document.querySelectorAll(s);
+            const sliderTph = $('#sliderTph'), sliderWater = $('#sliderWater'), sliderWi = $('#sliderWi');
+            const sliderCpTarget = $('#sliderCpTarget'), sliderPower = $('#sliderPower'), sliderBalls = $('#sliderBalls');
+            const sliderTphVal = $('#sliderTphVal'), sliderWaterVal = $('#sliderWaterVal'), sliderWiVal = $('#sliderWiVal');
+            const sliderCpTargetVal = $('#sliderCpTargetVal'), sliderPowerVal = $('#sliderPowerVal'), sliderBallsVal = $('#sliderBallsVal');
+            const metricTph = $('#metricTph'), metricWater = $('#metricWater'), metricCp = $('#metricCp');
+            const metricPower = $('#metricPower'), metricWi = $('#metricWi');
+            const pidCpValue = $('#pidCpValue'), pidRpmValue = $('#pidRpmValue'), pidStatusBadge = $('#pidStatusBadge');
+            const pipe1 = $('#pipe1'), pipe2 = $('#pipe2'), overflowPipe = $('#overflowPipe'), underflowPipe = $('#underflowPipe');
+            const actionCardContainer = $('#actionCardContainer'), actionBadge = $('#actionBadge');
+            const deviationDetails = $('#deviationDetails'), controlNavBadge = $('#controlNavBadge');
+            const energyConsumption = $('#energyConsumption'), recommendedBalls = $('#recommendedBalls'), ballLoss = $('#ballLoss');
+            const linerThicknessDisplay = $('#linerThickness'), linerCountdown = $('#linerCountdown'), linerBadge = $('#linerBadge');
+            const linerCurvePath = $('#linerCurvePath'), linerCurrentPoint = $('#linerCurrentPoint');
+            const summaryTph = $('#summaryTph'), summaryCp = $('#summaryCp'), summaryPower = $('#summaryPower');
+            const summaryWi = $('#summaryWi'), summaryLiner = $('#summaryLiner'), summaryBalls = $('#summaryBalls');
             const activeAlerts = $('#activeAlerts');
-
-            // Sparkline canvas
             const sparklineCanvas = $('#sparklineCp');
-            const sparklineCtx = sparklineCanvas.getContext('2d');
+            const sparklineCtx = sparklineCanvas ? sparklineCanvas.getContext('2d') : null;
 
-            // ========== UTILITY FUNCTIONS ==========
-            function animateNumber(el, target, decimals = 0, suffix = '') {
-                const currentText = el.textContent.replace(/[^\d.-]/g, '');
-                const current = parseFloat(currentText) || 0;
-                const duration = 600;
-                const start = performance.now();
-                function update(now) {
-                    const elapsed = now - start;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const eased = 1 - Math.pow(1 - progress, 3);
-                    const value = current + (target - current) * eased;
-                    const formatted = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
-                    el.textContent = formatted + suffix;
-                    if (progress < 1) {
-                        requestAnimationFrame(update);
-                    } else {
-                        el.textContent = (decimals > 0 ? target.toFixed(decimals) : Math.round(target).toString()) + suffix;
-                    }
+            // ========== FUNCIONES ==========
+            function animateNumber(el, target, decimals=0, suffix='') {
+                const current = parseFloat(el.textContent.replace(/[^\d.-]/g,'')) || 0;
+                const duration = 400, start = performance.now();
+                function step(now) {
+                    const p = Math.min((now-start)/duration, 1);
+                    const eased = 1 - Math.pow(1-p, 3);
+                    const val = current + (target-current)*eased;
+                    el.textContent = (decimals>0 ? val.toFixed(decimals) : Math.round(val)) + suffix;
+                    if (p < 1) requestAnimationFrame(step);
+                    else el.textContent = (decimals>0 ? target.toFixed(decimals) : Math.round(target)) + suffix;
                 }
-                requestAnimationFrame(update);
+                requestAnimationFrame(step);
             }
 
             function calculateCp(tph, water) {
-                const solidsMass = tph * 1000; // kg/h
-                const solidsVolume = solidsMass / 2700; // m3/h
-                const waterMass = water * 1000;
-                const waterVolume = water;
-                const totalVolume = solidsVolume + waterVolume;
-                const cpPercent = (solidsMass / (solidsMass + waterMass)) * 100;
-                return cpPercent;
-            }
-
-            function calculateAction() {
-                const tph = state.tph;
-                const water = state.water;
-                const wi = state.wi;
-                const cpTarget = state.cpTarget;
-                const power = state.power;
-                const currentCp = calculateCp(tph, water);
-                const deviation = currentCp - cpTarget;
-                let actionHTML = '';
-                let badgeClass = 'badge-ok';
-                let badgeText = 'ÓPTIMO';
-                let hasAlert = false;
-
-                if (Math.abs(deviation) < 0.5) {
-                    actionHTML = `<div class="action-card" style="border-color: var(--emerald); background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.03)); box-shadow: 0 0 40px var(--emerald-glow);">
-                        <div class="action-label" style="color: var(--emerald);">Estado del Circuito</div>
-                        <div class="action-text" style="color: var(--emerald); text-shadow: 0 0 40px var(--emerald-glow);">✅ OPERACIÓN ÓPTIMA</div>
-                        <div class="action-subtext">Densidad de pulpa dentro del rango objetivo. Mantener parámetros actuales.</div>
-                    </div>`;
-                    badgeClass = 'badge-ok';
-                    badgeText = 'ÓPTIMO';
-                } else if (deviation > 0) {
-                    const solidsMass = tph * 1000;
-                    const currentWaterMass = water * 1000;
-                    const waterNeededMass = solidsMass * (100 / cpTarget - 1);
-                    const waterNeededM3 = waterNeededMass / 1000;
-                    const waterToAdd = Math.max(0, waterNeededM3 - water);
-                    actionHTML = `<div class="action-card">
-                        <div class="action-label">Acción Prioritaria</div>
-                        <div class="action-text">⚠️ ACCION SUGERIDA: Abrir Válvula de Agua en +${waterToAdd.toFixed(1)} m³/h</div>
-                        <div class="action-subtext">Densidad actual ${currentCp.toFixed(1)}% > Objetivo ${cpTarget}%. Reducir Cp mediante adición de agua fresca.</div>
-                    </div>`;
-                    badgeClass = 'badge-danger';
-                    badgeText = 'SOBREDENSIFICADA';
-                    hasAlert = true;
-                } else {
-                    const solidsMass = tph * 1000;
-                    const currentWaterMass = water * 1000;
-                    const waterNeededMass = solidsMass * (100 / cpTarget - 1);
-                    const waterNeededM3 = waterNeededMass / 1000;
-                    const waterToReduce = Math.max(0, water - waterNeededM3);
-                    actionHTML = `<div class="action-card" style="border-color: var(--cyan); background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.03)); box-shadow: 0 0 40px var(--cyan-glow);">
-                        <div class="action-label" style="color: var(--cyan);">Acción Prioritaria</div>
-                        <div class="action-text" style="color: var(--cyan); text-shadow: 0 0 40px var(--cyan-glow);">⬇️ ACCION SUGERIDA: Reducir Válvula de Agua en -${waterToReduce.toFixed(1)} m³/h</div>
-                        <div class="action-subtext">Densidad actual ${currentCp.toFixed(1)}% < Objetivo ${cpTarget}%. Incrementar Cp reduciendo agua o aumentando tonelaje.</div>
-                    </div>`;
-                    badgeClass = 'badge-warn';
-                    badgeText = 'DILUIDA';
-                    hasAlert = true;
-                }
-
-                actionCardContainer.innerHTML = actionHTML;
-                actionBadge.className = `badge ${badgeClass}`;
-                actionBadge.textContent = badgeText;
-
-                // Update control tab alert badge
-                if (hasAlert) {
-                    controlAlertBadge.style.display = 'flex';
-                } else {
-                    controlAlertBadge.style.display = 'none';
-                }
-
-                deviationDetails.innerHTML = `
-                    <p><strong>Cp Actual:</strong> ${currentCp.toFixed(1)}% &nbsp;|&nbsp; <strong>Cp Objetivo:</strong> ${cpTarget}% &nbsp;|&nbsp; <strong>Desviación:</strong> ${deviation >= 0 ? '+' : ''}${deviation.toFixed(1)}%</p>
-                    <p><strong>Consumo Energético:</strong> ${((power * 1000) / tph).toFixed(2)} kWh/t</p>
-                    <p><strong>Relación Agua/Sólidos:</strong> ${(water / tph).toFixed(3)} m³/t</p>
-                `;
-
-                // Update active alerts in summary
-                if (hasAlert) {
-                    activeAlerts.innerHTML = `<p class="badge badge-danger" style="display:inline-block;">⚠️ ${badgeText}</p>`;
-                } else {
-                    activeAlerts.innerHTML = `<p>✅ Sin alertas activas</p>`;
-                }
-
-                return { currentCp, deviation };
+                const solidsMass = tph * 1000;
+                return (solidsMass / (solidsMass + water * 1000)) * 100;
             }
 
             function updatePid(cp) {
-                let pipeClass = 'pipe-opt';
-                let statusText = 'Flujo Normal';
-                let badgeClass = 'badge-ok';
-                if (cp < 60) { pipeClass = 'pipe-low'; statusText = 'Muy Diluida'; badgeClass = 'badge-warn'; }
-                else if (cp > 72) { pipeClass = 'pipe-high'; statusText = 'Sobredensificada'; badgeClass = 'badge-danger'; }
-                else if (cp >= 65 && cp <= 70) { pipeClass = 'pipe-opt'; statusText = 'Óptima'; badgeClass = 'badge-ok'; }
-                else if (cp >= 60 && cp < 65) { pipeClass = 'pipe-low'; statusText = 'Diluida'; badgeClass = 'badge-warn'; }
-                else if (cp > 70 && cp <= 72) { pipeClass = 'pipe-high'; statusText = 'Densa'; badgeClass = 'badge-warn'; }
-
-                pipe1.className.baseVal = `flow-path ${pipeClass}`;
-                pipe2.className.baseVal = `flow-path ${pipeClass}`;
-                overflowPipe.className.baseVal = `flow-path ${pipeClass}`;
-                underflowPipe.className.baseVal = `flow-path ${pipeClass}`;
-
-                pidStatusBadge.className = `badge ${badgeClass}`;
-                pidStatusBadge.textContent = statusText;
-
+                let pc = 'pipe-opt', st = 'Flujo Normal', bc = 'badge-ok';
+                if (cp < 60) { pc='pipe-low'; st='Diluida'; bc='badge-warn'; }
+                else if (cp > 72) { pc='pipe-high'; st='Sobredensificada'; bc='badge-danger'; }
+                else if (cp >= 65 && cp <= 70) { pc='pipe-opt'; st='Óptima'; bc='badge-ok'; }
+                else if (cp >= 60 && cp < 65) { pc='pipe-low'; st='Diluida'; bc='badge-warn'; }
+                else if (cp > 70 && cp <= 72) { pc='pipe-high'; st='Densa'; bc='badge-warn'; }
+                pipe1.className.baseVal = `flow-path ${pc}`;
+                pipe2.className.baseVal = `flow-path ${pc}`;
+                overflowPipe.className.baseVal = `flow-path ${pc}`;
+                underflowPipe.className.baseVal = `flow-path ${pc}`;
+                pidStatusBadge.className = `badge ${bc}`;
+                pidStatusBadge.textContent = st;
                 const rpm = Math.min(20, (state.power / state.tph) * 100);
                 pidRpmValue.textContent = rpm.toFixed(1);
                 pidCpValue.textContent = cp.toFixed(1) + '%';
             }
 
+            function calculateAction() {
+                const currentCp = calculateCp(state.tph, state.water);
+                const deviation = currentCp - state.cpTarget;
+                let html = '', bc = 'badge-ok', bt = 'ÓPTIMO', hasAlert = false;
+                if (Math.abs(deviation) < 0.5) {
+                    html = `<div class="action-card" style="border-color:var(--emerald);box-shadow:0 0 30px rgba(52,211,153,0.3);">
+                        <div class="action-label" style="color:var(--emerald);">Estado</div>
+                        <div class="action-text" style="color:var(--emerald);">✅ OPERACIÓN ÓPTIMA</div>
+                        <div class="action-subtext">Densidad dentro del rango objetivo.</div></div>`;
+                } else if (deviation > 0) {
+                    const sm = state.tph * 1000;
+                    const wnm = sm * (100/state.cpTarget - 1);
+                    const wnm3 = wnm / 1000;
+                    const add = Math.max(0, wnm3 - state.water);
+                    html = `<div class="action-card">
+                        <div class="action-label">Acción Prioritaria</div>
+                        <div class="action-text">⚠️ Abrir Válvula de Agua +${add.toFixed(1)} m³/h</div>
+                        <div class="action-subtext">Cp actual ${currentCp.toFixed(1)}% > Objetivo ${state.cpTarget}%</div></div>`;
+                    bc = 'badge-danger'; bt = 'SOBREDENSIFICADA'; hasAlert = true;
+                } else {
+                    const sm = state.tph * 1000;
+                    const wnm = sm * (100/state.cpTarget - 1);
+                    const wnm3 = wnm / 1000;
+                    const red = Math.max(0, state.water - wnm3);
+                    html = `<div class="action-card" style="border-color:var(--cyan);box-shadow:0 0 30px rgba(34,211,238,0.3);">
+                        <div class="action-label" style="color:var(--cyan);">Acción Prioritaria</div>
+                        <div class="action-text" style="color:var(--cyan);">⬇️ Reducir Agua -${red.toFixed(1)} m³/h</div>
+                        <div class="action-subtext">Cp actual ${currentCp.toFixed(1)}% < Objetivo ${state.cpTarget}%</div></div>`;
+                    bc = 'badge-warn'; bt = 'DILUIDA'; hasAlert = true;
+                }
+                actionCardContainer.innerHTML = html;
+                actionBadge.className = `badge ${bc}`;
+                actionBadge.textContent = bt;
+                controlNavBadge.style.display = hasAlert ? 'flex' : 'none';
+                deviationDetails.innerHTML = `
+                    <p><strong>Cp:</strong> ${currentCp.toFixed(1)}% | <strong>Objetivo:</strong> ${state.cpTarget}% | <strong>Desv:</strong> ${deviation>=0?'+':''}${deviation.toFixed(1)}%</p>
+                    <p><strong>Consumo:</strong> ${((state.power*1000)/state.tph).toFixed(2)} kWh/t | <strong>Agua/Sólidos:</strong> ${(state.water/state.tph).toFixed(3)} m³/t</p>`;
+                activeAlerts.innerHTML = hasAlert ? `<p class="badge badge-danger">⚠️ ${bt}</p>` : '<p>✅ Sin alertas</p>';
+                return { currentCp, deviation };
+            }
+
             function updateActivo() {
-                const tph = state.tph;
-                const power = state.power;
-                const wi = state.wi;
-                const balls = state.ballsAddition;
-
-                const energyKwhPerTon = (power * 1000) / tph;
-                energyConsumption.textContent = energyKwhPerTon.toFixed(2) + ' kWh/t';
-
-                const ballConsumptionGt = energyKwhPerTon * wi * 0.3 + 3;
-                const ballConsumptionTonsPerDay = (ballConsumptionGt * tph * 24) / 1000000;
-                recommendedBalls.textContent = ballConsumptionTonsPerDay.toFixed(1) + ' t/día';
-                ballLoss.textContent = ballConsumptionGt.toFixed(1) + ' g/t';
-
-                const hoursPerCycle = 1500;
-                const hoursElapsed = hoursPerCycle - state.linerHoursRemaining;
-                const initialThickness = 90;
-                const currentThickness = Math.max(0, initialThickness * (1 - hoursElapsed / hoursPerCycle));
-                state.linerThickness = currentThickness;
-                linerThicknessDisplay.textContent = currentThickness.toFixed(1) + ' mm';
-
-                const days = Math.floor(state.linerHoursRemaining / 24);
-                const hours = Math.floor(state.linerHoursRemaining % 24);
-                linerCountdown.textContent = `${days}d ${hours}h`;
-
-                if (currentThickness < 20) { linerBadge.className = 'badge badge-danger'; linerBadge.textContent = 'Cambio Urgente'; }
-                else if (currentThickness < 40) { linerBadge.className = 'badge badge-warn'; linerBadge.textContent = 'Cambio Próximo'; }
-                else { linerBadge.className = 'badge badge-ok'; linerBadge.textContent = 'Monitoreo'; }
-
-                const svgWidth = 400, svgHeight = 160;
-                const x = (hoursElapsed / hoursPerCycle) * svgWidth;
-                const y = svgHeight - (currentThickness / initialThickness) * svgHeight;
-                linerCurvePath.setAttribute('d', `M0,${svgHeight * 0.15} L${svgWidth},${svgHeight * 0.9}`);
-                linerCurrentPoint.setAttribute('x', x - 5);
-                linerCurrentPoint.setAttribute('y', y - 5);
-                linerCurrentPoint.setAttribute('fill', currentThickness < 20 ? '#f43f5e' : currentThickness < 40 ? '#fbbf24' : '#34d399');
-
-                summaryTph.textContent = tph.toFixed(0);
-                summaryCp.textContent = calculateCp(tph, state.water).toFixed(1);
-                summaryPower.textContent = power.toFixed(1);
-                summaryWi.textContent = wi.toFixed(1);
-                summaryLiner.textContent = `${days}d ${hours}h`;
-                summaryBalls.textContent = balls.toFixed(0);
+                const e = (state.power*1000)/state.tph;
+                energyConsumption.textContent = e.toFixed(2) + ' kWh/t';
+                const bg = e * state.wi * 0.3 + 3;
+                const btd = (bg * state.tph * 24) / 1000000;
+                recommendedBalls.textContent = btd.toFixed(1) + ' t/día';
+                ballLoss.textContent = bg.toFixed(1) + ' g/t';
+                const hpc = 1500, he = hpc - state.linerHoursRemaining, it = 90;
+                const ct = Math.max(0, it * (1 - he/hpc));
+                linerThicknessDisplay.textContent = ct.toFixed(1) + ' mm';
+                const d = Math.floor(state.linerHoursRemaining/24), h = Math.floor(state.linerHoursRemaining%24);
+                linerCountdown.textContent = `${d}d ${h}h`;
+                if (ct < 20) { linerBadge.className='badge badge-danger'; linerBadge.textContent='Cambio Urgente'; }
+                else if (ct < 40) { linerBadge.className='badge badge-warn'; linerBadge.textContent='Cambio Próximo'; }
+                else { linerBadge.className='badge badge-ok'; linerBadge.textContent='Monitoreo'; }
+                const sw=400, sh=150;
+                const x=(he/hpc)*sw, y=sh-(ct/it)*sh;
+                linerCurvePath.setAttribute('d', `M0,${sh*0.12} L${sw},${sh*0.88}`);
+                linerCurrentPoint.setAttribute('x', x-5);
+                linerCurrentPoint.setAttribute('y', y-5);
+                linerCurrentPoint.setAttribute('fill', ct<20?'#f43f5e':ct<40?'#fbbf24':'#34d399');
+                summaryTph.textContent = state.tph.toFixed(0);
+                summaryCp.textContent = calculateCp(state.tph, state.water).toFixed(1);
+                summaryPower.textContent = state.power.toFixed(1);
+                summaryWi.textContent = state.wi.toFixed(1);
+                summaryLiner.textContent = `${d}d ${h}h`;
+                summaryBalls.textContent = state.ballsAddition.toFixed(0);
             }
 
             function drawSparkline() {
-                const ctx = sparklineCtx;
-                const w = sparklineCanvas.width;
-                const h = sparklineCanvas.height;
-                ctx.clearRect(0, 0, w, h);
+                if (!sparklineCtx) return;
+                const w = sparklineCanvas.width, h = sparklineCanvas.height;
+                sparklineCtx.clearRect(0,0,w,h);
                 if (state.cpHistory.length < 2) return;
-                const min = Math.min(...state.cpHistory);
-                const max = Math.max(...state.cpHistory);
-                const range = max - min || 1;
-                ctx.beginPath();
-                ctx.strokeStyle = '#34d399';
-                ctx.lineWidth = 2;
-                ctx.shadowColor = '#34d399';
-                ctx.shadowBlur = 8;
-                state.cpHistory.forEach((val, i) => {
-                    const x = (i / (state.cpHistory.length - 1)) * w;
-                    const y = h - ((val - min) / range) * (h - 10) - 5;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+                const mn = Math.min(...state.cpHistory), mx = Math.max(...state.cpHistory);
+                const rng = mx-mn || 1;
+                sparklineCtx.beginPath();
+                sparklineCtx.strokeStyle = '#34d399';
+                sparklineCtx.lineWidth = 2.5;
+                sparklineCtx.shadowColor = '#34d399';
+                sparklineCtx.shadowBlur = 6;
+                state.cpHistory.forEach((v,i) => {
+                    const x = (i/(state.cpHistory.length-1))*w;
+                    const y = h - ((v-mn)/rng)*(h-8) - 4;
+                    i===0 ? sparklineCtx.moveTo(x,y) : sparklineCtx.lineTo(x,y);
                 });
-                ctx.stroke();
-                ctx.shadowBlur = 0;
+                sparklineCtx.stroke();
+                sparklineCtx.shadowBlur = 0;
             }
 
             function updateAll() {
-                const currentCp = calculateCp(state.tph, state.water);
-                state.cpHistory.push(currentCp);
-                if (state.cpHistory.length > 60) state.cpHistory.shift(); // last 60 points ~ 5 min
-
+                const cp = calculateCp(state.tph, state.water);
+                state.cpHistory.push(cp);
+                if (state.cpHistory.length > 60) state.cpHistory.shift();
                 animateNumber(metricTph, state.tph, 0, '');
                 animateNumber(metricWater, state.water, 0, '');
-                animateNumber(metricCp, currentCp, 1, '%');
+                animateNumber(metricCp, cp, 1, '%');
                 animateNumber(metricPower, state.power, 1, '');
                 animateNumber(metricWi, state.wi, 1, '');
-
                 sliderTphVal.textContent = state.tph;
                 sliderWaterVal.textContent = state.water;
                 sliderWiVal.textContent = state.wi.toFixed(1);
                 sliderCpTargetVal.textContent = state.cpTarget;
                 sliderPowerVal.textContent = state.power;
                 sliderBallsVal.textContent = state.ballsAddition;
-
                 calculateAction();
-                updatePid(currentCp);
+                updatePid(cp);
                 updateActivo();
                 drawSparkline();
                 saveState();
             }
 
-            // ========== EVENT LISTENERS ==========
-            sliderTph.addEventListener('input', (e) => { state.tph = parseFloat(e.target.value); updateAll(); });
-            sliderWater.addEventListener('input', (e) => { state.water = parseFloat(e.target.value); updateAll(); });
-            sliderWi.addEventListener('input', (e) => { state.wi = parseFloat(e.target.value); updateAll(); });
-            sliderCpTarget.addEventListener('input', (e) => { state.cpTarget = parseFloat(e.target.value); updateAll(); });
-            sliderPower.addEventListener('input', (e) => { state.power = parseFloat(e.target.value); updateAll(); });
-            sliderBalls.addEventListener('input', (e) => { state.ballsAddition = parseFloat(e.target.value); updateAll(); });
+            // ========== EVENTOS TÁCTILES ==========
+            // Feedback táctil con ripple
+            function addRipple(e) {
+                const el = e.currentTarget;
+                const rect = el.getBoundingClientRect();
+                const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                ripple.style.width = ripple.style.height = '20px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                el.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
 
-            // ========== TABS ==========
-            const tabBtns = $$('.tab-btn');
-            const tabPanels = $$('.tab-panel');
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tabId = btn.dataset.tab;
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    tabPanels.forEach(p => p.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById(`panel-${tabId}`).classList.add('active');
+            // Sliders con eventos táctiles mejorados
+            [sliderTph, sliderWater, sliderWi, sliderCpTarget, sliderPower, sliderBalls].forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const id = e.target.id;
+                    const val = parseFloat(e.target.value);
+                    const map = {
+                        sliderTph: () => { state.tph = val; },
+                        sliderWater: () => { state.water = val; },
+                        sliderWi: () => { state.wi = val; },
+                        sliderCpTarget: () => { state.cpTarget = val; },
+                        sliderPower: () => { state.power = val; },
+                        sliderBalls: () => { state.ballsAddition = val; }
+                    };
+                    map[id] && map[id]();
+                    updateAll();
+                });
+                slider.addEventListener('touchstart', addRipple, { passive: true });
+            });
+
+            // Navegación táctil
+            function switchTab(tabId) {
+                $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+                $$('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+                $$('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`panel-${tabId}`).classList.add('active');
+                // Scroll to top
+                document.getElementById('mainContent').scrollTop = 0;
+            }
+
+            $$('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    switchTab(e.currentTarget.dataset.tab);
+                });
+                btn.addEventListener('touchstart', addRipple, { passive: true });
+            });
+
+            // Tab bar desktop
+            $$('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    switchTab(e.currentTarget.dataset.tab);
                 });
             });
 
-            // ========== DIAGNOSTIC DATA ==========
-            const diagnosticData = {
-                presion: {
-                    title: 'Presión de hidrociclones cayendo',
-                    steps: [
-                        { title: 'Causa Raíz Probable', text: 'Obstrucción parcial en la entrada del ciclón o falla en bomba de alimentación. Posible fuga en la línea de pulpa.' },
-                        { title: 'Acción Inmediata en Sala de Control', text: 'Verificar curva de la bomba y presión de descarga. Ajustar velocidad de bomba si es VFD. Confirmar que válvulas de aislamiento estén 100% abiertas.' },
-                        { title: 'Verificación en Terreno', text: 'Inspeccionar visualmente la tubería de alimentación, buscar fugas o acumulación de sólidos. Verificar estado de la bomba y sellos. Medir presión con manómetro local.' }
-                    ]
-                },
-                vibracion: {
-                    title: 'Vibración alta en descanso de entrada',
-                    steps: [
-                        { title: 'Causa Raíz Probable', text: 'Desgaste en los pads o zapatas del descanso. Posible desalineación del molino. Carga de bolas desbalanceada.' },
-                        { title: 'Acción Inmediata en Sala de Control', text: 'Monitorear tendencia de vibración en tiempo real. Reducir tonelaje temporalmente si la vibración excede umbral crítico. Verificar temperatura del descanso.' },
-                        { title: 'Verificación en Terreno', text: 'Inspección termográfica de los descansos. Revisar sistema de lubricación y nivel de aceite. Verificar torque de pernos de anclaje.' }
-                    ]
-                },
-                finos: {
-                    title: 'Sobrecarga de finos en trommel',
-                    steps: [
-                        { title: 'Causa Raíz Probable', text: 'Alta generación de finos por dureza del mineral o sobre-molienda. Trommel obstruido o con mallas rotas.' },
-                        { title: 'Acción Inmediata en Sala de Control', text: 'Aumentar flujo de agua de lavado. Reducir tonelaje si es necesario. Monitorear presión diferencial a través del trommel.' },
-                        { title: 'Verificación en Terreno', text: 'Inspeccionar mallas del trommel por obstrucciones o roturas. Verificar descarga de pebbles. Limpiar área de descarga.' }
-                    ]
-                },
-                temperatura: {
-                    title: 'Alta temperatura en cojinetes',
-                    steps: [
-                        { title: 'Causa Raíz Probable', text: 'Falla en sistema de lubricación. Carga excesiva o desalineación. Obstrucción en circuito de enfriamiento.' },
-                        { title: 'Acción Inmediata en Sala de Control', text: 'Verificar flujo y presión de aceite. Reducir carga si la temperatura supera 85°C. Activar sistema de respaldo si está disponible.' },
-                        { title: 'Verificación en Terreno', text: 'Inspeccionar visualmente el sistema de lubricación. Verificar nivel de aceite y filtros. Medir temperatura con pirómetro.' }
-                    ]
-                },
-                ruido: {
-                    title: 'Ruido anormal en molino',
-                    steps: [
-                        { title: 'Causa Raíz Probable', text: 'Bolas rotas o desgaste irregular de liners. Posible ingreso de material extraño (chatarra). Desgaste en engranajes.' },
-                        { title: 'Acción Inmediata en Sala de Control', text: 'Monitorear espectro de vibración y audio. Evaluar si el ruido es intermitente o constante. Preparar parada programada si es crítico.' },
-                        { title: 'Verificación en Terreno', text: 'Inspección auditiva cercana (con protección). Revisar descarga del molino. Verificar estado de engranajes y piñón.' }
-                    ]
-                }
-            };
+            // Logo touch feedback
+            document.getElementById('logoIcon').addEventListener('touchstart', (e) => {
+                e.currentTarget.style.transform = 'scale(0.85)';
+            });
+            document.getElementById('logoIcon').addEventListener('touchend', (e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+            });
 
+            // ========== DIAGNÓSTICO ==========
+            const diagnosticData = {
+                presion: { steps: [
+                    { title:'Causa Raíz', text:'Obstrucción en entrada de ciclón o falla en bomba de alimentación.' },
+                    { title:'Acción Sala', text:'Verificar curva de bomba y presión de descarga. Ajustar VFD.' },
+                    { title:'Verificación Terreno', text:'Inspeccionar tubería, buscar fugas o acumulación de sólidos.' }
+                ]},
+                vibracion: { steps: [
+                    { title:'Causa Raíz', text:'Desgaste en pads del descanso o desalineación del molino.' },
+                    { title:'Acción Sala', text:'Monitorear vibración. Reducir tonelaje si excede umbral.' },
+                    { title:'Verificación Terreno', text:'Inspección termográfica. Revisar lubricación y pernos.' }
+                ]},
+                finos: { steps: [
+                    { title:'Causa Raíz', text:'Alta generación de finos por dureza o trommel obstruido.' },
+                    { title:'Acción Sala', text:'Aumentar agua de lavado. Reducir tonelaje si es necesario.' },
+                    { title:'Verificación Terreno', text:'Inspeccionar mallas del trommel. Limpiar descarga.' }
+                ]},
+                temperatura: { steps: [
+                    { title:'Causa Raíz', text:'Falla en lubricación o carga excesiva.' },
+                    { title:'Acción Sala', text:'Verificar flujo de aceite. Reducir carga si >85°C.' },
+                    { title:'Verificación Terreno', text:'Inspeccionar sistema de lubricación. Medir temperatura.' }
+                ]},
+                ruido: { steps: [
+                    { title:'Causa Raíz', text:'Bolas rotas, desgaste de liners o material extraño.' },
+                    { title:'Acción Sala', text:'Monitorear espectro de vibración. Preparar parada si es crítico.' },
+                    { title:'Verificación Terreno', text:'Inspección auditiva. Revisar descarga y engranajes.' }
+                ]}
+            };
             const diagSelector = $('#diagSelector');
             const diagStepsContainer = $('#diagStepsContainer');
-
-            function renderDiagnostic(anomalyKey) {
-                const data = diagnosticData[anomalyKey];
+            function renderDiag(key) {
+                const data = diagnosticData[key];
                 if (!data) return;
-                let html = '';
-                data.steps.forEach((step, index) => {
-                    html += `
-                        <div class="diag-step">
-                            <div class="diag-step-number">${index + 1}</div>
-                            <div class="diag-step-content">
-                                <div class="diag-step-title">${step.title}</div>
-                                <div class="diag-step-text">${step.text}</div>
-                            </div>
+                diagStepsContainer.innerHTML = data.steps.map((s,i) => `
+                    <div class="diag-step">
+                        <div class="diag-step-number">${i+1}</div>
+                        <div class="diag-step-content">
+                            <div class="diag-step-title">${s.title}</div>
+                            <div class="diag-step-text">${s.text}</div>
                         </div>
-                    `;
-                });
-                diagStepsContainer.innerHTML = html;
+                    </div>`).join('');
             }
-
             diagSelector.addEventListener('click', (e) => {
                 const btn = e.target.closest('.diag-btn');
                 if (btn) {
                     $$('.diag-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    renderDiagnostic(btn.dataset.anomaly);
+                    renderDiag(btn.dataset.anomaly);
                 }
             });
-            renderDiagnostic('presion');
+            renderDiag('presion');
 
-            // ========== BITÁCORA & MODAL ==========
+            // ========== BITÁCORA ==========
             const logForm = $('#logForm');
-            const generateBtn = $('#generateReportBtn');
             const reportModal = $('#reportModal');
             const reportSheetContainer = $('#reportSheetContainer');
             const closeModalBtn = $('#closeModalBtn');
@@ -1716,13 +1339,14 @@
 
             logForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                generateBtn.classList.add('loading');
-                generateBtn.textContent = 'Generando...';
+                const btn = $('#generateReportBtn');
+                btn.classList.add('loading');
+                btn.textContent = 'Generando...';
                 setTimeout(() => {
-                    generateBtn.classList.remove('loading');
-                    generateBtn.textContent = '⚡ Generar y Firmar Informe de Turno';
+                    btn.classList.remove('loading');
+                    btn.textContent = '⚡ Generar Informe';
                     generateReport();
-                }, 1200);
+                }, 800);
             });
 
             function generateReport() {
@@ -1730,36 +1354,30 @@
                 const operador = $('#logOperador').value.trim() || 'No especificado';
                 const novedades = $('#logNovedades').value.trim() || 'Sin novedades';
                 const alertas = $('#logAlertas').value.trim() || 'Sin alertas';
-                const fecha = new Date().toLocaleString('es-CL', { dateStyle: 'full', timeStyle: 'short' });
+                const fecha = new Date().toLocaleString('es-CL', { dateStyle:'full', timeStyle:'short' });
                 const cp = calculateCp(state.tph, state.water).toFixed(1);
-
-                const reportHTML = `
+                reportSheetContainer.innerHTML = `
                     <div class="report-sheet">
                         <h3>INFORME DE TRASPASO DE TURNO</h3>
-                        <div class="report-meta">
-                            Planta Concentradora · OptiMill OS v3.0<br>
-                            Fecha: ${fecha}
-                        </div>
+                        <div class="report-meta">OptiMill OS v4.0 · ${fecha}</div>
                         <table>
                             <tr><th>Campo</th><th>Valor</th></tr>
                             <tr><td><strong>Turno</strong></td><td>${turno}</td></tr>
-                            <tr><td><strong>Operador Responsable</strong></td><td>${operador}</td></tr>
-                            <tr><td><strong>Tonelaje (t/h)</strong></td><td>${state.tph}</td></tr>
-                            <tr><td><strong>Agua (m³/h)</strong></td><td>${state.water}</td></tr>
+                            <tr><td><strong>Operador</strong></td><td>${operador}</td></tr>
+                            <tr><td><strong>Tonelaje</strong></td><td>${state.tph} t/h</td></tr>
+                            <tr><td><strong>Agua</strong></td><td>${state.water} m³/h</td></tr>
                             <tr><td><strong>% Sólidos</strong></td><td>${cp}%</td></tr>
-                            <tr><td><strong>Potencia (MW)</strong></td><td>${state.power}</td></tr>
-                            <tr><td><strong>Dureza (Wi)</strong></td><td>${state.wi} kWh/t</td></tr>
-                            <tr><td><strong>Adición Bolas (t)</strong></td><td>${state.ballsAddition}</td></tr>
-                            <tr><td><strong>Espesor Liners (mm)</strong></td><td>${state.linerThickness.toFixed(1)}</td></tr>
+                            <tr><td><strong>Potencia</strong></td><td>${state.power} MW</td></tr>
+                            <tr><td><strong>Dureza</strong></td><td>${state.wi} kWh/t</td></tr>
+                            <tr><td><strong>Bolas</strong></td><td>${state.ballsAddition} t</td></tr>
+                            <tr><td><strong>Liners</strong></td><td>${state.linerThickness ? state.linerThickness.toFixed(1) : '--'} mm</td></tr>
                         </table>
-                        <p><strong>Novedades del Turno:</strong><br>${novedades}</p>
-                        <p><strong>Alertas del Sistema:</strong><br>${alertas}</p>
-                        <p style="margin-top:20px;text-align:center;border-top:1px solid #ccc;padding-top:10px;">
-                            Firma Operador: _________________________ &nbsp;&nbsp; Fecha: ${fecha}
+                        <p><strong>Novedades:</strong><br>${novedades}</p>
+                        <p><strong>Alertas:</strong><br>${alertas}</p>
+                        <p style="margin-top:16px;text-align:center;border-top:1px solid #ccc;padding-top:8px;">
+                            Firma: _________________________ &nbsp; Fecha: ${fecha}
                         </p>
-                    </div>
-                `;
-                reportSheetContainer.innerHTML = reportHTML;
+                    </div>`;
                 reportModal.style.display = 'flex';
             }
 
@@ -1767,19 +1385,35 @@
             reportModal.addEventListener('click', (e) => { if (e.target === reportModal) reportModal.style.display = 'none'; });
             printReportBtn.addEventListener('click', () => { window.print(); });
 
-            // ========== INIT ==========
+            // ========== GESTOS DE DESLIZAMIENTO ==========
+            let touchStartX = 0, touchStartY = 0;
+            const mainContent = $('#mainContent');
+            mainContent.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+            mainContent.addEventListener('touchend', (e) => {
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                if (Math.abs(dx) > 80 && Math.abs(dy) < 40) {
+                    // Swipe horizontal
+                    const tabs = ['proceso','control','activo','diagnostico','bitacora'];
+                    const currentTab = document.querySelector('.tab-panel.active')?.id.replace('panel-','');
+                    const idx = tabs.indexOf(currentTab);
+                    if (dx < 0 && idx < tabs.length-1) switchTab(tabs[idx+1]);
+                    if (dx > 0 && idx > 0) switchTab(tabs[idx-1]);
+                }
+            }, { passive: true });
+
+            // ========== INICIALIZACIÓN ==========
             function init() {
-                // Set slider positions from state
                 sliderTph.value = state.tph;
                 sliderWater.value = state.water;
                 sliderWi.value = state.wi;
                 sliderCpTarget.value = state.cpTarget;
                 sliderPower.value = state.power;
                 sliderBalls.value = state.ballsAddition;
-
                 updateAll();
-
-                // Simulate liner countdown
                 setInterval(() => {
                     if (state.linerHoursRemaining > 0) {
                         state.linerHoursRemaining -= 1;
@@ -1787,16 +1421,14 @@
                         saveState();
                     }
                 }, 60000);
-
-                // Periodic sparkline refresh
-                setInterval(() => {
-                    drawSparkline();
-                }, 10000);
+                setInterval(drawSparkline, 10000);
+                // Detectar pantalla táctil
+                if ('ontouchstart' in window) {
+                    document.body.classList.add('touch-device');
+                }
             }
-
             init();
-            console.log('OptiMill OS v3.0 inicializado correctamente');
-            console.log('Diseño premium · Dark theme · Animaciones fluidas');
+            console.log('OptiMill OS v4.0 · Interfaz Táctil Optimizada');
         })();
     </script>
 </body>
