@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>OptiMill OS | Dashboard Industrial</title>
+    <title>OptiMill OS | Consola Técnica Interactiva</title>
     <style>
         :root {
             --bg: #0b0d12;
@@ -18,6 +18,7 @@
             --positive: #4ade80;
             --negative: #f87171;
             --info: #60a5fa;
+            --warning: #f59e0b;
             --font: 'Inter', system-ui, sans-serif;
             --mono: 'SF Mono', 'JetBrains Mono', monospace;
             --r: 12px;
@@ -28,7 +29,6 @@
         body { font-family:var(--font); background:var(--bg); color:var(--text2); font-size:14px; line-height:1.5; }
         input, textarea, select { -webkit-user-select:text; user-select:text; }
 
-        /* Header */
         .header { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
         .brand { display:flex; align-items:center; gap:12px; }
         .brand-icon { width:40px; height:40px; border-radius:10px; background:var(--surface2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.4rem; }
@@ -37,7 +37,6 @@
         .status { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); padding:6px 14px; border-radius:20px; font-size:0.75rem; color:var(--positive); font-weight:600; }
         .status-dot { width:8px; height:8px; border-radius:50%; background:var(--positive); }
 
-        /* Dashboard Grid */
         .dashboard { display:grid; gap:16px; padding:16px; max-width:1600px; margin:0 auto; grid-template-columns:1fr; }
         @media (min-width: 768px) { .dashboard { grid-template-columns:repeat(2, 1fr); } }
         @media (min-width: 1100px) { .dashboard { grid-template-columns:repeat(12, 1fr); } }
@@ -51,20 +50,18 @@
         .col-span-12 { grid-column: span 12; }
         @media (max-width: 1099px) { .col-span-3, .col-span-4, .col-span-5, .col-span-6, .col-span-7, .col-span-8 { grid-column: span 12; } }
 
-        /* Cards */
         .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; display:flex; flex-direction:column; }
-        .card-header { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface2); }
+        .card-header { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface2); flex-wrap:wrap; gap:6px; }
         .card-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); }
-        .card-body { padding:14px 16px; flex:1; }
+        .card-body { padding:14px 16px; flex:1; overflow-y:auto; }
 
-        /* KPI */
         .kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; }
-        .kpi { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; text-align:center; }
+        .kpi { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; text-align:center; cursor:help; }
+        .kpi:hover { border-color:var(--border2); }
         .kpi-label { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text3); margin-bottom:2px; }
         .kpi-value { font-family:var(--mono); font-weight:700; font-size:1.2rem; color:var(--text); }
         .kpi-unit { font-size:0.6rem; color:var(--text3); }
 
-        /* Slider */
         .slider-group { margin-bottom:10px; }
         .slider-label { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text2); margin-bottom:4px; }
         .slider-val { font-family:var(--mono); color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:2px 8px; font-size:0.8rem; }
@@ -74,7 +71,6 @@
         input[type=range]::-moz-range-track { height:6px; border-radius:3px; background:var(--surface2); border:1px solid var(--border); }
         input[type=range]::-moz-range-thumb { width:24px; height:24px; border-radius:50%; background:var(--accent); border:3px solid var(--surface); cursor:grab; }
 
-        /* Action Box */
         .action-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 14px; margin-top:10px; border-left:4px solid var(--accent); }
         .action-box.optimal { border-left-color:var(--positive); }
         .action-box.danger { border-left-color:var(--negative); }
@@ -82,7 +78,6 @@
         .action-box .action-msg { font-family:var(--mono); font-weight:700; color:var(--text); font-size:0.9rem; }
         .action-box .action-detail { font-size:0.75rem; color:var(--text2); }
 
-        /* P&ID Molino */
         .mill-container { background:var(--surface2); border-radius:var(--r-sm); border:1px solid var(--border); padding:12px; position:relative; overflow:hidden; }
         .mill-svg { width:100%; height:auto; display:block; }
         @keyframes rotateMill { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
@@ -90,23 +85,32 @@
         .flow-line { stroke-dasharray:8 5; animation:flowDash 1s linear infinite; }
         @keyframes flowDash { from { stroke-dashoffset:0; } to { stroke-dashoffset:-26; } }
 
-        /* Tabla */
         .data-table { width:100%; border-collapse:collapse; font-size:0.72rem; }
         .data-table th { text-align:left; padding:5px 8px; color:var(--text3); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.04em; border-bottom:1px solid var(--border); }
         .data-table td { padding:5px 8px; border-bottom:1px solid var(--border); color:var(--text2); }
         .data-table .mono { font-family:var(--mono); color:var(--text); }
 
-        /* Botones */
         .btn { display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:var(--r-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.04em; min-height:var(--touch); }
         .btn:active { transform:scale(0.98); }
         .btn.primary { background:var(--accent); border-color:var(--accent); color:#0b0d12; }
 
-        /* Info sections */
         .info-toggle { width:100%; display:flex; justify-content:space-between; align-items:center; background:none; border:none; color:var(--text2); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; padding:8px 0; min-height:40px; }
         .info-content { display:none; padding:8px 0; font-size:0.72rem; line-height:1.6; border-top:1px solid var(--border); }
         .info-content.visible { display:block; }
         .chevron { transition:transform 0.2s; }
         .chevron.rotated { transform:rotate(180deg); }
+
+        .sparkline-container { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:8px; }
+        canvas { width:100%; height:50px; display:block; }
+
+        .alert-list { display:grid; gap:6px; }
+        .alert-item { display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); font-size:0.75rem; }
+        .alert-item .severity { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+        .severity.high { background:var(--negative); }
+        .severity.medium { background:var(--warning); }
+        .severity.low { background:var(--positive); }
+
+        .tooltip-trigger { cursor:help; border-bottom:1px dotted var(--text3); }
     </style>
 </head>
 <body>
@@ -115,7 +119,7 @@
             <div class="brand-icon">⚙</div>
             <div>
                 <div class="brand-name">OptiMill OS</div>
-                <div class="brand-sub">Molienda SAG & Bolas · Dashboard Técnico</div>
+                <div class="brand-sub">Molienda SAG & Bolas · Consola Técnica Interactiva</div>
             </div>
         </div>
         <div class="status"><span class="status-dot"></span> OPERATIVO</div>
@@ -124,30 +128,30 @@
     <main class="dashboard">
         <!-- Panel de Control -->
         <div class="card col-span-3">
-            <div class="card-header"><span class="card-title">Parámetros</span></div>
+            <div class="card-header"><span class="card-title">Parámetros</span><span class="card-title" style="color:var(--text2);">Interactivo</span></div>
             <div class="card-body">
                 <div class="slider-group">
-                    <div class="slider-label"><span>Tonelaje (t/h)</span><span class="slider-val" id="vTph">1500</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Tonelaje de mineral seco alimentado al molino">Tonelaje (t/h)</span><span class="slider-val" id="vTph">1500</span></div>
                     <input type="range" id="inTph" min="500" max="3000" step="10" value="1500">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>Agua (m³/h)</span><span class="slider-val" id="vWater">400</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Flujo de agua fresca agregada al circuito">Agua (m³/h)</span><span class="slider-val" id="vWater">400</span></div>
                     <input type="range" id="inWater" min="100" max="1500" step="5" value="400">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>Work Index (kWh/t)</span><span class="slider-val" id="vWi">14.0</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Índice de trabajo de Bond para el mineral">Work Index (kWh/t)</span><span class="slider-val" id="vWi">14.0</span></div>
                     <input type="range" id="inWi" min="8" max="22" step="0.1" value="14">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>Cp Objetivo (%)</span><span class="slider-val" id="vCpTarget">68</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Porcentaje de sólidos deseado en la pulpa">Cp Objetivo (%)</span><span class="slider-val" id="vCpTarget">68</span></div>
                     <input type="range" id="inCpTarget" min="55" max="78" step="1" value="68">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>Potencia (MW)</span><span class="slider-val" id="vPower">20</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Potencia consumida por el motor del molino">Potencia (MW)</span><span class="slider-val" id="vPower">20</span></div>
                     <input type="range" id="inPower" min="5" max="35" step="0.5" value="20">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span>Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Cantidad de bolas de acero agregadas recientemente">Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
                     <input type="range" id="inBalls" min="0" max="200" step="1" value="50">
                 </div>
                 <div class="action-box optimal" id="actionBox">
@@ -160,7 +164,7 @@
 
         <!-- P&ID -->
         <div class="card col-span-6">
-            <div class="card-header"><span class="card-title">Circuito de Molienda</span><span class="card-title" id="pidStatus" style="color:var(--text2);">Flujo Normal</span></div>
+            <div class="card-header"><span class="card-title">Circuito de Molienda</span><span class="card-title" id="pidStatus">Flujo Normal</span></div>
             <div class="card-body">
                 <div class="mill-container">
                     <svg class="mill-svg" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
@@ -178,83 +182,68 @@
                             </linearGradient>
                         </defs>
                         <rect width="800" height="280" fill="url(#grid)"/>
-                        <!-- Alimentación -->
                         <rect x="25" y="110" width="50" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="50" y="129" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
                         <line x1="75" y1="124" x2="135" y2="124" stroke="#2a3040" stroke-width="2"/>
-                        <!-- Molino SAG con detalle -->
                         <g id="millGroup" class="mill-rotating" style="transform-origin:200px 124px;">
-                            <!-- Cuerpo principal -->
                             <circle cx="200" cy="124" r="52" fill="url(#millBody)" stroke="#3a3f4a" stroke-width="2.5"/>
-                            <!-- Revestimientos -->
                             <circle cx="200" cy="124" r="46" fill="none" stroke="url(#millLiner)" stroke-width="4" stroke-dasharray="12 8"/>
-                            <!-- Anillo interior -->
                             <circle cx="200" cy="124" r="32" fill="none" stroke="#2a3040" stroke-width="1.5"/>
-                            <!-- Engranajes -->
                             <circle cx="200" cy="124" r="40" fill="none" stroke="#4a5060" stroke-width="1" stroke-dasharray="5 3"/>
-                            <!-- Pernos -->
                             <circle cx="200" cy="76" r="3" fill="#5a6070"/>
                             <circle cx="248" cy="124" r="3" fill="#5a6070"/>
                             <circle cx="200" cy="172" r="3" fill="#5a6070"/>
                             <circle cx="152" cy="124" r="3" fill="#5a6070"/>
-                            <!-- Eje -->
-                            <line x1="200" y1="124" x2="200" y2="124" stroke="none"/>
                             <circle cx="200" cy="124" r="8" fill="#6b7280"/>
-                            <!-- Líneas de carga -->
                             <line x1="200" y1="72" x2="200" y2="176" stroke="#2a3040" stroke-width="1" opacity="0.4"/>
                             <line x1="148" y1="124" x2="252" y2="124" stroke="#2a3040" stroke-width="1" opacity="0.4"/>
                             <line x1="163" y1="87" x2="237" y2="161" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                             <line x1="163" y1="161" x2="237" y2="87" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                         </g>
                         <text x="200" y="195" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
-                        <!-- Trommel -->
                         <rect x="260" y="110" width="48" height="28" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="284" y="129" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
-                        <!-- Tubería 1 -->
                         <line id="p1" x1="308" y1="124" x2="395" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
-                        <!-- Cajón -->
                         <rect x="395" y="110" width="55" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="422" y="129" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
-                        <!-- Tubería 2 -->
                         <line id="p2" x1="450" y1="124" x2="540" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
-                        <!-- Ciclones -->
                         <polygon points="540,95 570,95 575,118 540,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <polygon points="575,95 605,95 610,118 575,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <polygon points="605,95 635,95 640,118 605,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="590" y="140" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CICLONES</text>
-                        <!-- Overflow -->
                         <line id="p3" x1="640" y1="106" x2="700" y2="55" stroke="#4ade80" stroke-width="3" class="flow-line"/>
                         <text x="680" y="48" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
-                        <!-- Underflow -->
                         <line id="p4" x1="640" y1="110" x2="710" y2="185" stroke="#4ade80" stroke-width="3" class="flow-line"/>
                         <text x="690" y="200" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
-                        <!-- Agua -->
                         <line x1="135" y1="185" x2="200" y2="176" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/>
                         <text x="125" y="198" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
                     </svg>
                 </div>
-                <!-- Mini indicadores -->
                 <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; font-size:0.7rem; color:var(--text3);">
-                    <span>Cp: <strong id="pidCp" style="color:var(--text);">--</strong></span>
-                    <span>RPM: <strong id="pidRpm" style="color:var(--text);">--</strong></span>
-                    <span>Vel. Crítica: <strong id="pidVc" style="color:var(--text);">--</strong></span>
+                    <span>Cp: <strong id="pidCp">--</strong></span>
+                    <span>RPM: <strong id="pidRpm">--</strong></span>
+                    <span>Vel. Crítica: <strong id="pidVc">--</strong></span>
+                </div>
+                <!-- Sparkline de Cp -->
+                <div class="sparkline-container" style="margin-top:10px;">
+                    <canvas id="sparklineCp" width="800" height="50"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- KPIs y Resultados -->
+        <!-- Indicadores y recomendaciones -->
         <div class="card col-span-3">
             <div class="card-header"><span class="card-title">Indicadores Calculados</span></div>
             <div class="card-body">
                 <div class="kpi-row">
-                    <div class="kpi"><div class="kpi-label">Cp</div><div class="kpi-value" id="kCp">--</div><div class="kpi-unit">%</div></div>
-                    <div class="kpi"><div class="kpi-label">Ecs</div><div class="kpi-value" id="kEcs">--</div><div class="kpi-unit">kWh/t</div></div>
-                    <div class="kpi"><div class="kpi-label">F80</div><div class="kpi-value" id="kF80">--</div><div class="kpi-unit">µm</div></div>
-                    <div class="kpi"><div class="kpi-label">P80</div><div class="kpi-value" id="kP80">--</div><div class="kpi-unit">µm</div></div>
-                    <div class="kpi"><div class="kpi-label">RR</div><div class="kpi-value" id="kRR">--</div><div class="kpi-unit">F/P</div></div>
-                    <div class="kpi"><div class="kpi-label">Densidad</div><div class="kpi-value" id="kDens">--</div><div class="kpi-unit">kg/m³</div></div>
-                    <div class="kpi"><div class="kpi-label">Bolas</div><div class="kpi-value" id="kBolas">--</div><div class="kpi-unit">t/d</div></div>
-                    <div class="kpi"><div class="kpi-label">Pérdida</div><div class="kpi-value" id="kPerd">--</div><div class="kpi-unit">g/t</div></div>
+                    <div class="kpi" title="Porcentaje de sólidos en la pulpa"><div class="kpi-label">Cp</div><div class="kpi-value" id="kCp">--</div><div class="kpi-unit">%</div></div>
+                    <div class="kpi" title="Energía consumida por tonelada"><div class="kpi-label">Ecs</div><div class="kpi-value" id="kEcs">--</div><div class="kpi-unit">kWh/t</div></div>
+                    <div class="kpi" title="Tamaño 80% pasante alimentación"><div class="kpi-label">F80</div><div class="kpi-value" id="kF80">--</div><div class="kpi-unit">µm</div></div>
+                    <div class="kpi" title="Tamaño 80% pasante producto"><div class="kpi-label">P80</div><div class="kpi-value" id="kP80">--</div><div class="kpi-unit">µm</div></div>
+                    <div class="kpi" title="Relación de reducción de tamaño"><div class="kpi-label">RR</div><div class="kpi-value" id="kRR">--</div><div class="kpi-unit">F/P</div></div>
+                    <div class="kpi" title="Densidad de la pulpa"><div class="kpi-label">Densidad</div><div class="kpi-value" id="kDens">--</div><div class="kpi-unit">kg/m³</div></div>
+                    <div class="kpi" title="Consumo de bolas por día"><div class="kpi-label">Bolas</div><div class="kpi-value" id="kBolas">--</div><div class="kpi-unit">t/d</div></div>
+                    <div class="kpi" title="Pérdida de acero por tonelada"><div class="kpi-label">Pérdida</div><div class="kpi-value" id="kPerd">--</div><div class="kpi-unit">g/t</div></div>
                 </div>
                 <div style="margin-top:12px;">
                     <button class="info-toggle" id="toggleFormulas"><span>Fórmulas</span><span class="chevron">▼</span></button>
@@ -270,8 +259,16 @@
             </div>
         </div>
 
-        <!-- Tabla técnica -->
+        <!-- Recomendaciones dinámicas -->
         <div class="card col-span-12">
+            <div class="card-header"><span class="card-title">Recomendaciones Operativas Dinámicas</span></div>
+            <div class="card-body" id="recommendationsContainer">
+                <!-- Se llena con JavaScript -->
+            </div>
+        </div>
+
+        <!-- Tabla de referencia -->
+        <div class="card col-span-6">
             <div class="card-header"><span class="card-title">Parámetros de Referencia</span></div>
             <div class="card-body" style="overflow-x:auto;">
                 <table class="data-table">
@@ -286,8 +283,8 @@
             </div>
         </div>
 
-        <!-- Diagnóstico y Bitácora -->
-        <div class="card col-span-6">
+        <!-- Diagnóstico -->
+        <div class="card col-span-3">
             <div class="card-header"><span class="card-title">Diagnóstico</span></div>
             <div class="card-body">
                 <select id="diagSelect" style="width:100%; padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;">
@@ -298,9 +295,17 @@
                     <option value="ruido">Ruido anormal</option>
                 </select>
                 <div id="diagOutput" style="margin-top:8px; font-size:0.8rem; line-height:1.5; color:var(--text2);"></div>
+                <div style="margin-top:10px;">
+                    <button class="info-toggle" id="toggleDiagGuide"><span>Guía de diagnóstico</span><span class="chevron">▼</span></button>
+                    <div class="info-content" id="diagGuideContent">
+                        <p>Seleccione una anomalía para obtener recomendaciones paso a paso.</p>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="card col-span-6">
+
+        <!-- Bitácora -->
+        <div class="card col-span-3">
             <div class="card-header"><span class="card-title">Bitácora</span></div>
             <div class="card-body">
                 <form id="logForm" style="display:grid; gap:8px;">
@@ -308,16 +313,30 @@
                     <textarea id="logNovedades" placeholder="Novedades..." rows="3" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; resize:vertical;"></textarea>
                     <button type="submit" class="btn primary">Registrar Turno</button>
                 </form>
+                <div style="margin-top:10px;">
+                    <button class="info-toggle" id="toggleHistory"><span>Historial reciente</span><span class="chevron">▼</span></button>
+                    <div class="info-content" id="historyContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="card col-span-12">
+            <div class="card-header"><span class="card-title">Alertas del Sistema</span></div>
+            <div class="card-body">
+                <div class="alert-list" id="alertList">
+                    <div class="alert-item"><span class="severity low"></span><span>Sin alertas activas</span></div>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
         (function() {
-            const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720 };
+            const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720, cpHistory:[] };
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            const STORAGE_KEY = 'optiMill_v7';
+            const STORAGE_KEY = 'optiMill_v8';
             function load() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
             function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
             load();
@@ -332,20 +351,83 @@
             function densityCalc() { const ms=state.tph*1000, vs=ms/2700, mw=state.water*1000, vw=state.water; return (ms+mw)/(vs+vw); }
             function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; } // g/t
             function ballsPerDay(gpt) { return (gpt*state.tph*24)/1000000; }
-
             function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
-            function vcCalc() { return 42.3/Math.sqrt(5.5); } // velocidad crítica aprox
+            function vcCalc() { return 42.3/Math.sqrt(5.5); }
+
+            function generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev) {
+                const recs = [];
+                if (Math.abs(dev) > 2) {
+                    if (dev > 0) recs.push({ type:'danger', msg:'Reducir densidad: abrir válvula de agua', detail:`Aumentar agua en ${Math.max(0,(state.tph*1000)*(100/state.cpTarget-1)/1000 - state.water).toFixed(1)} m³/h para bajar Cp de ${cp.toFixed(1)}% a ${state.cpTarget}%` });
+                    else recs.push({ type:'warning', msg:'Aumentar densidad: cerrar válvula de agua', detail:`Reducir agua en ${Math.max(0, state.water - (state.tph*1000)*(100/state.cpTarget-1)/1000).toFixed(1)} m³/h para subir Cp` });
+                } else {
+                    recs.push({ type:'optimal', msg:'Densidad óptima', detail:'Mantener flujo de agua actual' });
+                }
+                if (ecs > 15) recs.push({ type:'warning', msg:'Consumo energético alto', detail:`Ecs = ${ecs.toFixed(2)} kWh/t excede rango óptimo (7-15). Evaluar dureza del mineral o eficiencia del molino` });
+                if (f80 > 150) recs.push({ type:'warning', msg:'Alimentación gruesa', detail:`F80 = ${(f80*1000).toFixed(0)} µm. Considerar ajuste de chancado primario` });
+                if (p80 > 300) recs.push({ type:'warning', msg:'Producto grueso', detail:`P80 = ${p80.toFixed(0)} µm. Verificar carga de bolas y velocidad del molino` });
+                if (bpd > 5) recs.push({ type:'warning', msg:'Alto consumo de bolas', detail:`${bpd.toFixed(2)} t/día. Revisar dureza del mineral y calidad de bolas` });
+                if (dens < 1600) recs.push({ type:'info', msg:'Pulpa diluida', detail:`Densidad ${dens.toFixed(0)} kg/m³ por debajo de lo normal` });
+                return recs;
+            }
+
+            function updateRecommendations(recs) {
+                const container = $('#recommendationsContainer');
+                if (recs.length === 0) {
+                    container.innerHTML = '<div style="color:var(--text3);">Sin recomendaciones adicionales.</div>';
+                    return;
+                }
+                container.innerHTML = recs.map(r => `
+                    <div class="action-box ${r.type}" style="margin-bottom:8px;">
+                        <div class="action-title">${r.type === 'danger' ? 'Crítico' : r.type === 'warning' ? 'Precaución' : r.type === 'info' ? 'Info' : 'Óptimo'}</div>
+                        <div class="action-msg">${r.msg}</div>
+                        <div class="action-detail">${r.detail}</div>
+                    </div>
+                `).join('');
+            }
+
+            function updateAlerts(cp, ecs, dev) {
+                const alertList = $('#alertList');
+                let html = '';
+                if (Math.abs(dev) > 2) html += `<div class="alert-item"><span class="severity high"></span><span>Desviación Cp: ${dev.toFixed(1)}%</span></div>`;
+                if (ecs > 18) html += `<div class="alert-item"><span class="severity medium"></span><span>Consumo específico alto: ${ecs.toFixed(1)} kWh/t</span></div>`;
+                if (cp > 72) html += `<div class="alert-item"><span class="severity high"></span><span>Pulpa sobredensificada (${cp.toFixed(1)}%)</span></div>`;
+                if (cp < 58) html += `<div class="alert-item"><span class="severity medium"></span><span>Pulpa muy diluida (${cp.toFixed(1)}%)</span></div>`;
+                if (html === '') html = '<div class="alert-item"><span class="severity low"></span><span>Sin alertas activas</span></div>';
+                alertList.innerHTML = html;
+            }
+
+            function drawSparkline() {
+                const canvas = $('#sparklineCp');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width, h = canvas.height;
+                ctx.clearRect(0,0,w,h);
+                if (state.cpHistory.length < 2) return;
+                const min = Math.min(...state.cpHistory), max = Math.max(...state.cpHistory);
+                const range = max - min || 1;
+                ctx.beginPath();
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2;
+                state.cpHistory.forEach((v,i) => {
+                    const x = (i/(state.cpHistory.length-1))*w;
+                    const y = h - ((v-min)/range)*(h-10) - 5;
+                    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+                });
+                ctx.stroke();
+            }
 
             function update() {
                 const cp = cpCalc(), ecs = ecsCalc(), f80 = f80Calc(), p80 = p80Calc(f80, ecs);
                 const dens = densityCalc(), gpt = ballsCalc(ecs, state.wi), bpd = ballsPerDay(gpt);
                 const rpm = rpmCalc(), vc = vcCalc();
+                const dev = cp - state.cpTarget;
 
-                // Valores sliders
+                state.cpHistory.push(cp);
+                if (state.cpHistory.length > 100) state.cpHistory.shift();
+
                 vTph.textContent = state.tph; vWater.textContent = state.water; vWi.textContent = state.wi.toFixed(1);
                 vCpTarget.textContent = state.cpTarget; vPower.textContent = state.power; vBalls.textContent = state.balls;
 
-                // KPIs
                 $('#kCp').textContent = cp.toFixed(1);
                 $('#kEcs').textContent = ecs.toFixed(2);
                 $('#kF80').textContent = (f80*1000).toFixed(0);
@@ -355,13 +437,10 @@
                 $('#kBolas').textContent = bpd.toFixed(1);
                 $('#kPerd').textContent = gpt.toFixed(1);
 
-                // P&ID
                 $('#pidCp').textContent = cp.toFixed(1)+'%';
                 $('#pidRpm').textContent = rpm.toFixed(1);
                 $('#pidVc').textContent = vc.toFixed(1);
 
-                // Acción
-                const dev = cp - state.cpTarget;
                 const actionBox = $('#actionBox');
                 const actionMsg = $('#actionMsg');
                 const actionDetail = $('#actionDetail');
@@ -385,11 +464,9 @@
                     pidStatus.textContent = 'Diluida';
                 }
 
-                // Color tuberías
                 const color = cp < 60 ? '#60a5fa' : (cp > 72 ? '#f87171' : '#4ade80');
                 ['#p1','#p2','#p3','#p4'].forEach(id => { const el = $(id); if(el) el.setAttribute('stroke', color); });
 
-                // Tabla referencia
                 $('#refCp').textContent = cp.toFixed(1);
                 $('#refEcs').textContent = ecs.toFixed(2);
                 $('#refF80').textContent = (f80*1000).toFixed(0);
@@ -397,10 +474,10 @@
                 $('#refDens').textContent = dens.toFixed(0);
                 $('#refBolas').textContent = bpd.toFixed(1);
 
-                function setStatus(el, val, min, max, unit) {
-                    const el2 = $(el);
-                    if (val >= min && val <= max) { el2.textContent = '✓'; el2.style.color = 'var(--positive)'; }
-                    else { el2.textContent = '✗'; el2.style.color = 'var(--negative)'; }
+                function setStatus(el, val, min, max) {
+                    const e = $(el);
+                    if (val >= min && val <= max) { e.textContent = '✓'; e.style.color = 'var(--positive)'; }
+                    else { e.textContent = '✗'; e.style.color = 'var(--negative)'; }
                 }
                 setStatus('#stCp', cp, 65, 70);
                 setStatus('#stEcs', ecs, 7, 15);
@@ -409,10 +486,13 @@
                 setStatus('#stDens', dens, 1600, 1800);
                 setStatus('#stBolas', bpd, 1, 5);
 
+                const recs = generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev);
+                updateRecommendations(recs);
+                updateAlerts(cp, ecs, dev);
+                drawSparkline();
                 save();
             }
 
-            // Eventos
             [inTph,inWater,inWi,inCpTarget,inPower,inBalls].forEach(el => {
                 el.addEventListener('input', () => {
                     state.tph = parseFloat(inTph.value);
@@ -425,13 +505,17 @@
                 });
             });
 
-            // Fórmulas
-            const toggleFormulas = $('#toggleFormulas');
-            const formulasContent = $('#formulasContent');
-            toggleFormulas.addEventListener('click', () => {
-                toggleFormulas.querySelector('.chevron').classList.toggle('rotated');
-                formulasContent.classList.toggle('visible');
-            });
+            // Toggle handlers
+            function setupToggle(btnId, contentId) {
+                const btn = $(btnId), content = $(contentId);
+                btn.addEventListener('click', () => {
+                    btn.querySelector('.chevron').classList.toggle('rotated');
+                    content.classList.toggle('visible');
+                });
+            }
+            setupToggle('#toggleFormulas', '#formulasContent');
+            setupToggle('#toggleDiagGuide', '#diagGuideContent');
+            setupToggle('#toggleHistory', '#historyContent');
 
             // Diagnóstico
             const diagData = {
@@ -446,22 +530,37 @@
             });
             $('#diagOutput').textContent = diagData.presion;
 
-            // Bitácora
+            // Historial de bitácora
+            function updateHistory() {
+                const logs = JSON.parse(localStorage.getItem('optiMill_logs') || '[]');
+                const content = $('#historyContent');
+                if (logs.length === 0) { content.innerHTML = '<p>Sin registros.</p>'; return; }
+                content.innerHTML = logs.slice(-5).reverse().map(log => 
+                    `<div style="margin-bottom:6px; padding:6px; background:var(--surface2); border-radius:4px;">
+                        <strong style="color:var(--text);">${log.operador}</strong> <span style="color:var(--text3);">(${log.fecha})</span><br>
+                        <span style="font-size:0.7rem;">${log.novedades}</span>
+                    </div>`
+                ).join('');
+            }
+
             $('#logForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const operador = $('#logOperador').value.trim() || 'No especificado';
                 const novedades = $('#logNovedades').value.trim() || 'Sin novedades';
                 const logs = JSON.parse(localStorage.getItem('optiMill_logs') || '[]');
-                logs.push({ fecha: new Date().toISOString(), operador, novedades });
+                logs.push({ fecha: new Date().toLocaleString('es-CL'), operador, novedades });
                 localStorage.setItem('optiMill_logs', JSON.stringify(logs));
                 e.target.reset();
+                updateHistory();
                 alert('Registro guardado.');
             });
 
             // Init
             inTph.value = state.tph; inWater.value = state.water; inWi.value = state.wi;
             inCpTarget.value = state.cpTarget; inPower.value = state.power; inBalls.value = state.balls;
+            updateHistory();
             update();
+            setInterval(drawSparkline, 10000);
         })();
     </script>
 </body>
