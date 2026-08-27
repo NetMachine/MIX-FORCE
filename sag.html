@@ -82,7 +82,9 @@
         .mill-container { background:var(--surface2); border-radius:var(--r-sm); border:1px solid var(--border); padding:12px; position:relative; overflow:hidden; }
         .mill-svg { width:100%; height:auto; display:block; }
         @keyframes rotateMill { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        @keyframes rotateInternal { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         .mill-rotating { transform-origin:center; animation:rotateMill 4s linear infinite; }
+        .internal-rotating { transform-origin:center; animation:rotateInternal 2s linear infinite; }
         .flow-line { stroke-dasharray:8 5; animation:flowDash 1s linear infinite; }
         @keyframes flowDash { from { stroke-dashoffset:0; } to { stroke-dashoffset:-26; } }
 
@@ -184,14 +186,20 @@
                             </linearGradient>
                         </defs>
                         <rect width="800" height="280" fill="url(#grid)"/>
+                        <!-- Alimentación -->
                         <rect x="25" y="110" width="50" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="50" y="129" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
                         <line x1="75" y1="124" x2="135" y2="124" stroke="#2a3040" stroke-width="2"/>
+                        <!-- Molino SAG -->
                         <g id="millGroup" class="mill-rotating" style="transform-origin:200px 124px;">
+                            <!-- Cuerpo principal -->
                             <circle cx="200" cy="124" r="52" fill="url(#millBody)" stroke="#3a3f4a" stroke-width="2.5"/>
+                            <!-- Revestimientos -->
                             <circle cx="200" cy="124" r="46" fill="none" stroke="url(#millLiner)" stroke-width="4" stroke-dasharray="12 8"/>
                             <circle cx="200" cy="124" r="32" fill="none" stroke="#2a3040" stroke-width="1.5"/>
+                            <!-- Engranajes -->
                             <circle cx="200" cy="124" r="40" fill="none" stroke="#4a5060" stroke-width="1" stroke-dasharray="5 3"/>
+                            <!-- Pernos -->
                             <circle cx="200" cy="76" r="3" fill="#5a6070"/>
                             <circle cx="248" cy="124" r="3" fill="#5a6070"/>
                             <circle cx="200" cy="172" r="3" fill="#5a6070"/>
@@ -202,9 +210,15 @@
                             <line x1="163" y1="87" x2="237" y2="161" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                             <line x1="163" y1="161" x2="237" y2="87" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                         </g>
+                        <!-- Grupo interno: carga (bolas, agua, mineral) - se generará dinámicamente -->
+                        <g id="millInternalGroup" class="internal-rotating" style="transform-origin:200px 124px;">
+                            <!-- El contenido se añadirá por JS -->
+                        </g>
                         <text x="200" y="195" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
+                        <!-- Trommel -->
                         <rect x="260" y="110" width="48" height="28" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="284" y="129" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
+                        <!-- Tuberías -->
                         <line id="p1" x1="308" y1="124" x2="395" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
                         <rect x="395" y="110" width="55" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="422" y="129" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
@@ -217,6 +231,7 @@
                         <text x="680" y="48" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
                         <line id="p4" x1="640" y1="110" x2="710" y2="185" stroke="#4ade80" stroke-width="3" class="flow-line"/>
                         <text x="690" y="200" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
+                        <!-- Agua de entrada -->
                         <line x1="135" y1="185" x2="200" y2="176" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/>
                         <text x="125" y="198" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
                     </svg>
@@ -336,7 +351,7 @@
             const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720, cpHistory:[] };
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            const STORAGE_KEY = 'optiMill_v8_1';
+            const STORAGE_KEY = 'optiMill_v9';
             function load() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
             function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
             load();
@@ -348,15 +363,14 @@
             function ecsCalc() { return (state.power*1000)/state.tph; }
             function f80Calc() { return 55/Math.sqrt(state.wi); } // mm
             function jbCalc() { return Math.min(1, state.balls/200); }
-            // Nueva fórmula P80 calibrada para respuesta fuerte a bolas
             function p80Calc(f80_mm, ecs, jb) {
                 const f80_um = f80_mm * 1000;
                 const base = f80_um / Math.pow(ecs * 10, 0.7);
                 const factor = Math.pow(1 - 0.8 * jb, 1.5);
-                return Math.max(50, base * factor); // mínimo 50 µm
+                return Math.max(50, base * factor);
             }
             function densityCalc() { const ms=state.tph*1000, vs=ms/2700, mw=state.water*1000, vw=state.water; return (ms+mw)/(vs+vw); }
-            function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; } // g/t
+            function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; }
             function ballsPerDay(gpt) { return (gpt*state.tph*24)/1000000; }
             function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
             function vcCalc() { return 42.3/Math.sqrt(5.5); }
@@ -426,6 +440,68 @@
                 ctx.stroke();
             }
 
+            // Nueva función para actualizar la animación del molino
+            function updateMillAnimation(rpm, balls, tph, water) {
+                const millGroup = $('#millGroup');
+                const internalGroup = $('#millInternalGroup');
+                if (!millGroup || !internalGroup) return;
+                
+                // Ajustar velocidad de rotación del molino: RPM simulado (0-20) -> duración (10s a 2s)
+                const duration = Math.max(2, 10 - rpm * 0.4); // 10s a 2s
+                millGroup.style.animationDuration = duration + 's';
+                
+                // Velocidad interna (carga) - ligeramente más rápida
+                const internalDuration = Math.max(1.5, duration * 0.7);
+                internalGroup.style.animationDuration = internalDuration + 's';
+                
+                // Limpiar y regenerar bolas y partículas
+                internalGroup.innerHTML = '';
+                
+                // Agua: círculo azul semitransparente que crece con el agua
+                const waterRadius = 20 + (water / 1500) * 20; // 20 a 40
+                const waterCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                waterCircle.setAttribute('cx', 200);
+                waterCircle.setAttribute('cy', 124);
+                waterCircle.setAttribute('r', waterRadius);
+                waterCircle.setAttribute('fill', 'rgba(96, 165, 250, 0.3)');
+                waterCircle.setAttribute('stroke', 'rgba(96, 165, 250, 0.6)');
+                waterCircle.setAttribute('stroke-width', '1');
+                internalGroup.appendChild(waterCircle);
+                
+                // Bolas: cantidad proporcional a la carga de bolas (0-200 t -> 0-20 bolas visibles)
+                const numBalls = Math.floor((balls / 200) * 20);
+                for (let i = 0; i < numBalls; i++) {
+                    const angle = (i / numBalls) * 2 * Math.PI;
+                    const radius = 25 + (i % 5) * 4; // 25 a 41
+                    const bx = 200 + radius * Math.cos(angle);
+                    const by = 124 + radius * Math.sin(angle);
+                    const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    ball.setAttribute('cx', bx);
+                    ball.setAttribute('cy', by);
+                    ball.setAttribute('r', 5 + Math.random() * 3);
+                    ball.setAttribute('fill', '#8a90a0');
+                    ball.setAttribute('stroke', '#4a5060');
+                    ball.setAttribute('stroke-width', '0.5');
+                    internalGroup.appendChild(ball);
+                }
+                
+                // Mineral: partículas marrones/amarillentas, cantidad según tonelaje
+                const numOre = Math.floor((tph / 3000) * 30);
+                for (let i = 0; i < numOre; i++) {
+                    const angle = (i / numOre) * 2 * Math.PI + 0.3;
+                    const radius = 20 + (i % 7) * 3;
+                    const ox = 200 + radius * Math.cos(angle);
+                    const oy = 124 + radius * Math.sin(angle);
+                    const ore = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    ore.setAttribute('cx', ox);
+                    ore.setAttribute('cy', oy);
+                    ore.setAttribute('r', 3 + Math.random() * 3);
+                    ore.setAttribute('fill', '#d4a574');
+                    ore.setAttribute('opacity', '0.8');
+                    internalGroup.appendChild(ore);
+                }
+            }
+
             function update() {
                 const cp = cpCalc(), ecs = ecsCalc(), f80 = f80Calc(), jb = jbCalc();
                 const p80 = p80Calc(f80, ecs, jb);
@@ -452,6 +528,9 @@
                 $('#pidCp').textContent = cp.toFixed(1)+'%';
                 $('#pidRpm').textContent = rpm.toFixed(1);
                 $('#pidVc').textContent = vc.toFixed(1);
+
+                // Actualizar animación del molino
+                updateMillAnimation(rpm, state.balls, state.tph, state.water);
 
                 const actionBox = $('#actionBox');
                 const actionMsg = $('#actionMsg');
