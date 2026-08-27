@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>OptiMill OS | Consola Técnica Interactiva</title>
     <style>
+        /* ========== ESTILOS (se mantienen del v8, sin cambios mayores) ========== */
         :root {
             --bg: #0b0d12;
             --surface: #131720;
@@ -151,8 +152,9 @@
                     <input type="range" id="inPower" min="5" max="35" step="0.5" value="20">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Cantidad de bolas de acero agregadas recientemente">Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
+                    <div class="slider-label"><span class="tooltip-trigger" title="Cantidad de bolas de acero agregadas recientemente (afecta tamaño de producto)">Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
                     <input type="range" id="inBalls" min="0" max="200" step="1" value="50">
+                    <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">↑ Bolas = ↓ P80</div>
                 </div>
                 <div class="action-box optimal" id="actionBox">
                     <div class="action-title">Acción Recomendada</div>
@@ -224,7 +226,6 @@
                     <span>RPM: <strong id="pidRpm">--</strong></span>
                     <span>Vel. Crítica: <strong id="pidVc">--</strong></span>
                 </div>
-                <!-- Sparkline de Cp -->
                 <div class="sparkline-container" style="margin-top:10px;">
                     <canvas id="sparklineCp" width="800" height="50"></canvas>
                 </div>
@@ -251,9 +252,10 @@
                         <p><strong>Cp:</strong> M_s / (M_s + M_w) × 100</p>
                         <p><strong>Ecs:</strong> P / TPH</p>
                         <p><strong>F80:</strong> 55 / √Wi (mm)</p>
-                        <p><strong>P80:</strong> F80 / (Ecs × 10)^0.25 (µm)</p>
+                        <p><strong>P80:</strong> F80 / (Ecs × 10)^0.25 × (1 - 0.4·Jb) (µm)</p>
                         <p><strong>Densidad:</strong> (Ms + Mw) / (Vs + Vw)</p>
                         <p><strong>Bolas:</strong> Ecs × Wi × 0.3 + 3 (g/t)</p>
+                        <p><em>Jb = carga de bolas normalizada (Bolas/200)</em></p>
                     </div>
                 </div>
             </div>
@@ -262,9 +264,7 @@
         <!-- Recomendaciones dinámicas -->
         <div class="card col-span-12">
             <div class="card-header"><span class="card-title">Recomendaciones Operativas Dinámicas</span></div>
-            <div class="card-body" id="recommendationsContainer">
-                <!-- Se llena con JavaScript -->
-            </div>
+            <div class="card-body" id="recommendationsContainer"></div>
         </div>
 
         <!-- Tabla de referencia -->
@@ -347,14 +347,15 @@
             function cpCalc() { const ms = state.tph*1000; return (ms/(ms+state.water*1000))*100; }
             function ecsCalc() { return (state.power*1000)/state.tph; }
             function f80Calc() { return 55/Math.sqrt(state.wi); } // mm
-            function p80Calc(f80, ecs) { return (f80*1000)/Math.pow(ecs*10, 0.25); } // µm
+            function jbCalc() { return Math.min(1, state.balls/200); }
+            function p80Calc(f80, ecs, jb) { return (f80*1000)/Math.pow(ecs*10, 0.25) * (1 - 0.4*jb); } // µm
             function densityCalc() { const ms=state.tph*1000, vs=ms/2700, mw=state.water*1000, vw=state.water; return (ms+mw)/(vs+vw); }
             function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; } // g/t
             function ballsPerDay(gpt) { return (gpt*state.tph*24)/1000000; }
             function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
             function vcCalc() { return 42.3/Math.sqrt(5.5); }
 
-            function generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev) {
+            function generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev, jb) {
                 const recs = [];
                 if (Math.abs(dev) > 2) {
                     if (dev > 0) recs.push({ type:'danger', msg:'Reducir densidad: abrir válvula de agua', detail:`Aumentar agua en ${Math.max(0,(state.tph*1000)*(100/state.cpTarget-1)/1000 - state.water).toFixed(1)} m³/h para bajar Cp de ${cp.toFixed(1)}% a ${state.cpTarget}%` });
@@ -364,7 +365,9 @@
                 }
                 if (ecs > 15) recs.push({ type:'warning', msg:'Consumo energético alto', detail:`Ecs = ${ecs.toFixed(2)} kWh/t excede rango óptimo (7-15). Evaluar dureza del mineral o eficiencia del molino` });
                 if (f80 > 150) recs.push({ type:'warning', msg:'Alimentación gruesa', detail:`F80 = ${(f80*1000).toFixed(0)} µm. Considerar ajuste de chancado primario` });
-                if (p80 > 300) recs.push({ type:'warning', msg:'Producto grueso', detail:`P80 = ${p80.toFixed(0)} µm. Verificar carga de bolas y velocidad del molino` });
+                if (p80 > 300) {
+                    recs.push({ type:'warning', msg:'Producto grueso', detail:`P80 = ${p80.toFixed(0)} µm. Aumentar carga de bolas (actualmente ${state.balls} t) o potencia. Jb actual = ${(jb*100).toFixed(0)}%` });
+                }
                 if (bpd > 5) recs.push({ type:'warning', msg:'Alto consumo de bolas', detail:`${bpd.toFixed(2)} t/día. Revisar dureza del mineral y calidad de bolas` });
                 if (dens < 1600) recs.push({ type:'info', msg:'Pulpa diluida', detail:`Densidad ${dens.toFixed(0)} kg/m³ por debajo de lo normal` });
                 return recs;
@@ -417,7 +420,8 @@
             }
 
             function update() {
-                const cp = cpCalc(), ecs = ecsCalc(), f80 = f80Calc(), p80 = p80Calc(f80, ecs);
+                const cp = cpCalc(), ecs = ecsCalc(), f80 = f80Calc(), jb = jbCalc();
+                const p80 = p80Calc(f80, ecs, jb);
                 const dens = densityCalc(), gpt = ballsCalc(ecs, state.wi), bpd = ballsPerDay(gpt);
                 const rpm = rpmCalc(), vc = vcCalc();
                 const dev = cp - state.cpTarget;
@@ -486,7 +490,7 @@
                 setStatus('#stDens', dens, 1600, 1800);
                 setStatus('#stBolas', bpd, 1, 5);
 
-                const recs = generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev);
+                const recs = generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev, jb);
                 updateRecommendations(recs);
                 updateAlerts(cp, ecs, dev);
                 drawSparkline();
@@ -505,7 +509,6 @@
                 });
             });
 
-            // Toggle handlers
             function setupToggle(btnId, contentId) {
                 const btn = $(btnId), content = $(contentId);
                 btn.addEventListener('click', () => {
@@ -517,7 +520,6 @@
             setupToggle('#toggleDiagGuide', '#diagGuideContent');
             setupToggle('#toggleHistory', '#historyContent');
 
-            // Diagnóstico
             const diagData = {
                 presion: 'Obstrucción en ciclón o falla en bomba. Verificar presión de descarga.',
                 vibracion: 'Desgaste en pads del descanso. Revisar lubricación y alineación.',
@@ -530,7 +532,6 @@
             });
             $('#diagOutput').textContent = diagData.presion;
 
-            // Historial de bitácora
             function updateHistory() {
                 const logs = JSON.parse(localStorage.getItem('optiMill_logs') || '[]');
                 const content = $('#historyContent');
