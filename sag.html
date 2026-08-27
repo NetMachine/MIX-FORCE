@@ -154,7 +154,7 @@
                 <div class="slider-group">
                     <div class="slider-label"><span class="tooltip-trigger" title="Cantidad de bolas de acero agregadas recientemente (afecta tamaño de producto)">Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
                     <input type="range" id="inBalls" min="0" max="200" step="1" value="50">
-                    <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">↑ Bolas = ↓ P80</div>
+                    <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">↑ Bolas = ↓ P80 (Jb = <span id="jbDisplay">25</span>%)</div>
                 </div>
                 <div class="action-box optimal" id="actionBox">
                     <div class="action-title">Acción Recomendada</div>
@@ -251,11 +251,11 @@
                     <div class="info-content" id="formulasContent">
                         <p><strong>Cp:</strong> M_s / (M_s + M_w) × 100</p>
                         <p><strong>Ecs:</strong> P / TPH</p>
-                        <p><strong>F80:</strong> 55 / √Wi (mm)</p>
-                        <p><strong>P80:</strong> F80 / (Ecs × 10)^0.25 × (1 - 0.4·Jb) (µm)</p>
+                        <p><strong>F80:</strong> 55 / √Wi (mm) → µm</p>
+                        <p><strong>P80:</strong> F80(µm) / (Ecs×10)<sup>0.7</sup> × (1 - 0.8·Jb)<sup>1.5</sup></p>
+                        <p><strong>Jb:</strong> Bolas / 200 (llenado de bolas)</p>
                         <p><strong>Densidad:</strong> (Ms + Mw) / (Vs + Vw)</p>
                         <p><strong>Bolas:</strong> Ecs × Wi × 0.3 + 3 (g/t)</p>
-                        <p><em>Jb = carga de bolas normalizada (Bolas/200)</em></p>
                     </div>
                 </div>
             </div>
@@ -336,7 +336,7 @@
             const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720, cpHistory:[] };
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            const STORAGE_KEY = 'optiMill_v8';
+            const STORAGE_KEY = 'optiMill_v8_1';
             function load() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
             function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
             load();
@@ -348,14 +348,20 @@
             function ecsCalc() { return (state.power*1000)/state.tph; }
             function f80Calc() { return 55/Math.sqrt(state.wi); } // mm
             function jbCalc() { return Math.min(1, state.balls/200); }
-            function p80Calc(f80, ecs, jb) { return (f80*1000)/Math.pow(ecs*10, 0.25) * (1 - 0.4*jb); } // µm
+            // Nueva fórmula P80 calibrada para respuesta fuerte a bolas
+            function p80Calc(f80_mm, ecs, jb) {
+                const f80_um = f80_mm * 1000;
+                const base = f80_um / Math.pow(ecs * 10, 0.7);
+                const factor = Math.pow(1 - 0.8 * jb, 1.5);
+                return Math.max(50, base * factor); // mínimo 50 µm
+            }
             function densityCalc() { const ms=state.tph*1000, vs=ms/2700, mw=state.water*1000, vw=state.water; return (ms+mw)/(vs+vw); }
             function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; } // g/t
             function ballsPerDay(gpt) { return (gpt*state.tph*24)/1000000; }
             function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
             function vcCalc() { return 42.3/Math.sqrt(5.5); }
 
-            function generateRecommendations(cp, ecs, f80, p80, dens, bpd, dev, jb) {
+            function generateRecommendations(cp, ecs, f80_mm, p80, dens, bpd, dev, jb) {
                 const recs = [];
                 if (Math.abs(dev) > 2) {
                     if (dev > 0) recs.push({ type:'danger', msg:'Reducir densidad: abrir válvula de agua', detail:`Aumentar agua en ${Math.max(0,(state.tph*1000)*(100/state.cpTarget-1)/1000 - state.water).toFixed(1)} m³/h para bajar Cp de ${cp.toFixed(1)}% a ${state.cpTarget}%` });
@@ -364,9 +370,10 @@
                     recs.push({ type:'optimal', msg:'Densidad óptima', detail:'Mantener flujo de agua actual' });
                 }
                 if (ecs > 15) recs.push({ type:'warning', msg:'Consumo energético alto', detail:`Ecs = ${ecs.toFixed(2)} kWh/t excede rango óptimo (7-15). Evaluar dureza del mineral o eficiencia del molino` });
-                if (f80 > 150) recs.push({ type:'warning', msg:'Alimentación gruesa', detail:`F80 = ${(f80*1000).toFixed(0)} µm. Considerar ajuste de chancado primario` });
+                if (f80_mm > 150) recs.push({ type:'warning', msg:'Alimentación gruesa', detail:`F80 = ${(f80_mm*1000).toFixed(0)} µm. Considerar ajuste de chancado primario` });
                 if (p80 > 300) {
-                    recs.push({ type:'warning', msg:'Producto grueso', detail:`P80 = ${p80.toFixed(0)} µm. Aumentar carga de bolas (actualmente ${state.balls} t) o potencia. Jb actual = ${(jb*100).toFixed(0)}%` });
+                    const suggestedBalls = Math.min(200, state.balls + 20);
+                    recs.push({ type:'warning', msg:'Producto grueso: aumentar bolas', detail:`P80 = ${p80.toFixed(0)} µm (>300). Subir carga de bolas a ${suggestedBalls} t (Jb actual ${(jb*100).toFixed(0)}%).` });
                 }
                 if (bpd > 5) recs.push({ type:'warning', msg:'Alto consumo de bolas', detail:`${bpd.toFixed(2)} t/día. Revisar dureza del mineral y calidad de bolas` });
                 if (dens < 1600) recs.push({ type:'info', msg:'Pulpa diluida', detail:`Densidad ${dens.toFixed(0)} kg/m³ por debajo de lo normal` });
@@ -431,6 +438,7 @@
 
                 vTph.textContent = state.tph; vWater.textContent = state.water; vWi.textContent = state.wi.toFixed(1);
                 vCpTarget.textContent = state.cpTarget; vPower.textContent = state.power; vBalls.textContent = state.balls;
+                $('#jbDisplay').textContent = Math.round(jb*100);
 
                 $('#kCp').textContent = cp.toFixed(1);
                 $('#kEcs').textContent = ecs.toFixed(2);
