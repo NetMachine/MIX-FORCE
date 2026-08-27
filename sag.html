@@ -81,8 +81,8 @@
 
         .mill-container { background:var(--surface2); border-radius:var(--r-sm); border:1px solid var(--border); padding:12px; position:relative; overflow:hidden; }
         .mill-svg { width:100%; height:auto; display:block; }
-        @keyframes rotateMill { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         .mill-rotating { transform-origin:center; animation:rotateMill linear infinite; }
+        @keyframes rotateMill { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         .flow-line { stroke-dasharray:8 5; animation:flowDash 1s linear infinite; }
         @keyframes flowDash { from { stroke-dashoffset:0; } to { stroke-dashoffset:-26; } }
 
@@ -204,7 +204,7 @@
                             <line x1="163" y1="87" x2="237" y2="161" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                             <line x1="163" y1="161" x2="237" y2="87" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                         </g>
-                        <!-- Grupo interno: partículas y agua (animado con JS) -->
+                        <!-- Grupo interno: carga (se anima con JS) -->
                         <g id="millInternalGroup"></g>
                         <text x="200" y="195" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
                         <!-- Resto del circuito -->
@@ -341,7 +341,7 @@
             const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720, cpHistory:[] };
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            const STORAGE_KEY = 'optiMill_v10';
+            const STORAGE_KEY = 'optiMill_v11';
             function load() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
             function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
             load();
@@ -366,142 +366,152 @@
             function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
             function vcCalc() { return 42.3/Math.sqrt(5.5); }
 
-            // ========== ANIMACIÓN INTERNA CON GRAVEDAD ==========
-            const millCenterX = 200, millCenterY = 124, millRadius = 46; // Radio interno del molino
+            // ========== ANIMACIÓN INTERNA CON GRAVEDAD (VISTA LATERAL) ==========
+            const millCenterX = 200, millCenterY = 124, millRadius = 46; // Radio interno
             const internalGroup = $('#millInternalGroup');
             const millGroup = $('#millGroup');
-
-            // Partículas: { elem, type, angle, radius, speed, size, color }
             let particles = [];
-            let waterPath = null;
             let animationId = null;
             let lastTime = 0;
             let currentRpm = 0;
 
+            // Ángulo máximo de elevación antes de caer (en radianes, desde la vertical inferior)
+            const maxLiftAngle = Math.PI * 0.6; // ~108° desde abajo (10-11 en punto)
+
             function createParticles() {
-                // Limpiar grupo
                 internalGroup.innerHTML = '';
                 particles = [];
 
-                // Crear agua como path
+                // Agua (superficie)
                 const water = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                water.setAttribute('fill', 'rgba(96, 165, 250, 0.25)');
-                water.setAttribute('stroke', 'rgba(96, 165, 250, 0.5)');
+                water.setAttribute('fill', 'rgba(96, 165, 250, 0.2)');
+                water.setAttribute('stroke', 'rgba(96, 165, 250, 0.4)');
                 water.setAttribute('stroke-width', '1');
                 internalGroup.appendChild(water);
                 waterPath = water;
 
-                // Número de bolas según carga (máx 20)
                 const numBalls = Math.floor((state.balls / 200) * 20);
                 for (let i = 0; i < numBalls; i++) {
                     const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    const r = 5 + Math.random() * 3;
+                    const r = 4 + Math.random() * 3;
                     ball.setAttribute('r', r);
                     ball.setAttribute('fill', '#8a90a0');
                     ball.setAttribute('stroke', '#4a5060');
                     ball.setAttribute('stroke-width', '0.5');
                     internalGroup.appendChild(ball);
-                    // Posición inicial aleatoria en la parte inferior
-                    const angle = Math.PI * (0.8 + Math.random() * 0.4); // entre 144° y 216° (abajo)
-                    const radius = millRadius * (0.6 + Math.random() * 0.4);
                     particles.push({
-                        elem: ball,
-                        type: 'ball',
-                        angle: angle,
-                        radius: radius,
-                        angularSpeed: 0,
-                        size: r,
-                        color: '#8a90a0'
+                        elem: ball, type: 'ball', size: r,
+                        x: millCenterX, y: millCenterY + millRadius * (0.8 + Math.random() * 0.2),
+                        vx: 0, vy: 0, onWall: false
                     });
                 }
 
-                // Número de partículas de mineral según tonelaje (máx 30)
-                const numOre = Math.floor((state.tph / 3000) * 30);
+                const numOre = Math.floor((state.tph / 3000) * 25);
                 for (let i = 0; i < numOre; i++) {
                     const ore = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    const r = 3 + Math.random() * 3;
+                    const r = 2 + Math.random() * 2;
                     ore.setAttribute('r', r);
                     ore.setAttribute('fill', '#d4a574');
                     ore.setAttribute('opacity', '0.8');
                     internalGroup.appendChild(ore);
-                    const angle = Math.PI * (0.8 + Math.random() * 0.4);
-                    const radius = millRadius * (0.5 + Math.random() * 0.5);
                     particles.push({
-                        elem: ore,
-                        type: 'ore',
-                        angle: angle,
-                        radius: radius,
-                        angularSpeed: 0,
-                        size: r,
-                        color: '#d4a574'
+                        elem: ore, type: 'ore', size: r,
+                        x: millCenterX, y: millCenterY + millRadius * (0.7 + Math.random() * 0.3),
+                        vx: 0, vy: 0, onWall: false
                     });
                 }
             }
 
-            // Física simplificada: rotación + gravedad
             function updateParticles(deltaTime, rpm) {
-                // Velocidad angular del molino (rad/s)
-                const omega = rpm * 2 * Math.PI / 60;
-                const gravity = 800; // px/s² (ajustable)
-                const wallRadius = millRadius;
-                const minRadius = 10;
+                const gravity = 600; // px/s²
+                const wallFriction = 0.98;
+                const omega = rpm * 2 * Math.PI / 60; // rad/s
+                const minRadius = 8;
+                const dt = Math.min(deltaTime, 0.05);
 
                 particles.forEach(p => {
-                    // Actualizar ángulo por rotación del molino
-                    p.angle += omega * deltaTime;
+                    if (!p.onWall) {
+                        // Aplicar gravedad
+                        p.vy += gravity * dt;
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt;
 
-                    // Calcular componente radial de la gravedad
-                    // El ángulo se mide desde la vertical hacia abajo (0 = abajo)
-                    // En nuestro sistema, usamos ángulo estándar: 0 = derecha, pi/2 = abajo, etc.
-                    // Para simplificar, calculamos la posición vertical relativa:
-                    const x = Math.cos(p.angle) * p.radius;
-                    const y = Math.sin(p.angle) * p.radius;
-                    // La gravedad tira hacia abajo (y positivo)
-                    const gravityRadial = -gravity * Math.sin(p.angle); // componente radial (hacia centro si es negativo)
-
-                    // Si la partícula está en la mitad superior (y < 0) y la fuerza centrífuga es insuficiente, cae
-                    const centrifugal = omega * omega * p.radius;
-                    if (centrifugal < gravity * Math.abs(Math.cos(p.angle))) {
-                        // Cae: reducir radio (hacia el centro)
-                        p.radius -= 60 * deltaTime; // velocidad de caída
-                        if (p.radius < minRadius) p.radius = minRadius;
+                        // Verificar colisión con pared
+                        const dx = p.x - millCenterX;
+                        const dy = p.y - millCenterY;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist > millRadius - p.size) {
+                            // Colisión con pared
+                            p.onWall = true;
+                            const nx = dx / dist, ny = dy / dist;
+                            p.x = millCenterX + nx * (millRadius - p.size);
+                            p.y = millCenterY + ny * (millRadius - p.size);
+                            // Rebote tangencial
+                            const tx = -ny, ty = nx;
+                            const vNormal = p.vx * nx + p.vy * ny;
+                            const vTangent = p.vx * tx + p.vy * ty;
+                            p.vx = vTangent * tx * wallFriction;
+                            p.vy = vTangent * ty * wallFriction;
+                            // Añadir velocidad tangencial por rotación (arrastre)
+                            p.vx += -ny * omega * (millRadius - p.size);
+                            p.vy += nx * omega * (millRadius - p.size);
+                        }
                     } else {
-                        // Permanece en la pared (radio = wallRadius)
-                        p.radius = wallRadius;
+                        // En la pared, moverse tangencialmente
+                        const dx = p.x - millCenterX;
+                        const dy = p.y - millCenterY;
+                        const angle = Math.atan2(dy, dx);
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        // Velocidad angular de arrastre
+                        const vxWall = -Math.sin(angle) * omega * (millRadius - p.size);
+                        const vyWall = Math.cos(angle) * omega * (millRadius - p.size);
+                        p.x += vxWall * dt;
+                        p.y += vyWall * dt;
+
+                        // Mantener en el radio
+                        const dx2 = p.x - millCenterX;
+                        const dy2 = p.y - millCenterY;
+                        const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                        if (dist2 > millRadius - p.size) {
+                            p.x = millCenterX + dx2 / dist2 * (millRadius - p.size);
+                            p.y = millCenterY + dy2 / dist2 * (millRadius - p.size);
+                        }
+
+                        // Verificar si debe desprenderse (supera ángulo máximo)
+                        const newAngle = Math.atan2(p.y - millCenterY, p.x - millCenterX);
+                        // Convertir a ángulo desde la vertical inferior (0 abajo, positivo en sentido antihorario)
+                        let liftAngle = newAngle - Math.PI/2;
+                        if (liftAngle < -Math.PI) liftAngle += 2*Math.PI;
+                        if (liftAngle > Math.PI) liftAngle -= 2*Math.PI;
+                        if (Math.abs(liftAngle) > maxLiftAngle) {
+                            p.onWall = false;
+                            p.vx = vxWall * 0.5;
+                            p.vy = vyWall * 0.5;
+                        }
                     }
 
-                    // Limitar radio al máximo
-                    if (p.radius > wallRadius) p.radius = wallRadius;
-
-                    // Actualizar posición del elemento SVG
-                    const cx = millCenterX + Math.cos(p.angle) * p.radius;
-                    const cy = millCenterY + Math.sin(p.angle) * p.radius;
-                    p.elem.setAttribute('cx', cx);
-                    p.elem.setAttribute('cy', cy);
+                    // Actualizar elemento SVG
+                    p.elem.setAttribute('cx', p.x);
+                    p.elem.setAttribute('cy', p.y);
                 });
 
-                // Actualizar agua: superficie libre
+                // Actualizar agua (superficie inclinada según rotación)
                 if (waterPath) {
-                    const waterLevel = 0.4; // fracción del radio ocupada por agua
-                    const angle1 = Math.PI * 0.7; // ángulo inicial
-                    const angle2 = Math.PI * 1.3;
-                    const r1 = wallRadius * waterLevel;
-                    const r2 = wallRadius * waterLevel;
-                    const x1 = millCenterX + Math.cos(angle1) * r1;
-                    const y1 = millCenterY + Math.sin(angle1) * r1;
-                    const x2 = millCenterX + Math.cos(angle2) * r2;
-                    const y2 = millCenterY + Math.sin(angle2) * r2;
-                    const controlY = millCenterY + wallRadius * 0.6;
-                    waterPath.setAttribute('d', `M ${x1} ${y1} Q ${millCenterX} ${controlY} ${x2} ${y2} L ${millCenterX} ${millCenterY + wallRadius} Z`);
+                    const waterLevel = 0.3 + (state.water / 1500) * 0.3;
+                    const baseY = millCenterY + millRadius * 0.5;
+                    const x1 = millCenterX - millRadius * 0.6;
+                    const x2 = millCenterX + millRadius * 0.6;
+                    const y1 = baseY - 5;
+                    const y2 = baseY + 5;
+                    waterPath.setAttribute('d', `M ${x1} ${y1} Q ${millCenterX} ${baseY - 12} ${x2} ${y2} L ${x2} ${millCenterY + millRadius} L ${x1} ${millCenterY + millRadius} Z`);
                 }
             }
 
             function animate(timestamp) {
                 if (!lastTime) lastTime = timestamp;
-                const deltaTime = (timestamp - lastTime) / 1000; // segundos
+                const deltaTime = (timestamp - lastTime) / 1000;
                 lastTime = timestamp;
-                if (deltaTime > 0.1) deltaTime = 0.1; // evitar saltos grandes
-
+                if (deltaTime > 0.1) deltaTime = 0.1;
                 updateParticles(deltaTime, currentRpm);
                 animationId = requestAnimationFrame(animate);
             }
@@ -512,16 +522,10 @@
                 animationId = requestAnimationFrame(animate);
             }
 
-            function stopAnimation() {
-                if (animationId) cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-
             function rebuildInternalLoad() {
                 createParticles();
-                // Ajustar duración de rotación del molino según RPM
                 if (currentRpm > 0) {
-                    const duration = 60 / currentRpm; // duración de una vuelta en segundos
+                    const duration = 60 / currentRpm;
                     millGroup.style.animationDuration = duration + 's';
                 }
             }
@@ -620,18 +624,13 @@
                 $('#pidRpm').textContent = rpm.toFixed(1);
                 $('#pidVc').textContent = vc.toFixed(1);
 
-                // Actualizar RPM para animación
                 currentRpm = rpm;
-                // Ajustar velocidad de rotación del molino
                 if (rpm > 0) {
-                    const duration = 60 / rpm; // duración de una vuelta en segundos
+                    const duration = 60 / rpm;
                     millGroup.style.animationDuration = duration + 's';
                 }
 
-                // Si cambió el número de bolas o tonelaje, regenerar partículas
-                // (Se puede optimizar comparando con valores anteriores, pero por simplicidad regeneramos en cada cambio de slider)
-                // Para evitar regenerar a cada frame, solo lo hacemos cuando cambian bolas o tonelaje.
-                // Guardamos últimos valores usados en rebuild.
+                // Regenerar partículas si cambió bolas o tonelaje
                 if (!window.lastBallsCount || window.lastBallsCount !== state.balls || !window.lastTphCount || window.lastTphCount !== state.tph) {
                     rebuildInternalLoad();
                     window.lastBallsCount = state.balls;
@@ -755,9 +754,7 @@
                 inTph.value = state.tph; inWater.value = state.water; inWi.value = state.wi;
                 inCpTarget.value = state.cpTarget; inPower.value = state.power; inBalls.value = state.balls;
                 updateHistory();
-                // Crear partículas iniciales
                 rebuildInternalLoad();
-                // Iniciar animación
                 startAnimation();
                 update();
                 setInterval(drawSparkline, 10000);
