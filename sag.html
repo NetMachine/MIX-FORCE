@@ -3,1594 +3,917 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0a0a0f">
-    <meta name="description" content="OptiMill OS - Consola Táctil de Molienda SAG & Bolas">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>OptiMill OS | Aurora Industrial</title>
+    <meta name="theme-color" content="#0c0e14">
+    <meta name="description" content="OptiMill OS - Consola Técnica de Molienda SAG & Bolas">
+    <title>OptiMill OS | Consola Técnica</title>
     <style>
-        /* ========== SISTEMA DE DISEÑO ========== */
+        /* ========== SISTEMA DE DISEÑO - SOBRIO Y TÉCNICO ========== */
         :root {
-            --bg-0: #0a0a0f;
-            --bg-1: #0f1118;
-            --bg-2: #151820;
-            --bg-3: #1a1e2a;
-            --glass: rgba(255,255,255,0.04);
-            --glass-border: rgba(255,255,255,0.08);
-            --glass-hover: rgba(255,255,255,0.08);
-            --text-0: #f0f2f5;
-            --text-1: #c8cdd8;
-            --text-2: #8a90a0;
-            --text-3: #5a6070;
-            --amber: #fbbf24;
-            --amber-bright: #fcd34d;
-            --amber-dim: #b45309;
-            --amber-glow: rgba(251,191,36,0.35);
-            --emerald: #34d399;
-            --emerald-bright: #6ee7b7;
-            --emerald-glow: rgba(52,211,153,0.35);
-            --cyan: #22d3ee;
-            --cyan-bright: #67e8f9;
-            --cyan-glow: rgba(34,211,238,0.35);
-            --rose: #f43f5e;
-            --rose-bright: #fb7185;
-            --rose-glow: rgba(244,63,94,0.4);
-            --violet: #a78bfa;
-            --violet-glow: rgba(167,139,250,0.3);
-            --font-display: 'SF Pro Display', 'Inter', system-ui, sans-serif;
+            --bg: #0c0e14;
+            --bg-panel: #11141c;
+            --bg-elevated: #161a24;
+            --bg-inset: #0a0c10;
+            --border: #1f2430;
+            --border-light: #2a3040;
+            --text-primary: #e8ecf1;
+            --text-secondary: #a0a8b8;
+            --text-muted: #6b7280;
+            --accent: #f0b429;
+            --accent-hover: #f7c948;
+            --positive: #4ade80;
+            --warning: #f59e0b;
+            --negative: #f87171;
+            --info: #60a5fa;
+            --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
             --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
-            --font-body: 'Inter', 'SF Pro Text', system-ui, sans-serif;
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --radius-sm: 10px;
-            --shadow-card: 0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
-            --shadow-elevated: 0 16px 60px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.4);
-            --shadow-glow-amber: 0 0 30px var(--amber-glow), 0 0 60px rgba(251,191,36,0.15);
-            --shadow-glow-emerald: 0 0 30px var(--emerald-glow), 0 0 60px rgba(52,211,153,0.15);
-            --shadow-glow-cyan: 0 0 30px var(--cyan-glow), 0 0 60px rgba(34,211,238,0.15);
-            --shadow-glow-rose: 0 0 30px var(--rose-glow), 0 0 60px rgba(244,63,94,0.15);
-            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            --touch-target: 56px;
-            --touch-target-sm: 48px;
+            --radius: 10px;
+            --radius-sm: 6px;
+            --radius-lg: 14px;
+            --touch: 48px;
+            --touch-sm: 40px;
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --transition: 0.18s ease;
         }
-
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         html { scroll-behavior:smooth; }
         body {
             font-family:var(--font-body);
-            background:var(--bg-0);
-            color:var(--text-1);
+            background:var(--bg);
+            color:var(--text-secondary);
             min-height:100vh;
             overflow-x:hidden;
             overscroll-behavior:none;
             touch-action:manipulation;
             -webkit-user-select:none;
             user-select:none;
-            background-image:
-                radial-gradient(ellipse at 15% 30%, rgba(251,191,36,0.06) 0%, transparent 55%),
-                radial-gradient(ellipse at 85% 15%, rgba(34,211,238,0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 90%, rgba(52,211,153,0.04) 0%, transparent 55%),
-                radial-gradient(ellipse at 75% 70%, rgba(167,139,250,0.03) 0%, transparent 45%);
-            background-attachment:fixed;
+            font-size:14px;
+            line-height:1.5;
         }
         input, textarea, select { -webkit-user-select:text; user-select:text; }
-        ::selection { background:var(--amber); color:#0a0a0f; }
-        ::-webkit-scrollbar { width:5px; height:5px; }
+        ::selection { background:var(--accent); color:#0c0e14; }
+        ::-webkit-scrollbar { width:4px; height:4px; }
         ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:var(--bg-3); border-radius:3px; }
-        ::-webkit-scrollbar-thumb:hover { background:#2a2e3a; }
-
-        /* ========== ANIMACIONES ========== */
-        @keyframes fadeInUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
-        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-        @keyframes glowPulse {
-            0%,100%{box-shadow:0 0 20px var(--amber-glow), 0 0 40px rgba(251,191,36,0.1);}
-            50%{box-shadow:0 0 40px var(--amber-glow), 0 0 80px rgba(251,191,36,0.2);}
-        }
-        @keyframes rotateMill { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-        @keyframes flowDash { from{stroke-dashoffset:0;} to{stroke-dashoffset:-32;} }
-        @keyframes rippleEffect { to{transform:scale(4); opacity:0;} }
-        @keyframes borderGlow {
-            0%,100%{border-color:rgba(251,191,36,0.3);}
-            50%{border-color:rgba(251,191,36,0.7);}
-        }
-        @keyframes scanSweep {
-            0%{transform:translateY(-100%);}
-            100%{transform:translateY(100vh);}
-        }
-        @keyframes valueShine {
-            0%{background-position:200% center;}
-            100%{background-position:-200% center;}
-        }
-        @keyframes floatUp {
-            0%,100%{transform:translateY(0);}
-            50%{transform:translateY(-4px);}
-        }
-
-        /* ========== LAYOUT SHELL ========== */
-        .app-shell {
-            display:flex;
-            flex-direction:column;
-            height:100vh;
-            height:100dvh;
-            max-width:1700px;
-            margin:0 auto;
-            position:relative;
-            overflow:hidden;
-            background:var(--bg-0);
-            border-left:1px solid rgba(255,255,255,0.03);
-            border-right:1px solid rgba(255,255,255,0.03);
-        }
-        /* Línea de escaneo sutil */
-        .app-shell::after {
-            content:'';
-            position:absolute;
-            top:0; left:0; right:0;
-            height:2px;
-            background:linear-gradient(90deg, transparent, rgba(251,191,36,0.15), transparent);
-            animation:scanSweep 8s linear infinite;
-            pointer-events:none;
-            z-index:5;
-        }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
         /* ========== HEADER ========== */
         .app-header {
-            background:linear-gradient(180deg, rgba(15,17,24,0.98), rgba(15,17,24,0.9));
-            backdrop-filter:blur(24px);
-            border-bottom:1px solid rgba(255,255,255,0.06);
-            padding:10px 20px;
+            background:var(--bg-panel);
+            border-bottom:1px solid var(--border);
+            padding:10px 16px;
             display:flex;
             align-items:center;
             justify-content:space-between;
             flex-shrink:0;
-            min-height:64px;
-            z-index:50;
-            position:relative;
-        }
-        .app-header::before {
-            content:'';
-            position:absolute;
-            bottom:-1px; left:10%; right:10%;
-            height:1px;
-            background:linear-gradient(90deg, transparent, var(--amber-glow), transparent);
-        }
-        .logo-container { display:flex; align-items:center; gap:14px; }
-        .logo-icon {
-            width:48px; height:48px; border-radius:14px;
-            background:linear-gradient(135deg, #1a1e2a, #0f1118);
-            border:1px solid rgba(251,191,36,0.4);
-            display:flex; align-items:center; justify-content:center;
-            font-weight:900; color:var(--amber); font-size:1.5rem;
-            box-shadow:0 0 25px var(--amber-glow), inset 0 1px 0 rgba(255,255,255,0.1);
-            transition:var(--transition);
-            position:relative;
-            overflow:hidden;
-        }
-        .logo-icon::after {
-            content:'';
-            position:absolute;
-            top:-50%; left:-50%; width:200%; height:200%;
-            background:linear-gradient(45deg, transparent, rgba(251,191,36,0.1), transparent);
-            animation:valueShine 4s linear infinite;
-        }
-        .logo-icon:active { transform:scale(0.9); }
-        .app-title {
-            font-weight:800; font-size:1.3rem; letter-spacing:-0.01em;
-            color:var(--text-0);
-            background:linear-gradient(135deg, #f0f2f5, var(--amber-bright));
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-            line-height:1.2;
-        }
-        .app-subtitle {
-            font-size:0.6rem; color:var(--text-3); letter-spacing:0.12em;
-            text-transform:uppercase; font-weight:500;
-        }
-        .status-pill {
-            display:flex; align-items:center; gap:8px;
-            background:rgba(52,211,153,0.1);
-            border:1px solid rgba(52,211,153,0.3);
-            color:var(--emerald-bright);
-            padding:8px 16px; border-radius:50px;
-            font-size:0.68rem; font-weight:600;
-            letter-spacing:0.06em; text-transform:uppercase;
-            white-space:nowrap;
-            box-shadow:0 0 20px rgba(52,211,153,0.15);
-        }
-        .status-dot {
-            width:8px; height:8px; border-radius:50%;
-            background:var(--emerald);
-            box-shadow:0 0 12px var(--emerald), 0 0 24px var(--emerald-glow);
-            animation:pulse 1.8s ease-in-out infinite;
-        }
-
-        /* ========== CONTENIDO PRINCIPAL ========== */
-        .main-content {
-            flex:1;
-            overflow-y:auto;
-            padding:20px;
-            padding-bottom:calc(90px + var(--safe-bottom));
-            scroll-behavior:smooth;
-            -webkit-overflow-scrolling:touch;
-            overscroll-behavior:contain;
-            position:relative;
-        }
-        .tab-panel { display:none; animation:fadeInUp 0.4s ease; }
-        .tab-panel.active { display:block; }
-
-        /* ========== NAVEGACIÓN INFERIOR ========== */
-        .bottom-nav {
-            position:fixed;
-            bottom:0; left:0; right:0;
-            background:linear-gradient(180deg, rgba(15,17,24,0.95), rgba(10,10,15,0.98));
-            backdrop-filter:blur(28px);
-            border-top:1px solid rgba(255,255,255,0.08);
-            display:flex;
-            justify-content:space-around;
-            align-items:center;
-            padding:4px 4px;
-            padding-bottom:calc(4px + var(--safe-bottom));
-            z-index:200;
-            max-width:1700px;
-            margin:0 auto;
-            box-shadow:0 -8px 40px rgba(0,0,0,0.6);
-        }
-        .bottom-nav::before {
-            content:'';
-            position:absolute;
-            top:0; left:20%; right:20%;
-            height:1px;
-            background:linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent);
-        }
-        .nav-btn {
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            gap:3px;
-            padding:8px 12px;
-            min-width:64px;
             min-height:56px;
-            border:none;
-            background:transparent;
-            color:var(--text-3);
-            font-size:0.58rem;
-            font-weight:600;
-            letter-spacing:0.05em;
-            text-transform:uppercase;
-            cursor:pointer;
-            transition:var(--transition);
-            border-radius:14px;
-            position:relative;
-            -webkit-tap-highlight-color:transparent;
+            position:sticky;
+            top:0;
+            z-index:50;
         }
-        .nav-btn svg { width:24px; height:24px; transition:var(--transition); filter:drop-shadow(0 0 4px transparent); }
-        .nav-btn.active {
-            color:var(--amber);
-            background:rgba(251,191,36,0.06);
-        }
-        .nav-btn.active svg {
-            transform:scale(1.1);
-            filter:drop-shadow(0 0 8px var(--amber-glow));
-        }
-        .nav-btn.active::before {
-            content:'';
-            position:absolute;
-            top:0; left:50%;
-            transform:translateX(-50%);
-            width:24px; height:3px;
-            background:var(--amber);
-            border-radius:0 0 3px 3px;
-            box-shadow:0 0 12px var(--amber-glow);
-        }
-        .nav-btn:active { transform:scale(0.88); }
-        .nav-btn .nav-badge {
-            position:absolute;
-            top:4px; right:8px;
-            background:var(--rose);
-            color:#fff;
-            font-size:0.58rem;
-            font-weight:700;
-            min-width:18px; height:18px;
-            border-radius:50%;
+        .logo-section { display:flex; align-items:center; gap:12px; }
+        .logo-icon {
+            width:40px; height:40px; border-radius:8px;
+            background:var(--bg-elevated);
+            border:1px solid var(--border-light);
             display:flex; align-items:center; justify-content:center;
-            box-shadow:0 0 12px var(--rose-glow);
-            border:2px solid var(--bg-1);
+            font-weight:700; color:var(--accent); font-size:1.2rem;
+        }
+        .app-title { font-weight:700; font-size:1.1rem; color:var(--text-primary); letter-spacing:-0.01em; }
+        .app-subtitle { font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
+        .status-indicator {
+            display:flex; align-items:center; gap:6px;
+            color:var(--positive); font-size:0.7rem; font-weight:600;
+            text-transform:uppercase; letter-spacing:0.05em;
+        }
+        .status-indicator .dot {
+            width:8px; height:8px; border-radius:50%;
+            background:var(--positive);
         }
 
-        /* ========== TARJETAS ========== */
-        .card {
-            background:linear-gradient(180deg, var(--bg-2), var(--bg-1));
-            border:1px solid rgba(255,255,255,0.06);
-            border-radius:var(--radius-lg);
-            padding:18px;
-            box-shadow:var(--shadow-card);
-            transition:var(--transition);
-            position:relative;
+        /* ========== LAYOUT PRINCIPAL ========== */
+        .main-container {
+            max-width:1400px;
+            margin:0 auto;
+            padding:16px;
+            padding-bottom:calc(80px + var(--safe-bottom));
+            display:grid;
+            gap:16px;
+            grid-template-columns:1fr;
+        }
+        @media (min-width: 900px) {
+            .main-container {
+                grid-template-columns: 380px 1fr;
+                align-items:start;
+            }
+        }
+        @media (min-width: 1200px) {
+            .main-container {
+                grid-template-columns: 400px 1fr 320px;
+            }
+        }
+
+        /* ========== PANELES ========== */
+        .panel {
+            background:var(--bg-panel);
+            border:1px solid var(--border);
+            border-radius:var(--radius);
             overflow:hidden;
-            margin-bottom:18px;
         }
-        .card::before {
-            content:'';
-            position:absolute;
-            top:0; left:0; right:0;
-            height:1px;
-            background:linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
-        }
-        .card::after {
-            content:'';
-            position:absolute;
-            top:0; left:0; right:0; bottom:0;
-            background:radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.04), transparent 60%);
-            pointer-events:none;
-            border-radius:var(--radius-lg);
-        }
-        .card:active { transform:scale(0.98); }
-        .card-header {
+        .panel-header {
+            padding:12px 16px;
+            border-bottom:1px solid var(--border);
             display:flex;
             align-items:center;
             justify-content:space-between;
-            margin-bottom:16px;
-            gap:10px;
-            flex-wrap:wrap;
-            position:relative;
-            z-index:1;
+            background:var(--bg-elevated);
         }
-        .card-title {
+        .panel-title {
             font-size:0.7rem;
             font-weight:700;
-            letter-spacing:0.1em;
             text-transform:uppercase;
-            color:var(--text-2);
-            display:flex;
-            align-items:center;
-            gap:8px;
+            letter-spacing:0.08em;
+            color:var(--text-muted);
         }
-        .card-title svg { width:20px; height:20px; color:var(--amber); filter:drop-shadow(0 0 4px var(--amber-glow)); }
-        .card-value {
-            font-family:var(--font-mono);
-            font-size:clamp(1.5rem, 4vw, 2.2rem);
-            font-weight:700;
-            color:var(--text-0);
-            line-height:1.15;
-            transition:color 0.3s;
+        .panel-body {
+            padding:14px 16px;
+        }
+
+        /* ========== CONTROLES ========== */
+        .control-group {
+            margin-bottom:14px;
             position:relative;
-            z-index:1;
-            letter-spacing:-0.02em;
         }
-        .card-value.amber {
-            color:var(--amber-bright);
-            text-shadow:0 0 30px var(--amber-glow), 0 0 60px rgba(251,191,36,0.15);
-        }
-        .card-value.emerald {
-            color:var(--emerald-bright);
-            text-shadow:0 0 30px var(--emerald-glow), 0 0 60px rgba(52,211,153,0.15);
-        }
-        .card-value.cyan {
-            color:var(--cyan-bright);
-            text-shadow:0 0 30px var(--cyan-glow), 0 0 60px rgba(34,211,238,0.15);
-        }
-        .card-value.rose {
-            color:var(--rose-bright);
-            text-shadow:0 0 30px var(--rose-glow), 0 0 60px rgba(244,63,94,0.15);
-        }
-
-        .grid { display:grid; gap:18px; }
-        .grid-2 { grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); }
-        .grid-3 { grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); }
-        .grid-4 { grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); }
-
-        /* ========== SLIDERS ========== */
-        .slider-group { margin-bottom:18px; position:relative; z-index:1; }
-        .slider-label {
+        .control-label {
             display:flex;
             justify-content:space-between;
             align-items:center;
-            margin-bottom:8px;
+            margin-bottom:6px;
             font-size:0.78rem;
-            color:var(--text-2);
-            font-weight:600;
-            letter-spacing:0.02em;
-            flex-wrap:wrap;
-            gap:6px;
+            color:var(--text-secondary);
+            font-weight:500;
         }
-        .slider-value {
+        .control-value {
             font-family:var(--font-mono);
-            font-weight:700;
-            font-size:1.1rem;
-            color:var(--text-0);
+            font-weight:600;
+            color:var(--text-primary);
+            background:var(--bg-inset);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            padding:3px 10px;
+            font-size:0.85rem;
             min-width:70px;
-            text-align:right;
-            background:rgba(255,255,255,0.04);
-            padding:5px 12px;
-            border-radius:8px;
-            border:1px solid rgba(255,255,255,0.08);
-            transition:var(--transition);
+            text-align:center;
         }
         input[type="range"] {
             -webkit-appearance:none;
             width:100%;
-            height:44px;
+            height:36px;
             background:transparent;
             cursor:pointer;
-            position:relative;
             touch-action:pan-y;
-            z-index:2;
         }
         input[type="range"]::-webkit-slider-runnable-track {
-            height:8px;
-            border-radius:4px;
-            background:linear-gradient(90deg, #1a1e2a, #2a2e3a);
-            border:1px solid rgba(255,255,255,0.06);
-            box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);
+            height:6px;
+            border-radius:3px;
+            background:var(--bg-inset);
+            border:1px solid var(--border);
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance:none;
-            width:36px;
-            height:36px;
+            width:28px;
+            height:28px;
             border-radius:50%;
-            background:radial-gradient(circle at 35% 30%, var(--amber-bright), var(--amber-dim));
-            border:3px solid #0f1118;
-            box-shadow:0 0 25px var(--amber-glow), 0 0 50px rgba(251,191,36,0.2), inset 0 -2px 6px rgba(0,0,0,0.5), inset 0 2px 6px rgba(255,255,255,0.3);
-            margin-top:-14px;
+            background:var(--accent);
+            border:3px solid var(--bg-panel);
+            margin-top:-11px;
             cursor:grab;
-            transition:transform 0.15s, box-shadow 0.15s;
+            box-shadow:0 1px 4px rgba(0,0,0,0.4);
         }
         input[type="range"]::-webkit-slider-thumb:active {
             cursor:grabbing;
-            transform:scale(1.3);
-            box-shadow:0 0 40px var(--amber-glow), 0 0 80px rgba(251,191,36,0.3);
+            transform:scale(1.15);
         }
         input[type="range"]::-moz-range-track {
-            height:8px; border-radius:4px;
-            background:linear-gradient(90deg,#1a1e2a,#2a2e3a);
-            border:1px solid rgba(255,255,255,0.06);
+            height:6px; border-radius:3px;
+            background:var(--bg-inset); border:1px solid var(--border);
         }
         input[type="range"]::-moz-range-thumb {
-            width:36px; height:36px; border-radius:50%;
-            background:radial-gradient(circle at 35% 30%, var(--amber-bright), var(--amber-dim));
-            border:3px solid #0f1118;
-            box-shadow:0 0 25px var(--amber-glow);
+            width:28px; height:28px; border-radius:50%;
+            background:var(--accent); border:3px solid var(--bg-panel);
             cursor:grab;
         }
 
-        /* ========== TARJETA DE ACCIÓN ========== */
-        .action-card {
-            background:linear-gradient(135deg, rgba(244,63,94,0.15), rgba(244,63,94,0.03));
-            border:1.5px solid rgba(244,63,94,0.4);
-            border-radius:var(--radius-lg);
-            padding:20px;
-            margin-top:14px;
-            position:relative;
-            overflow:hidden;
-            box-shadow:0 0 35px var(--rose-glow), 0 0 70px rgba(244,63,94,0.1);
-            animation:glowPulse 2.5s infinite;
-            transition:var(--transition);
+        /* ========== RESULTADOS ========== */
+        .result-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+            gap:8px;
         }
-        .action-card:active { transform:scale(0.97); }
-        .action-card::before {
-            content:'';
-            position:absolute;
-            top:-50%; left:-50%; width:200%; height:200%;
-            background:conic-gradient(from 0deg, transparent, rgba(244,63,94,0.08), transparent, rgba(244,63,94,0.08), transparent);
-            animation:rotateMill 8s linear infinite;
-            pointer-events:none;
+        .result-item {
+            background:var(--bg-inset);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            padding:10px 12px;
+            text-align:center;
         }
-        .action-label {
-            font-size:0.62rem;
-            letter-spacing:0.2em;
+        .result-item .label {
+            font-size:0.65rem;
             text-transform:uppercase;
-            color:var(--rose-bright);
-            font-weight:700;
-            margin-bottom:8px;
-            position:relative;
-            z-index:1;
+            letter-spacing:0.05em;
+            color:var(--text-muted);
+            margin-bottom:4px;
         }
-        .action-text {
+        .result-item .value {
             font-family:var(--font-mono);
-            font-size:clamp(1.1rem, 2.5vw, 1.7rem);
-            font-weight:900;
-            color:#fff;
-            line-height:1.25;
-            text-shadow:0 0 30px var(--rose-glow), 0 0 60px rgba(244,63,94,0.3);
-            position:relative;
-            z-index:1;
-            letter-spacing:-0.01em;
+            font-weight:700;
+            font-size:1.1rem;
+            color:var(--text-primary);
         }
-        .action-subtext {
-            color:var(--text-2);
+        .result-item .unit {
+            font-size:0.65rem;
+            color:var(--text-muted);
+        }
+
+        /* ========== ACCIÓN ========== */
+        .action-box {
+            background:var(--bg-inset);
+            border:1px solid var(--negative);
+            border-radius:var(--radius);
+            padding:14px 16px;
+            margin-top:12px;
+            border-left:4px solid var(--negative);
+        }
+        .action-box.optimal {
+            border-color:var(--positive);
+            border-left-color:var(--positive);
+        }
+        .action-box.warning {
+            border-color:var(--warning);
+            border-left-color:var(--warning);
+        }
+        .action-box .action-title {
+            font-size:0.65rem;
+            text-transform:uppercase;
+            letter-spacing:0.1em;
+            color:var(--text-muted);
+            margin-bottom:4px;
+        }
+        .action-box .action-message {
+            font-family:var(--font-mono);
+            font-weight:700;
+            font-size:1rem;
+            color:var(--text-primary);
+        }
+        .action-box .action-detail {
             font-size:0.8rem;
-            margin-top:8px;
-            line-height:1.5;
-            position:relative;
-            z-index:1;
+            color:var(--text-secondary);
+            margin-top:4px;
+        }
+
+        /* ========== TABLA TÉCNICA ========== */
+        .data-table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:0.78rem;
+        }
+        .data-table th {
+            text-align:left;
+            padding:6px 8px;
+            color:var(--text-muted);
+            font-weight:600;
+            font-size:0.65rem;
+            text-transform:uppercase;
+            letter-spacing:0.05em;
+            border-bottom:1px solid var(--border);
+        }
+        .data-table td {
+            padding:6px 8px;
+            border-bottom:1px solid var(--border-light);
+            color:var(--text-secondary);
+        }
+        .data-table tr:last-child td { border-bottom:none; }
+        .data-table .highlight {
+            color:var(--text-primary);
+            font-weight:600;
+            font-family:var(--font-mono);
         }
 
         /* ========== P&ID ========== */
         .pid-container {
-            width:100%;
-            background:linear-gradient(180deg, #0a0a0f, #0f1118);
-            border-radius:var(--radius-md);
-            border:1px solid rgba(255,255,255,0.06);
-            padding:10px;
+            background:var(--bg-inset);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
             overflow:hidden;
-            touch-action:pan-x pan-y;
             position:relative;
         }
-        .pid-container::before {
-            content:'';
+        .pid-svg { width:100%; height:auto; display:block; pointer-events:none; }
+        .pid-label {
             position:absolute;
-            top:0; left:0; right:0; bottom:0;
-            background:radial-gradient(ellipse at center, rgba(251,191,36,0.03), transparent 70%);
+            background:var(--bg-elevated);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            padding:2px 8px;
+            font-size:0.6rem;
+            color:var(--text-secondary);
             pointer-events:none;
         }
-        .pid-svg { width:100%; height:auto; display:block; user-select:none; pointer-events:none; }
-        .molino-group { transform-origin:center; animation:rotateMill 5s linear infinite; }
-        .flow-path {
-            stroke-dasharray:12 8;
-            animation:flowDash 1.5s linear infinite;
-            transition:stroke 0.3s;
-        }
-        .pipe-low { stroke:var(--cyan-bright); filter:drop-shadow(0 0 8px var(--cyan-glow)); }
-        .pipe-opt { stroke:var(--emerald-bright); filter:drop-shadow(0 0 8px var(--emerald-glow)); }
-        .pipe-high { stroke:var(--rose-bright); filter:drop-shadow(0 0 10px var(--rose-glow)); animation-duration:0.5s; }
 
-        /* ========== DIAGNÓSTICO ========== */
-        .diag-selector { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
-        .diag-btn {
-            padding:14px 16px;
-            border-radius:var(--radius-sm);
-            border:1px solid rgba(255,255,255,0.08);
-            background:rgba(255,255,255,0.02);
-            color:var(--text-2);
-            font-size:0.72rem;
-            font-weight:600;
-            cursor:pointer;
-            transition:var(--transition);
-            min-height:48px;
-            text-align:left;
-            flex:1 1 180px;
-            letter-spacing:0.02em;
-            -webkit-tap-highlight-color:transparent;
-            position:relative;
+        /* ========== INFO TÉCNICA EXPANDIBLE ========== */
+        .info-section {
+            margin-top:12px;
+            border-top:1px solid var(--border);
+            padding-top:12px;
         }
-        .diag-btn:active { transform:scale(0.95); }
-        .diag-btn.active {
-            background:rgba(251,191,36,0.1);
-            border-color:rgba(251,191,36,0.5);
-            color:var(--amber-bright);
-            box-shadow:0 0 20px var(--amber-glow);
-        }
-        .diag-btn.active::before {
-            content:'';
-            position:absolute;
-            top:0; left:0; right:0; bottom:0;
-            background:radial-gradient(ellipse at 30% 0%, rgba(251,191,36,0.15), transparent 70%);
-            border-radius:var(--radius-sm);
-            pointer-events:none;
-        }
-        .diag-steps { display:grid; gap:12px; }
-        .diag-step {
-            display:flex;
-            gap:14px;
-            padding:16px;
-            background:rgba(255,255,255,0.02);
-            border-radius:var(--radius-sm);
-            border-left:3px solid var(--amber);
-            align-items:flex-start;
-            transition:var(--transition);
-            box-shadow:inset 0 1px 0 rgba(255,255,255,0.03);
-        }
-        .diag-step:active { transform:translateX(4px); }
-        .diag-step-number {
-            font-family:var(--font-mono);
-            font-weight:900;
-            color:var(--amber);
-            font-size:1.2rem;
-            flex-shrink:0;
-            line-height:1;
-            text-shadow:0 0 12px var(--amber-glow);
-        }
-        .diag-step-title {
-            font-size:0.6rem;
-            text-transform:uppercase;
-            letter-spacing:0.1em;
-            color:var(--text-3);
-            font-weight:700;
-            margin-bottom:4px;
-        }
-        .diag-step-text { font-size:0.85rem; line-height:1.6; color:var(--text-1); }
-
-        /* ========== FORMULARIOS ========== */
-        .log-form { display:grid; gap:14px; }
-        .log-input, .log-textarea, .log-select {
+        .info-toggle {
             width:100%;
-            padding:14px 16px;
-            background:rgba(255,255,255,0.03);
-            border:1px solid rgba(255,255,255,0.08);
-            border-radius:var(--radius-sm);
-            color:var(--text-0);
-            font-family:var(--font-body);
-            font-size:0.9rem;
-            min-height:52px;
-            transition:var(--transition);
-            outline:none;
-            resize:vertical;
-            -webkit-user-select:text;
-            user-select:text;
-        }
-        .log-input:focus, .log-textarea:focus, .log-select:focus {
-            border-color:rgba(251,191,36,0.5);
-            box-shadow:0 0 0 3px rgba(251,191,36,0.15), 0 0 20px rgba(251,191,36,0.1);
-            background:rgba(255,255,255,0.05);
-        }
-        .log-input::placeholder, .log-textarea::placeholder { color:var(--text-3); }
-        .btn-primary {
-            background:linear-gradient(135deg, var(--amber-bright), var(--amber-dim));
-            color:#0a0a0f;
-            border:none;
-            padding:16px 24px;
-            border-radius:var(--radius-sm);
-            font-weight:700;
-            font-size:0.85rem;
-            cursor:pointer;
-            transition:var(--transition);
-            min-height:56px;
-            letter-spacing:0.04em;
-            text-transform:uppercase;
-            box-shadow:0 8px 25px var(--amber-glow), 0 4px 10px rgba(0,0,0,0.3);
-            -webkit-tap-highlight-color:transparent;
-            width:100%;
-            position:relative;
-            overflow:hidden;
-        }
-        .btn-primary::before {
-            content:'';
-            position:absolute;
-            top:-50%; left:-50%;
-            width:200%; height:200%;
-            background:linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation:valueShine 3s linear infinite;
-        }
-        .btn-primary:active { transform:scale(0.95); box-shadow:0 4px 15px var(--amber-glow); }
-
-        /* ========== BADGES ========== */
-        .badge {
-            display:inline-block;
-            padding:5px 12px;
-            border-radius:50px;
-            font-size:0.6rem;
-            font-weight:700;
-            letter-spacing:0.06em;
-            text-transform:uppercase;
-            transition:var(--transition);
-            position:relative;
-        }
-        .badge-ok {
-            background:rgba(52,211,153,0.12);
-            color:var(--emerald-bright);
-            border:1px solid rgba(52,211,153,0.35);
-            box-shadow:0 0 15px rgba(52,211,153,0.15);
-        }
-        .badge-warn {
-            background:rgba(251,191,36,0.12);
-            color:var(--amber-bright);
-            border:1px solid rgba(251,191,36,0.35);
-            box-shadow:0 0 15px rgba(251,191,36,0.15);
-        }
-        .badge-danger {
-            background:rgba(244,63,94,0.12);
-            color:var(--rose-bright);
-            border:1px solid rgba(244,63,94,0.35);
-            box-shadow:0 0 15px rgba(244,63,94,0.2);
-            animation:glowPulse 2s infinite;
-        }
-
-        /* ========== SPARKLINE ========== */
-        .sparkline-container {
-            height:40px;
-            width:100%;
-            position:relative;
-            margin-top:8px;
-            background:rgba(255,255,255,0.02);
-            border-radius:8px;
-            padding:4px;
-            border:1px solid rgba(255,255,255,0.04);
-        }
-
-        /* ========== MODAL ========== */
-        .modal-overlay {
-            position:fixed;
-            top:0; left:0; right:0; bottom:0;
-            background:rgba(10,10,15,0.85);
-            backdrop-filter:blur(16px);
-            z-index:300;
             display:flex;
             align-items:center;
-            justify-content:center;
-            padding:16px;
-            animation:fadeIn 0.25s ease;
-        }
-        .modal-content {
-            background:linear-gradient(180deg, var(--bg-2), var(--bg-1));
-            border:1px solid rgba(255,255,255,0.1);
-            border-radius:var(--radius-lg);
-            padding:20px;
-            max-width:700px;
-            width:100%;
-            max-height:90vh;
-            max-height:90dvh;
-            overflow-y:auto;
-            box-shadow:var(--shadow-elevated);
-            animation:fadeInUp 0.35s ease;
-            position:relative;
-        }
-        .modal-content::before {
-            content:'';
-            position:absolute;
-            top:0; left:0; right:0;
-            height:2px;
-            background:linear-gradient(90deg, transparent, var(--amber-glow), transparent);
-        }
-        .modal-header {
-            display:flex;
             justify-content:space-between;
-            align-items:center;
-            margin-bottom:16px;
-        }
-        .modal-close {
             background:none;
             border:none;
-            color:var(--text-3);
-            font-size:1.6rem;
+            color:var(--text-secondary);
+            font-size:0.75rem;
+            font-weight:600;
             cursor:pointer;
-            min-width:48px;
-            min-height:48px;
-            border-radius:50%;
-            transition:var(--transition);
-            display:flex;
-            align-items:center;
-            justify-content:center;
+            padding:8px 0;
+            text-transform:uppercase;
+            letter-spacing:0.05em;
+            min-height:var(--touch-sm);
             -webkit-tap-highlight-color:transparent;
         }
-        .modal-close:active { background:rgba(255,255,255,0.08); transform:scale(0.9); }
-        .report-sheet {
-            background:#f8f9fb;
-            color:#1e293b;
-            padding:24px;
-            border-radius:8px;
-            font-family:'Times New Roman', serif;
-            font-size:0.85rem;
+        .info-toggle:hover { color:var(--text-primary); }
+        .info-toggle .chevron {
+            transition:transform 0.2s;
+            font-size:0.8rem;
+        }
+        .info-toggle.expanded .chevron { transform:rotate(180deg); }
+        .info-content {
+            display:none;
+            padding:8px 0;
+            font-size:0.75rem;
             line-height:1.6;
-            box-shadow:0 4px 20px rgba(0,0,0,0.3);
+            color:var(--text-secondary);
+            border-top:1px solid var(--border-light);
+            margin-top:4px;
         }
-        .report-sheet h3 { text-align:center; font-size:1.3rem; margin-bottom:4px; font-weight:700; }
-        .report-sheet .report-meta {
-            text-align:center; font-size:0.75rem; color:#475569;
-            border-bottom:2px solid #1e293b; padding-bottom:8px; margin-bottom:14px;
+        .info-content.visible { display:block; }
+
+        /* ========== BOTONES ========== */
+        .btn {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:10px 16px;
+            border-radius:var(--radius-sm);
+            font-weight:600;
+            font-size:0.8rem;
+            cursor:pointer;
+            min-height:var(--touch-sm);
+            transition:var(--transition);
+            border:1px solid var(--border-light);
+            background:var(--bg-elevated);
+            color:var(--text-primary);
+            -webkit-tap-highlight-color:transparent;
+            text-transform:uppercase;
+            letter-spacing:0.04em;
+            width:100%;
         }
-        .report-sheet table { width:100%; border-collapse:collapse; margin-bottom:14px; }
-        .report-sheet th, .report-sheet td {
-            padding:8px 10px; text-align:left; border:1px solid #cbd5e1; font-size:0.8rem;
+        .btn:active { transform:scale(0.98); background:var(--bg-inset); }
+        .btn.primary {
+            background:var(--accent);
+            border-color:var(--accent);
+            color:#0c0e14;
         }
-        .report-sheet th { background:#f1f5f9; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+        .btn.primary:active { background:var(--accent-hover); }
+
+        /* ========== ALERTAS ========== */
+        .alert-list {
+            display:grid;
+            gap:6px;
+        }
+        .alert-item {
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 10px;
+            background:var(--bg-inset);
+            border:1px solid var(--border);
+            border-radius:var(--radius-sm);
+            font-size:0.75rem;
+            color:var(--text-secondary);
+        }
+        .alert-item .severity {
+            width:8px; height:8px; border-radius:50%;
+            flex-shrink:0;
+        }
+        .severity.high { background:var(--negative); }
+        .severity.medium { background:var(--warning); }
+        .severity.low { background:var(--positive); }
 
         /* ========== RESPONSIVE ========== */
-        @media (min-width: 768px) {
-            .bottom-nav { display:none; }
-            .main-content { padding-bottom:24px; }
-            .tab-bar-desktop {
-                display:flex;
-                gap:6px;
-                padding:8px 20px;
-                border-bottom:1px solid rgba(255,255,255,0.06);
-                background:rgba(15,17,24,0.9);
-                flex-shrink:0;
-            }
+        @media (max-width: 899px) {
+            .main-container { padding:10px; gap:10px; }
+            .panel-body { padding:10px 12px; }
+            .result-grid { grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); }
         }
-        @media (max-width: 767px) {
-            .tab-bar-desktop { display:none; }
-            .app-header { padding:6px 12px; min-height:56px; }
-            .app-title { font-size:1.1rem; }
-            .logo-icon { width:40px; height:40px; font-size:1.2rem; }
-            .card { padding:14px; }
-            .card-value { font-size:1.4rem; }
-            .grid-2, .grid-3, .grid-4 { grid-template-columns:1fr; }
-            .action-text { font-size:1.05rem; }
-            .slider-value { font-size:0.95rem; padding:4px 8px; }
-        }
-        @media (max-width: 380px) {
+        @media (max-width: 480px) {
+            .app-header { padding:6px 10px; min-height:48px; }
+            .logo-icon { width:32px; height:32px; font-size:1rem; }
             .app-title { font-size:0.95rem; }
-            .status-pill { font-size:0.55rem; padding:5px 8px; }
-            .card { padding:10px; }
-            .slider-label { font-size:0.7rem; }
-            .nav-btn { min-width:52px; font-size:0.5rem; }
+            .result-item .value { font-size:0.95rem; }
         }
         @media (orientation: landscape) and (max-width: 900px) {
-            .grid-2 { grid-template-columns:1fr 1fr; }
-            .card-value { font-size:1.2rem; }
-            .main-content { padding:12px; }
-        }
-        @media print {
-            .app-header, .bottom-nav, .tab-bar-desktop, .modal-close, .print-btn, .btn-primary {
-                display:none !important;
-            }
-            .modal-overlay { position:static; background:none; backdrop-filter:none; padding:0; }
-            .modal-content { box-shadow:none; border:none; max-height:none; overflow:visible; padding:0; }
-            .report-sheet { border:1px solid #ccc; }
-            body { background:#fff; }
-            .main-content { display:none; }
+            .main-container { grid-template-columns:1fr 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="app-shell">
-        <!-- HEADER -->
-        <header class="app-header">
-            <div class="logo-container">
-                <div class="logo-icon" id="logoIcon">⚙</div>
-                <div>
-                    <div class="app-title">OptiMill OS</div>
-                    <div class="app-subtitle">Consola Táctil · SAG & Bolas</div>
-                </div>
+    <header class="app-header">
+        <div class="logo-section">
+            <div class="logo-icon">⚙</div>
+            <div>
+                <div class="app-title">OptiMill OS</div>
+                <div class="app-subtitle">Consola Técnica · Molienda SAG & Bolas</div>
             </div>
-            <div class="status-pill">
-                <span class="status-dot"></span>
-                <span>En línea · SAG-01</span>
-            </div>
-        </header>
-
-        <!-- TAB BAR DESKTOP -->
-        <nav class="tab-bar-desktop" id="tabBarDesktop" style="display:none;">
-            <button class="tab-btn active" data-tab="proceso" style="padding:12px 20px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
-                Proceso
-            </button>
-            <button class="tab-btn" data-tab="control" style="padding:12px 20px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
-                Control
-            </button>
-            <button class="tab-btn" data-tab="activo" style="padding:12px 20px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
-                Activo
-            </button>
-            <button class="tab-btn" data-tab="diagnostico" style="padding:12px 20px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
-                Diagnóstico
-            </button>
-            <button class="tab-btn" data-tab="bitacora" style="padding:12px 20px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-weight:600;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;border-radius:10px;transition:var(--transition);min-height:48px;">
-                Bitácora
-            </button>
-        </nav>
-
-        <!-- MAIN CONTENT -->
-        <main class="main-content" id="mainContent">
-            <!-- ===== TAB: PROCESO ===== -->
-            <div class="tab-panel active" id="panel-proceso">
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                                Diagrama de Proceso
-                            </span>
-                            <span class="badge" id="pidStatusBadge">Flujo Normal</span>
-                        </div>
-                        <div class="pid-container">
-                            <svg class="pid-svg" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none;">
-                                <defs>
-                                    <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
-                                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e2a" stroke-width="0.5"/>
-                                    </pattern>
-                                    <linearGradient id="millGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#3a3f4a"/>
-                                        <stop offset="100%" stop-color="#1a1e2a"/>
-                                    </linearGradient>
-                                    <filter id="softGlow">
-                                        <feGaussianBlur stdDeviation="2" result="blur"/>
-                                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                                    </filter>
-                                </defs>
-                                <rect width="800" height="280" fill="url(#gridPattern)"/>
-                                <!-- Ore feed -->
-                                <rect x="30" y="100" width="50" height="30" rx="6" fill="#2a2e3a" stroke="#3a3f4a" stroke-width="2" filter="url(#softGlow)"/>
-                                <text x="55" y="120" fill="#8a90a0" font-size="10" text-anchor="middle" font-family="monospace">ALIM</text>
-                                <line x1="80" y1="115" x2="140" y2="115" stroke="#3a3f4a" stroke-width="3"/>
-                                <!-- SAG Mill -->
-                                <g class="molino-group" style="transform-origin:210px 115px;">
-                                    <circle cx="210" cy="115" r="50" fill="url(#millGrad)" stroke="#5a6070" stroke-width="3"/>
-                                    <circle cx="210" cy="115" r="35" fill="none" stroke="#3a3f4a" stroke-width="2"/>
-                                    <line x1="210" y1="65" x2="210" y2="165" stroke="#3a3f4a" stroke-width="1.5" opacity="0.5"/>
-                                    <line x1="160" y1="115" x2="260" y2="115" stroke="#3a3f4a" stroke-width="1.5" opacity="0.5"/>
-                                    <circle cx="210" cy="115" r="7" fill="#8a90a0"/>
-                                </g>
-                                <text x="210" y="190" fill="#5a6070" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
-                                <!-- Trommel -->
-                                <rect x="270" y="100" width="50" height="30" rx="4" fill="#2a2e3a" stroke="#3a3f4a" stroke-width="2"/>
-                                <text x="295" y="120" fill="#8a90a0" font-size="8" text-anchor="middle" font-family="monospace">TROMMEL</text>
-                                <!-- Pipe 1 -->
-                                <line id="pipe1" x1="320" y1="115" x2="410" y2="115" stroke-width="5" class="flow-path pipe-opt" stroke-linecap="round"/>
-                                <!-- Pump box -->
-                                <rect x="410" y="100" width="60" height="30" rx="6" fill="#2a2e3a" stroke="#3a3f4a" stroke-width="2"/>
-                                <text x="440" y="120" fill="#8a90a0" font-size="9" text-anchor="middle" font-family="monospace">CAJÓN</text>
-                                <!-- Pipe 2 -->
-                                <line id="pipe2" x1="470" y1="115" x2="570" y2="115" stroke-width="5" class="flow-path pipe-opt" stroke-linecap="round"/>
-                                <!-- Cyclones -->
-                                <g>
-                                    <polygon points="570,85 600,85 605,110 570,110" fill="#2a2e3a" stroke="#3a3f4a" stroke-width="2"/>
-                                    <polygon points="605,85 635,85 640,110 605,110" fill="#2a2e3a" stroke="#3a3f4a" stroke-width="2"/>
-                                    <polygon points="635,85 665,85 670,110 635,110" fill="#2a2e3a" stroke="#3a3f4a" stroke-width="2"/>
-                                    <text x="620" y="135" fill="#5a6070" font-size="9" text-anchor="middle" font-family="monospace">CICLONES</text>
-                                </g>
-                                <!-- Overflow -->
-                                <line x1="670" y1="97" x2="730" y2="45" stroke="#3a3f4a" stroke-width="3" stroke-dasharray="6 4" class="flow-path pipe-opt" id="overflowPipe"/>
-                                <text x="710" y="38" fill="#5a6070" font-size="8" text-anchor="middle" font-family="monospace">OVERFLOW</text>
-                                <!-- Underflow -->
-                                <line x1="670" y1="100" x2="740" y2="175" stroke="#3a3f4a" stroke-width="3" stroke-dasharray="6 4" class="flow-path pipe-opt" id="underflowPipe"/>
-                                <text x="720" y="190" fill="#5a6070" font-size="8" text-anchor="middle" font-family="monospace">UNDERFLOW</text>
-                                <!-- Water -->
-                                <line x1="150" y1="175" x2="210" y2="165" stroke="#67e8f9" stroke-width="3" stroke-dasharray="4 4" class="flow-path"/>
-                                <text x="140" y="190" fill="#67e8f9" font-size="9" font-family="monospace">AGUA</text>
-                            </svg>
-                        </div>
-                        <div class="flex-between mt-12">
-                            <span class="text-muted" style="font-size:0.75rem;">Cp: <strong id="pidCpValue" class="card-value cyan" style="font-size:1.1rem;">--%</strong></span>
-                            <span class="text-muted" style="font-size:0.75rem;">RPM: <strong id="pidRpmValue" class="card-value emerald" style="font-size:1.1rem;">--</strong></span>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-                                Métricas en Tiempo Real
-                            </span>
-                            <span class="badge badge-ok" id="stabilityBadge">Estable</span>
-                        </div>
-                        <div class="grid grid-2" style="gap:12px;">
-                            <div>
-                                <div class="slider-label">Tonelaje</div>
-                                <div class="card-value amber" id="metricTph">--</div>
-                                <div class="text-muted" style="font-size:0.65rem;">t/h</div>
-                            </div>
-                            <div>
-                                <div class="slider-label">Agua</div>
-                                <div class="card-value cyan" id="metricWater">--</div>
-                                <div class="text-muted" style="font-size:0.65rem;">m³/h</div>
-                            </div>
-                            <div>
-                                <div class="slider-label">% Sólidos</div>
-                                <div class="card-value emerald" id="metricCp">--</div>
-                                <div class="text-muted" style="font-size:0.65rem;">Cp</div>
-                            </div>
-                            <div>
-                                <div class="slider-label">Potencia</div>
-                                <div class="card-value rose" id="metricPower">--</div>
-                                <div class="text-muted" style="font-size:0.65rem;">MW</div>
-                            </div>
-                        </div>
-                        <div class="mt-12">
-                            <div class="slider-label">Dureza (Wi)</div>
-                            <div class="card-value" style="font-size:1.3rem;" id="metricWi">--</div>
-                            <div class="text-muted" style="font-size:0.65rem;">kWh/t</div>
-                        </div>
-                        <div class="sparkline-container">
-                            <canvas id="sparklineCp" width="400" height="40" style="width:100%;height:40px;"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== TAB: CONTROL ===== -->
-            <div class="tab-panel" id="panel-control">
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m8 7V10m8 11V3"/></svg>
-                                Parámetros
-                            </span>
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Tonelaje (TPH)</span>
-                                <span class="slider-value" id="sliderTphVal">1500</span>
-                            </div>
-                            <input type="range" id="sliderTph" min="500" max="3000" step="10" value="1500" aria-label="Tonelaje Seco">
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Agua (m³/h)</span>
-                                <span class="slider-value" id="sliderWaterVal">400</span>
-                            </div>
-                            <input type="range" id="sliderWater" min="100" max="1500" step="5" value="400" aria-label="Agua de Adición">
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Dureza (W<sub>i</sub>)</span>
-                                <span class="slider-value" id="sliderWiVal">14.0</span>
-                            </div>
-                            <input type="range" id="sliderWi" min="8" max="22" step="0.1" value="14" aria-label="Dureza del Mineral">
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Cp Objetivo (%)</span>
-                                <span class="slider-value" id="sliderCpTargetVal">68</span>
-                            </div>
-                            <input type="range" id="sliderCpTarget" min="55" max="78" step="1" value="68" aria-label="Sólidos Objetivo">
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Potencia (MW)</span>
-                                <span class="slider-value" id="sliderPowerVal">20</span>
-                            </div>
-                            <input type="range" id="sliderPower" min="5" max="35" step="0.5" value="20" aria-label="Potencia Molino">
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                                Respuesta Prescriptiva
-                            </span>
-                            <span class="badge" id="actionBadge">--</span>
-                        </div>
-                        <div id="actionCardContainer">
-                            <div class="text-muted" style="text-align:center;padding:40px 0;font-size:1rem;">
-                                ⚙️ Ajuste parámetros para ver recomendaciones
-                            </div>
-                        </div>
-                        <div class="mt-12">
-                            <div class="card-header">
-                                <span class="card-title">Desviación</span>
-                            </div>
-                            <div id="deviationDetails" class="text-muted" style="font-size:0.8rem;line-height:1.6;">
-                                Sin desviación significativa.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== TAB: ACTIVO ===== -->
-            <div class="tab-panel" id="panel-activo">
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                                Carga de Bolas
-                            </span>
-                        </div>
-                        <div class="slider-group">
-                            <div class="slider-label">
-                                <span>Adición de Bolas (t)</span>
-                                <span class="slider-value" id="sliderBallsVal">50</span>
-                            </div>
-                            <input type="range" id="sliderBalls" min="0" max="200" step="1" value="50" aria-label="Última Adición de Bolas">
-                        </div>
-                        <div class="grid grid-2 mt-12" style="gap:12px;">
-                            <div>
-                                <div class="slider-label">Consumo Energético</div>
-                                <div class="card-value cyan" id="energyConsumption" style="font-size:1.3rem;">--</div>
-                                <div class="text-muted" style="font-size:0.65rem;">kWh/t</div>
-                            </div>
-                            <div>
-                                <div class="slider-label">Adición Recomendada</div>
-                                <div class="card-value amber" id="recommendedBalls" style="font-size:1.3rem;">--</div>
-                                <div class="text-muted" style="font-size:0.65rem;">t/día</div>
-                            </div>
-                        </div>
-                        <div class="mt-12">
-                            <div class="slider-label">Pérdida g/t</div>
-                            <div class="card-value rose" id="ballLoss" style="font-size:1.3rem;">--</div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                                Desgaste de Liners
-                            </span>
-                            <span class="badge" id="linerBadge">Monitoreo</span>
-                        </div>
-                        <div class="chart-container" id="linerChartContainer" style="height:150px;">
-                            <svg class="chart-svg" id="linerChartSvg" viewBox="0 0 400 150" preserveAspectRatio="none">
-                                <path id="linerCurvePath" d="M0,18 L400,132" fill="none" stroke="#fbbf24" stroke-width="3"/>
-                                <rect id="linerCurrentPoint" x="170" y="65" width="12" height="12" fill="#f43f5e" rx="2"/>
-                            </svg>
-                        </div>
-                        <div class="flex-between mt-12">
-                            <span class="text-muted" style="font-size:0.75rem;">Espesor: <strong id="linerThickness" class="card-value emerald" style="font-size:1.1rem;">--</strong> mm</span>
-                            <span class="text-muted" style="font-size:0.75rem;">Cambio: <strong id="linerCountdown" class="card-value amber" style="font-size:1.1rem;">--</strong></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== TAB: DIAGNÓSTICO ===== -->
-            <div class="tab-panel" id="panel-diagnostico">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                            Matriz de Diagnóstico
-                        </span>
-                        <span class="badge badge-warn">Sistema Experto</span>
-                    </div>
-                    <div class="diag-selector" id="diagSelector">
-                        <button class="diag-btn active" data-anomaly="presion">Presión hidrociclones</button>
-                        <button class="diag-btn" data-anomaly="vibracion">Vibración descanso</button>
-                        <button class="diag-btn" data-anomaly="finos">Finos en trommel</button>
-                        <button class="diag-btn" data-anomaly="temperatura">Temp. cojinetes</button>
-                        <button class="diag-btn" data-anomaly="ruido">Ruido anormal</button>
-                    </div>
-                    <div id="diagStepsContainer" class="diag-steps"></div>
-                </div>
-            </div>
-
-            <!-- ===== TAB: BITÁCORA ===== -->
-            <div class="tab-panel" id="panel-bitacora">
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                Registro de Turno
-                            </span>
-                        </div>
-                        <form class="log-form" id="logForm">
-                            <div>
-                                <label class="slider-label">Turno</label>
-                                <select class="log-select" id="logTurno">
-                                    <option value="A">Turno A (06:00 - 14:00)</option>
-                                    <option value="B">Turno B (14:00 - 22:00)</option>
-                                    <option value="C">Turno C (22:00 - 06:00)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="slider-label">Operador</label>
-                                <input type="text" class="log-input" id="logOperador" placeholder="Nombre del operador" required>
-                            </div>
-                            <div>
-                                <label class="slider-label">Novedades</label>
-                                <textarea class="log-textarea" id="logNovedades" placeholder="Describa novedades operativas..."></textarea>
-                            </div>
-                            <div>
-                                <label class="slider-label">Alertas</label>
-                                <textarea class="log-textarea" id="logAlertas" placeholder="Registre alertas activas..."></textarea>
-                            </div>
-                            <button type="submit" class="btn-primary" id="generateReportBtn">
-                                ⚡ Generar Informe
-                            </button>
-                        </form>
-                    </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                                Resumen
-                            </span>
-                        </div>
-                        <div id="systemSummary" class="text-muted" style="font-size:0.85rem;line-height:1.8;">
-                            <p><strong>Estado:</strong> <span class="badge badge-ok">Operativo</span></p>
-                            <p><strong>Tonelaje:</strong> <span id="summaryTph">--</span> t/h</p>
-                            <p><strong>% Sólidos:</strong> <span id="summaryCp">--</span>%</p>
-                            <p><strong>Potencia:</strong> <span id="summaryPower">--</span> MW</p>
-                            <p><strong>Dureza:</strong> <span id="summaryWi">--</span> kWh/t</p>
-                            <p><strong>Cambio liners:</strong> <span id="summaryLiner">--</span></p>
-                            <p><strong>Bolas:</strong> <span id="summaryBalls">--</span> t</p>
-                        </div>
-                        <div class="mt-12">
-                            <div class="card-header">
-                                <span class="card-title">Alertas Activas</span>
-                            </div>
-                            <div id="activeAlerts" class="text-muted" style="font-size:0.85rem;">
-                                <p>✅ Sin alertas</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- NAVEGACIÓN INFERIOR -->
-        <nav class="bottom-nav" id="bottomNav">
-            <button class="nav-btn active" data-tab="proceso">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>
-                Proceso
-            </button>
-            <button class="nav-btn" data-tab="control">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m8 7V10m8 11V3"/></svg>
-                Control
-                <span class="nav-badge" id="controlNavBadge" style="display:none;">1</span>
-            </button>
-            <button class="nav-btn" data-tab="activo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Activo
-            </button>
-            <button class="nav-btn" data-tab="diagnostico">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-                Diagnóstico
-            </button>
-            <button class="nav-btn" data-tab="bitacora">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Bitácora
-            </button>
-        </nav>
-    </div>
-
-    <!-- MODAL -->
-    <div class="modal-overlay" id="reportModal" style="display:none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="font-size:1.2rem;font-weight:700;color:var(--text-0);">📄 Informe de Turno</h3>
-                <button class="modal-close" id="closeModalBtn">&times;</button>
-            </div>
-            <div id="reportSheetContainer"></div>
-            <button class="btn-primary print-btn" id="printReportBtn" style="margin-top:12px;">
-                🖨️ Imprimir / PDF
-            </button>
         </div>
-    </div>
+        <div class="status-indicator">
+            <span class="dot"></span>
+            <span>Operativo</span>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- COLUMNA IZQUIERDA: CONTROLES -->
+        <div class="panel" id="controlPanel">
+            <div class="panel-header">
+                <span class="panel-title">Parámetros de Entrada</span>
+            </div>
+            <div class="panel-body">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Tonelaje Seco</span>
+                        <span class="control-value" id="valTph">1500</span>
+                    </div>
+                    <input type="range" id="inTph" min="500" max="3000" step="10" value="1500">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Agua de Adición</span>
+                        <span class="control-value" id="valWater">400</span>
+                    </div>
+                    <input type="range" id="inWater" min="100" max="1500" step="5" value="400">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Work Index (W<sub>i</sub>)</span>
+                        <span class="control-value" id="valWi">14.0</span>
+                    </div>
+                    <input type="range" id="inWi" min="8" max="22" step="0.1" value="14">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Cp Objetivo (%)</span>
+                        <span class="control-value" id="valCpTarget">68</span>
+                    </div>
+                    <input type="range" id="inCpTarget" min="55" max="78" step="1" value="68">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Potencia Molino (MW)</span>
+                        <span class="control-value" id="valPower">20</span>
+                    </div>
+                    <input type="range" id="inPower" min="5" max="35" step="0.5" value="20">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Adición de Bolas (t)</span>
+                        <span class="control-value" id="valBalls">50</span>
+                    </div>
+                    <input type="range" id="inBalls" min="0" max="200" step="1" value="50">
+                </div>
+
+                <div class="action-box optimal" id="actionBox">
+                    <div class="action-title">Estado del Circuito</div>
+                    <div class="action-message" id="actionMessage">OPERACIÓN ÓPTIMA</div>
+                    <div class="action-detail" id="actionDetail">Densidad dentro del rango objetivo.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA CENTRAL: RESULTADOS Y P&ID -->
+        <div style="display:grid; gap:16px;">
+            <!-- P&ID -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Diagrama de Proceso</span>
+                    <span class="panel-title" style="color:var(--text-muted);" id="pidStatus">Flujo Normal</span>
+                </div>
+                <div class="panel-body">
+                    <div class="pid-container">
+                        <svg class="pid-svg" viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <pattern id="gridPid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e2a" stroke-width="0.5"/>
+                                </pattern>
+                            </defs>
+                            <rect width="800" height="240" fill="url(#gridPid)"/>
+                            <!-- Alimentación -->
+                            <rect x="30" y="95" width="45" height="26" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                            <text x="52" y="112" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
+                            <line x1="75" y1="108" x2="130" y2="108" stroke="#2a3040" stroke-width="2"/>
+                            <!-- Molino SAG -->
+                            <g id="millGroup" style="transform-origin:190px 108px;">
+                                <circle cx="190" cy="108" r="42" fill="#1a1e2a" stroke="#3a3f4a" stroke-width="2"/>
+                                <circle cx="190" cy="108" r="28" fill="none" stroke="#2a3040" stroke-width="1.5"/>
+                                <line x1="190" y1="66" x2="190" y2="150" stroke="#2a3040" stroke-width="1" opacity="0.5"/>
+                                <line x1="148" y1="108" x2="232" y2="108" stroke="#2a3040" stroke-width="1" opacity="0.5"/>
+                                <circle cx="190" cy="108" r="6" fill="#6b7280"/>
+                            </g>
+                            <text x="190" y="170" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">SAG</text>
+                            <!-- Trommel -->
+                            <rect x="240" y="95" width="45" height="26" rx="3" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                            <text x="262" y="112" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
+                            <!-- Tubería 1 -->
+                            <line id="pipe1" x1="285" y1="108" x2="370" y2="108" stroke="#4ade80" stroke-width="4" class="flow-line" stroke-dasharray="10 6"/>
+                            <!-- Cajón -->
+                            <rect x="370" y="95" width="50" height="26" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                            <text x="395" y="112" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
+                            <!-- Tubería 2 -->
+                            <line id="pipe2" x1="420" y1="108" x2="510" y2="108" stroke="#4ade80" stroke-width="4" class="flow-line" stroke-dasharray="10 6"/>
+                            <!-- Ciclones -->
+                            <polygon points="510,82 540,82 545,105 510,105" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                            <polygon points="545,82 575,82 580,105 545,105" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                            <polygon points="575,82 605,82 610,105 575,105" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                            <text x="560" y="125" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CICLONES</text>
+                            <!-- Overflow -->
+                            <line id="overflow" x1="610" y1="93" x2="670" y2="48" stroke="#4ade80" stroke-width="3" class="flow-line" stroke-dasharray="8 5"/>
+                            <text x="650" y="42" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
+                            <!-- Underflow -->
+                            <line id="underflow" x1="610" y1="96" x2="680" y2="165" stroke="#4ade80" stroke-width="3" class="flow-line" stroke-dasharray="8 5"/>
+                            <text x="660" y="180" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
+                            <!-- Agua -->
+                            <line x1="130" y1="165" x2="190" y2="155" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/>
+                            <text x="120" y="178" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resultados Técnicos -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Resultados del Cálculo</span>
+                </div>
+                <div class="panel-body">
+                    <div class="result-grid" id="resultsGrid">
+                        <div class="result-item">
+                            <div class="label">% Sólidos</div>
+                            <div class="value" id="resCp">--</div>
+                            <div class="unit">%</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Consumo Específico</div>
+                            <div class="value" id="resEcs">--</div>
+                            <div class="unit">kWh/t</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">F80 Estimado</div>
+                            <div class="value" id="resF80">--</div>
+                            <div class="unit">µm</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">P80 Estimado</div>
+                            <div class="value" id="resP80">--</div>
+                            <div class="unit">µm</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Ratio de Reducción</div>
+                            <div class="value" id="resRR">--</div>
+                            <div class="unit">F80/P80</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Adición Bolas</div>
+                            <div class="value" id="resBalls">--</div>
+                            <div class="unit">t/día</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Pérdida Bolas</div>
+                            <div class="value" id="resLoss">--</div>
+                            <div class="unit">g/t</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Densidad Pulpa</div>
+                            <div class="value" id="resDensity">--</div>
+                            <div class="unit">kg/m³</div>
+                        </div>
+                    </div>
+
+                    <!-- Info técnica expandible -->
+                    <div class="info-section">
+                        <button class="info-toggle" id="toggleFormulas">
+                            <span>Fórmulas y Cálculos</span>
+                            <span class="chevron">▼</span>
+                        </button>
+                        <div class="info-content" id="formulasContent">
+                            <p><strong>% Sólidos (Cp):</strong> Cp = M_sólidos / (M_sólidos + M_agua) × 100</p>
+                            <p><strong>Consumo Específico:</strong> E = P / TPH (kWh/t)</p>
+                            <p><strong>F80 Estimado:</strong> F80 ≈ 55 / √(W_i) (mm) → convertido a µm</p>
+                            <p><strong>P80 Estimado:</strong> P80 ≈ F80 / (E × 10)^0.25 (µm)</p>
+                            <p><strong>Densidad Pulpa:</strong> ρ = (M_sólidos + M_agua) / (V_sólidos + V_agua)</p>
+                            <p><strong>Adición de Bolas:</strong> Consumo = E × W_i × 0.3 + 3 (g/t)</p>
+                            <p><strong>Work Index (Bond):</strong> W_i = 10 / √(P80) - 10 / √(F80) (kWh/t)</p>
+                        </div>
+                    </div>
+                    <div class="info-section" style="margin-top:4px;">
+                        <button class="info-toggle" id="toggleParams">
+                            <span>Parámetros de Referencia</span>
+                            <span class="chevron">▼</span>
+                        </button>
+                        <div class="info-content" id="paramsContent">
+                            <table class="data-table">
+                                <tr><th>Parámetro</th><th>Rango Óptimo</th><th>Unidad</th></tr>
+                                <tr><td>% Sólidos (Cp)</td><td class="highlight">65 - 70</td><td>%</td></tr>
+                                <tr><td>F80 (alimentación)</td><td class="highlight">50 - 150</td><td>mm</td></tr>
+                                <tr><td>P80 (producto)</td><td class="highlight">150 - 300</td><td>µm</td></tr>
+                                <tr><td>Consumo Específico</td><td class="highlight">7 - 15</td><td>kWh/t</td></tr>
+                                <tr><td>Work Index</td><td class="highlight">10 - 16</td><td>kWh/t</td></tr>
+                                <tr><td>Densidad Pulpa</td><td class="highlight">1600 - 1800</td><td>kg/m³</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: DIAGNÓSTICO Y BITÁCORA -->
+        <div style="display:grid; gap:16px;">
+            <!-- Diagnóstico -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Diagnóstico Rápido</span>
+                </div>
+                <div class="panel-body">
+                    <select id="diagSelect" style="width:100%; padding:8px; background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; margin-bottom:8px; min-height:40px;">
+                        <option value="presion">Presión hidrociclones</option>
+                        <option value="vibracion">Vibración descanso</option>
+                        <option value="finos">Finos en trommel</option>
+                        <option value="temperatura">Temp. cojinetes</option>
+                        <option value="ruido">Ruido anormal</option>
+                    </select>
+                    <div id="diagOutput" style="font-size:0.78rem; line-height:1.6; color:var(--text-secondary);">
+                        <!-- Contenido dinámico -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bitácora -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Bitácora de Turno</span>
+                </div>
+                <div class="panel-body">
+                    <form id="logForm" style="display:grid; gap:8px;">
+                        <input type="text" id="logOperador" placeholder="Operador" style="padding:8px; background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; min-height:40px;">
+                        <textarea id="logNovedades" placeholder="Novedades..." rows="2" style="padding:8px; background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; resize:vertical;"></textarea>
+                        <button type="submit" class="btn primary">Registrar Turno</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Alertas del Sistema</span>
+                </div>
+                <div class="panel-body">
+                    <div class="alert-list" id="alertList">
+                        <div class="alert-item">
+                            <span class="severity low"></span>
+                            <span>Sin alertas activas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
-        // ========== JAVASCRIPT COMPLETO ==========
-        // (Mismo código JavaScript de la versión anterior, adaptado a las nuevas clases)
         (function() {
             'use strict';
-            const STORAGE_KEY = 'optiMillState_v5';
+            // ========== ESTADO ==========
             const state = {
                 tph: 1500, water: 400, wi: 14.0, cpTarget: 68, power: 20,
-                ballsAddition: 50, linerHoursRemaining: 720, cpHistory: []
+                ballsAddition: 50, linerHoursRemaining: 720
             };
+            const STORAGE_KEY = 'optiMill_v6';
             function loadState() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
-            function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ tph:state.tph, water:state.water, wi:state.wi, cpTarget:state.cpTarget, power:state.power, ballsAddition:state.ballsAddition, linerHoursRemaining:state.linerHoursRemaining })); } catch(e){} }
+            function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
             loadState();
 
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            const sliderTph = $('#sliderTph'), sliderWater = $('#sliderWater'), sliderWi = $('#sliderWi');
-            const sliderCpTarget = $('#sliderCpTarget'), sliderPower = $('#sliderPower'), sliderBalls = $('#sliderBalls');
-            const sliderTphVal = $('#sliderTphVal'), sliderWaterVal = $('#sliderWaterVal'), sliderWiVal = $('#sliderWiVal');
-            const sliderCpTargetVal = $('#sliderCpTargetVal'), sliderPowerVal = $('#sliderPowerVal'), sliderBallsVal = $('#sliderBallsVal');
-            const metricTph = $('#metricTph'), metricWater = $('#metricWater'), metricCp = $('#metricCp');
-            const metricPower = $('#metricPower'), metricWi = $('#metricWi');
-            const pidCpValue = $('#pidCpValue'), pidRpmValue = $('#pidRpmValue'), pidStatusBadge = $('#pidStatusBadge');
-            const pipe1 = $('#pipe1'), pipe2 = $('#pipe2'), overflowPipe = $('#overflowPipe'), underflowPipe = $('#underflowPipe');
-            const actionCardContainer = $('#actionCardContainer'), actionBadge = $('#actionBadge');
-            const deviationDetails = $('#deviationDetails'), controlNavBadge = $('#controlNavBadge');
-            const energyConsumption = $('#energyConsumption'), recommendedBalls = $('#recommendedBalls'), ballLoss = $('#ballLoss');
-            const linerThicknessDisplay = $('#linerThickness'), linerCountdown = $('#linerCountdown'), linerBadge = $('#linerBadge');
-            const linerCurvePath = $('#linerCurvePath'), linerCurrentPoint = $('#linerCurrentPoint');
-            const summaryTph = $('#summaryTph'), summaryCp = $('#summaryCp'), summaryPower = $('#summaryPower');
-            const summaryWi = $('#summaryWi'), summaryLiner = $('#summaryLiner'), summaryBalls = $('#summaryBalls');
-            const activeAlerts = $('#activeAlerts');
-            const sparklineCanvas = $('#sparklineCp');
-            const sparklineCtx = sparklineCanvas ? sparklineCanvas.getContext('2d') : null;
+            
+            // Inputs
+            const inTph = $('#inTph'), inWater = $('#inWater'), inWi = $('#inWi'), inCpTarget = $('#inCpTarget'), inPower = $('#inPower'), inBalls = $('#inBalls');
+            const valTph = $('#valTph'), valWater = $('#valWater'), valWi = $('#valWi'), valCpTarget = $('#valCpTarget'), valPower = $('#valPower'), valBalls = $('#valBalls');
+            
+            // Results
+            const resCp = $('#resCp'), resEcs = $('#resEcs'), resF80 = $('#resF80'), resP80 = $('#resP80'), resRR = $('#resRR'), resBalls = $('#resBalls'), resLoss = $('#resLoss'), resDensity = $('#resDensity');
+            
+            // Action
+            const actionBox = $('#actionBox'), actionMessage = $('#actionMessage'), actionDetail = $('#actionDetail');
+            const pidStatus = $('#pidStatus');
+            const pipe1 = $('#pipe1'), pipe2 = $('#pipe2'), overflow = $('#overflow'), underflow = $('#underflow');
 
-            function animateNumber(el, target, decimals=0, suffix='') {
-                const current = parseFloat(el.textContent.replace(/[^\d.-]/g,'')) || 0;
-                const duration = 400, start = performance.now();
-                function step(now) {
-                    const p = Math.min((now-start)/duration, 1);
-                    const eased = 1 - Math.pow(1-p, 3);
-                    const val = current + (target-current)*eased;
-                    el.textContent = (decimals>0 ? val.toFixed(decimals) : Math.round(val)) + suffix;
-                    if (p < 1) requestAnimationFrame(step);
-                    else el.textContent = (decimals>0 ? target.toFixed(decimals) : Math.round(target)) + suffix;
-                }
-                requestAnimationFrame(step);
-            }
-
+            // ========== FUNCIONES DE CÁLCULO ==========
             function calculateCp(tph, water) {
-                const solidsMass = tph * 1000;
+                const solidsMass = tph * 1000; // kg/h
                 return (solidsMass / (solidsMass + water * 1000)) * 100;
             }
 
-            function updatePid(cp) {
-                let pc = 'pipe-opt', st = 'Flujo Normal', bc = 'badge-ok';
-                if (cp < 60) { pc='pipe-low'; st='Diluida'; bc='badge-warn'; }
-                else if (cp > 72) { pc='pipe-high'; st='Sobredensificada'; bc='badge-danger'; }
-                else if (cp >= 65 && cp <= 70) { pc='pipe-opt'; st='Óptima'; bc='badge-ok'; }
-                else if (cp >= 60 && cp < 65) { pc='pipe-low'; st='Diluida'; bc='badge-warn'; }
-                else if (cp > 70 && cp <= 72) { pc='pipe-high'; st='Densa'; bc='badge-warn'; }
-                pipe1.className.baseVal = `flow-path ${pc}`;
-                pipe2.className.baseVal = `flow-path ${pc}`;
-                overflowPipe.className.baseVal = `flow-path ${pc}`;
-                underflowPipe.className.baseVal = `flow-path ${pc}`;
-                pidStatusBadge.className = `badge ${bc}`;
-                pidStatusBadge.textContent = st;
-                const rpm = Math.min(20, (state.power / state.tph) * 100);
-                pidRpmValue.textContent = rpm.toFixed(1);
-                pidCpValue.textContent = cp.toFixed(1) + '%';
+            function calculateDensity(tph, water) {
+                const solidsMass = tph * 1000; // kg/h
+                const solidsVolume = solidsMass / 2700; // m³/h (densidad mineral 2.7 t/m³)
+                const waterVolume = water; // m³/h
+                return (solidsMass + water * 1000) / (solidsVolume + waterVolume); // kg/m³
             }
 
-            function calculateAction() {
-                const currentCp = calculateCp(state.tph, state.water);
-                const deviation = currentCp - state.cpTarget;
-                let html = '', bc = 'badge-ok', bt = 'ÓPTIMO', hasAlert = false;
-                if (Math.abs(deviation) < 0.5) {
-                    html = `<div class="action-card" style="border-color:rgba(52,211,153,0.4);box-shadow:0 0 35px rgba(52,211,153,0.3);">
-                        <div class="action-label" style="color:var(--emerald-bright);">Estado</div>
-                        <div class="action-text" style="color:var(--emerald-bright);text-shadow:0 0 30px rgba(52,211,153,0.5);">✅ OPERACIÓN ÓPTIMA</div>
-                        <div class="action-subtext">Densidad dentro del rango objetivo.</div></div>`;
-                } else if (deviation > 0) {
-                    const sm = state.tph * 1000;
-                    const wnm = sm * (100/state.cpTarget - 1);
-                    const wnm3 = wnm / 1000;
-                    const add = Math.max(0, wnm3 - state.water);
-                    html = `<div class="action-card">
-                        <div class="action-label">Acción Prioritaria</div>
-                        <div class="action-text">⚠️ Abrir Válvula de Agua +${add.toFixed(1)} m³/h</div>
-                        <div class="action-subtext">Cp actual ${currentCp.toFixed(1)}% > Objetivo ${state.cpTarget}%</div></div>`;
-                    bc = 'badge-danger'; bt = 'SOBREDENSIFICADA'; hasAlert = true;
-                } else {
-                    const sm = state.tph * 1000;
-                    const wnm = sm * (100/state.cpTarget - 1);
-                    const wnm3 = wnm / 1000;
-                    const red = Math.max(0, state.water - wnm3);
-                    html = `<div class="action-card" style="border-color:rgba(34,211,238,0.4);box-shadow:0 0 35px rgba(34,211,238,0.3);">
-                        <div class="action-label" style="color:var(--cyan-bright);">Acción Prioritaria</div>
-                        <div class="action-text" style="color:var(--cyan-bright);text-shadow:0 0 30px rgba(34,211,238,0.5);">⬇️ Reducir Agua -${red.toFixed(1)} m³/h</div>
-                        <div class="action-subtext">Cp actual ${currentCp.toFixed(1)}% < Objetivo ${state.cpTarget}%</div></div>`;
-                    bc = 'badge-warn'; bt = 'DILUIDA'; hasAlert = true;
-                }
-                actionCardContainer.innerHTML = html;
-                actionBadge.className = `badge ${bc}`;
-                actionBadge.textContent = bt;
-                controlNavBadge.style.display = hasAlert ? 'flex' : 'none';
-                deviationDetails.innerHTML = `
-                    <p><strong>Cp:</strong> ${currentCp.toFixed(1)}% | <strong>Objetivo:</strong> ${state.cpTarget}% | <strong>Desv:</strong> ${deviation>=0?'+':''}${deviation.toFixed(1)}%</p>
-                    <p><strong>Consumo:</strong> ${((state.power*1000)/state.tph).toFixed(2)} kWh/t | <strong>Agua/Sólidos:</strong> ${(state.water/state.tph).toFixed(3)} m³/t</p>`;
-                activeAlerts.innerHTML = hasAlert ? `<p class="badge badge-danger">⚠️ ${bt}</p>` : '<p>✅ Sin alertas</p>';
-                return { currentCp, deviation };
+            function calculateEcs(power, tph) {
+                return (power * 1000) / tph; // kWh/t
             }
 
-            function updateActivo() {
-                const e = (state.power*1000)/state.tph;
-                energyConsumption.textContent = e.toFixed(2) + ' kWh/t';
-                const bg = e * state.wi * 0.3 + 3;
-                const btd = (bg * state.tph * 24) / 1000000;
-                recommendedBalls.textContent = btd.toFixed(1) + ' t/día';
-                ballLoss.textContent = bg.toFixed(1) + ' g/t';
-                const hpc = 1500, he = hpc - state.linerHoursRemaining, it = 90;
-                const ct = Math.max(0, it * (1 - he/hpc));
-                linerThicknessDisplay.textContent = ct.toFixed(1) + ' mm';
-                const d = Math.floor(state.linerHoursRemaining/24), h = Math.floor(state.linerHoursRemaining%24);
-                linerCountdown.textContent = `${d}d ${h}h`;
-                if (ct < 20) { linerBadge.className='badge badge-danger'; linerBadge.textContent='Cambio Urgente'; }
-                else if (ct < 40) { linerBadge.className='badge badge-warn'; linerBadge.textContent='Cambio Próximo'; }
-                else { linerBadge.className='badge badge-ok'; linerBadge.textContent='Monitoreo'; }
-                const sw=400, sh=150;
-                const x=(he/hpc)*sw, y=sh-(ct/it)*sh;
-                linerCurvePath.setAttribute('d', `M0,${sh*0.12} L${sw},${sh*0.88}`);
-                linerCurrentPoint.setAttribute('x', x-5);
-                linerCurrentPoint.setAttribute('y', y-5);
-                linerCurrentPoint.setAttribute('fill', ct<20?'#f43f5e':ct<40?'#fbbf24':'#34d399');
-                summaryTph.textContent = state.tph.toFixed(0);
-                summaryCp.textContent = calculateCp(state.tph, state.water).toFixed(1);
-                summaryPower.textContent = state.power.toFixed(1);
-                summaryWi.textContent = state.wi.toFixed(1);
-                summaryLiner.textContent = `${d}d ${h}h`;
-                summaryBalls.textContent = state.ballsAddition.toFixed(0);
+            function estimateF80(wi) {
+                return 55 / Math.sqrt(wi); // mm
             }
 
-            function drawSparkline() {
-                if (!sparklineCtx) return;
-                const w = sparklineCanvas.width, h = sparklineCanvas.height;
-                sparklineCtx.clearRect(0,0,w,h);
-                if (state.cpHistory.length < 2) return;
-                const mn = Math.min(...state.cpHistory), mx = Math.max(...state.cpHistory);
-                const rng = mx-mn || 1;
-                sparklineCtx.beginPath();
-                sparklineCtx.strokeStyle = '#34d399';
-                sparklineCtx.lineWidth = 2.5;
-                sparklineCtx.shadowColor = '#34d399';
-                sparklineCtx.shadowBlur = 8;
-                state.cpHistory.forEach((v,i) => {
-                    const x = (i/(state.cpHistory.length-1))*w;
-                    const y = h - ((v-mn)/rng)*(h-8) - 4;
-                    i===0 ? sparklineCtx.moveTo(x,y) : sparklineCtx.lineTo(x,y);
-                });
-                sparklineCtx.stroke();
-                sparklineCtx.shadowBlur = 0;
+            function estimateP80(f80_mm, ecs) {
+                return f80_mm * 1000 / Math.pow(ecs * 10, 0.25); // µm
             }
 
+            function calculateBallConsumption(ecs, wi) {
+                return ecs * wi * 0.3 + 3; // g/t
+            }
+
+            // ========== ACTUALIZACIÓN ==========
             function updateAll() {
-                const cp = calculateCp(state.tph, state.water);
-                state.cpHistory.push(cp);
-                if (state.cpHistory.length > 60) state.cpHistory.shift();
-                animateNumber(metricTph, state.tph, 0, '');
-                animateNumber(metricWater, state.water, 0, '');
-                animateNumber(metricCp, cp, 1, '%');
-                animateNumber(metricPower, state.power, 1, '');
-                animateNumber(metricWi, state.wi, 1, '');
-                sliderTphVal.textContent = state.tph;
-                sliderWaterVal.textContent = state.water;
-                sliderWiVal.textContent = state.wi.toFixed(1);
-                sliderCpTargetVal.textContent = state.cpTarget;
-                sliderPowerVal.textContent = state.power;
-                sliderBallsVal.textContent = state.ballsAddition;
-                calculateAction();
-                updatePid(cp);
-                updateActivo();
-                drawSparkline();
+                const tph = state.tph, water = state.water, wi = state.wi, cpTarget = state.cpTarget, power = state.power;
+                const cp = calculateCp(tph, water);
+                const ecs = calculateEcs(power, tph);
+                const f80_mm = estimateF80(wi);
+                const p80_um = estimateP80(f80_mm, ecs);
+                const rr = (f80_mm * 1000) / p80_um;
+                const ballsConsumption = calculateBallConsumption(ecs, wi);
+                const ballsPerDay = (ballsConsumption * tph * 24) / 1000000;
+                const density = calculateDensity(tph, water);
+                const deviation = cp - cpTarget;
+
+                // Actualizar valores mostrados
+                valTph.textContent = tph;
+                valWater.textContent = water;
+                valWi.textContent = wi.toFixed(1);
+                valCpTarget.textContent = cpTarget;
+                valPower.textContent = power;
+                valBalls.textContent = state.ballsAddition;
+
+                // Resultados
+                resCp.textContent = cp.toFixed(1);
+                resEcs.textContent = ecs.toFixed(2);
+                resF80.textContent = (f80_mm * 1000).toFixed(0);
+                resP80.textContent = p80_um.toFixed(0);
+                resRR.textContent = rr.toFixed(2);
+                resBalls.textContent = ballsPerDay.toFixed(1);
+                resLoss.textContent = ballsConsumption.toFixed(1);
+                resDensity.textContent = density.toFixed(0);
+
+                // Acción
+                if (Math.abs(deviation) < 0.5) {
+                    actionBox.className = 'action-box optimal';
+                    actionMessage.textContent = 'OPERACIÓN ÓPTIMA';
+                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% ≈ Objetivo ${cpTarget}%`;
+                    pidStatus.textContent = 'Óptima';
+                } else if (deviation > 0) {
+                    const sm = tph * 1000;
+                    const wnm = sm * (100/cpTarget - 1);
+                    const add = Math.max(0, wnm/1000 - water);
+                    actionBox.className = 'action-box';
+                    actionMessage.textContent = `ABRIR AGUA +${add.toFixed(1)} m³/h`;
+                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% > Objetivo ${cpTarget}% (sobredensificada)`;
+                    pidStatus.textContent = 'Sobredensificada';
+                } else {
+                    const sm = tph * 1000;
+                    const wnm = sm * (100/cpTarget - 1);
+                    const red = Math.max(0, water - wnm/1000);
+                    actionBox.className = 'action-box warning';
+                    actionMessage.textContent = `REDUCIR AGUA -${red.toFixed(1)} m³/h`;
+                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% < Objetivo ${cpTarget}% (diluida)`;
+                    pidStatus.textContent = 'Diluida';
+                }
+
+                // Color de tuberías
+                const color = cp < 60 ? '#60a5fa' : (cp > 72 ? '#f87171' : '#4ade80');
+                pipe1.setAttribute('stroke', color);
+                pipe2.setAttribute('stroke', color);
+                overflow.setAttribute('stroke', color);
+                underflow.setAttribute('stroke', color);
+
+                // Alertas
+                updateAlerts(cp, ecs, deviation);
                 saveState();
             }
 
-            [sliderTph, sliderWater, sliderWi, sliderCpTarget, sliderPower, sliderBalls].forEach(slider => {
-                slider.addEventListener('input', (e) => {
-                    const id = e.target.id;
-                    const val = parseFloat(e.target.value);
-                    if (id === 'sliderTph') state.tph = val;
-                    else if (id === 'sliderWater') state.water = val;
-                    else if (id === 'sliderWi') state.wi = val;
-                    else if (id === 'sliderCpTarget') state.cpTarget = val;
-                    else if (id === 'sliderPower') state.power = val;
-                    else if (id === 'sliderBalls') state.ballsAddition = val;
+            function updateAlerts(cp, ecs, deviation) {
+                const alertList = $('#alertList');
+                let html = '';
+                if (Math.abs(deviation) > 2) {
+                    html += `<div class="alert-item"><span class="severity high"></span><span>Desviación Cp: ${deviation.toFixed(1)}%</span></div>`;
+                }
+                if (ecs > 18) {
+                    html += `<div class="alert-item"><span class="severity medium"></span><span>Consumo específico alto: ${ecs.toFixed(1)} kWh/t</span></div>`;
+                }
+                if (cp > 72) {
+                    html += `<div class="alert-item"><span class="severity high"></span><span>Pulpa sobredensificada (${cp.toFixed(1)}%)</span></div>`;
+                }
+                if (cp < 58) {
+                    html += `<div class="alert-item"><span class="severity medium"></span><span>Pulpa muy diluida (${cp.toFixed(1)}%)</span></div>`;
+                }
+                if (html === '') {
+                    html = `<div class="alert-item"><span class="severity low"></span><span>Sin alertas activas</span></div>`;
+                }
+                alertList.innerHTML = html;
+            }
+
+            // ========== EVENTOS ==========
+            [inTph, inWater, inWi, inCpTarget, inPower, inBalls].forEach(input => {
+                input.addEventListener('input', () => {
+                    state.tph = parseFloat(inTph.value);
+                    state.water = parseFloat(inWater.value);
+                    state.wi = parseFloat(inWi.value);
+                    state.cpTarget = parseFloat(inCpTarget.value);
+                    state.power = parseFloat(inPower.value);
+                    state.ballsAddition = parseFloat(inBalls.value);
                     updateAll();
                 });
             });
 
-            function switchTab(tabId) {
-                $$('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
-                $$('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
-                $$('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById(`panel-${tabId}`).classList.add('active');
-                document.getElementById('mainContent').scrollTop = 0;
-            }
-
-            $$('.nav-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab));
-            });
-            $$('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab));
-            });
-
-            const diagnosticData = {
-                presion: { steps: [
-                    { title:'Causa Raíz', text:'Obstrucción en entrada de ciclón o falla en bomba de alimentación.' },
-                    { title:'Acción Sala', text:'Verificar curva de bomba y presión de descarga. Ajustar VFD.' },
-                    { title:'Verificación Terreno', text:'Inspeccionar tubería, buscar fugas o acumulación de sólidos.' }
-                ]},
-                vibracion: { steps: [
-                    { title:'Causa Raíz', text:'Desgaste en pads del descanso o desalineación del molino.' },
-                    { title:'Acción Sala', text:'Monitorear vibración. Reducir tonelaje si excede umbral.' },
-                    { title:'Verificación Terreno', text:'Inspección termográfica. Revisar lubricación y pernos.' }
-                ]},
-                finos: { steps: [
-                    { title:'Causa Raíz', text:'Alta generación de finos por dureza o trommel obstruido.' },
-                    { title:'Acción Sala', text:'Aumentar agua de lavado. Reducir tonelaje si es necesario.' },
-                    { title:'Verificación Terreno', text:'Inspeccionar mallas del trommel. Limpiar descarga.' }
-                ]},
-                temperatura: { steps: [
-                    { title:'Causa Raíz', text:'Falla en lubricación o carga excesiva.' },
-                    { title:'Acción Sala', text:'Verificar flujo de aceite. Reducir carga si >85°C.' },
-                    { title:'Verificación Terreno', text:'Inspeccionar sistema de lubricación. Medir temperatura.' }
-                ]},
-                ruido: { steps: [
-                    { title:'Causa Raíz', text:'Bolas rotas, desgaste de liners o material extraño.' },
-                    { title:'Acción Sala', text:'Monitorear espectro de vibración. Preparar parada si es crítico.' },
-                    { title:'Verificación Terreno', text:'Inspección auditiva. Revisar descarga y engranajes.' }
-                ]}
+            // ========== DIAGNÓSTICO ==========
+            const diagData = {
+                presion: { text: 'Obstrucción en ciclón o falla en bomba. Verificar presión de descarga y válvulas.', severity: 'high' },
+                vibracion: { text: 'Desgaste en pads del descanso o desalineación. Revisar lubricación.', severity: 'medium' },
+                finos: { text: 'Alta generación de finos. Aumentar agua de lavado y revisar mallas.', severity: 'medium' },
+                temperatura: { text: 'Falla en lubricación o carga excesiva. Verificar aceite y reducir carga.', severity: 'high' },
+                ruido: { text: 'Bolas rotas o desgaste de liners. Inspección auditiva requerida.', severity: 'medium' }
             };
-            const diagSelector = $('#diagSelector');
-            const diagStepsContainer = $('#diagStepsContainer');
-            function renderDiag(key) {
-                const data = diagnosticData[key];
-                if (!data) return;
-                diagStepsContainer.innerHTML = data.steps.map((s,i) => `
-                    <div class="diag-step">
-                        <div class="diag-step-number">${i+1}</div>
-                        <div class="diag-step-content">
-                            <div class="diag-step-title">${s.title}</div>
-                            <div class="diag-step-text">${s.text}</div>
-                        </div>
-                    </div>`).join('');
-            }
-            diagSelector.addEventListener('click', (e) => {
-                const btn = e.target.closest('.diag-btn');
-                if (btn) {
-                    $$('.diag-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    renderDiag(btn.dataset.anomaly);
+            const diagSelect = $('#diagSelect');
+            const diagOutput = $('#diagOutput');
+            function renderDiag() {
+                const key = diagSelect.value;
+                const data = diagData[key];
+                if (data) {
+                    diagOutput.innerHTML = `<strong style="color:var(--text-primary);">${data.text}</strong>`;
                 }
-            });
-            renderDiag('presion');
+            }
+            diagSelect.addEventListener('change', renderDiag);
+            renderDiag();
 
+            // ========== INFO EXPANDIBLE ==========
+            function setupToggle(toggleId, contentId) {
+                const toggle = $(toggleId);
+                const content = $(contentId);
+                if (!toggle || !content) return;
+                toggle.addEventListener('click', () => {
+                    toggle.classList.toggle('expanded');
+                    content.classList.toggle('visible');
+                });
+            }
+            setupToggle('#toggleFormulas', '#formulasContent');
+            setupToggle('#toggleParams', '#paramsContent');
+
+            // ========== BITÁCORA ==========
             const logForm = $('#logForm');
-            const reportModal = $('#reportModal');
-            const reportSheetContainer = $('#reportSheetContainer');
-            const closeModalBtn = $('#closeModalBtn');
-            const printReportBtn = $('#printReportBtn');
-
             logForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const btn = $('#generateReportBtn');
-                btn.classList.add('loading');
-                btn.textContent = 'Generando...';
-                setTimeout(() => {
-                    btn.classList.remove('loading');
-                    btn.textContent = '⚡ Generar Informe';
-                    generateReport();
-                }, 800);
-            });
-
-            function generateReport() {
-                const turno = $('#logTurno').value;
                 const operador = $('#logOperador').value.trim() || 'No especificado';
                 const novedades = $('#logNovedades').value.trim() || 'Sin novedades';
-                const alertas = $('#logAlertas').value.trim() || 'Sin alertas';
-                const fecha = new Date().toLocaleString('es-CL', { dateStyle:'full', timeStyle:'short' });
-                const cp = calculateCp(state.tph, state.water).toFixed(1);
-                reportSheetContainer.innerHTML = `
-                    <div class="report-sheet">
-                        <h3>INFORME DE TRASPASO DE TURNO</h3>
-                        <div class="report-meta">OptiMill OS v5.0 · ${fecha}</div>
-                        <table>
-                            <tr><th>Campo</th><th>Valor</th></tr>
-                            <tr><td><strong>Turno</strong></td><td>${turno}</td></tr>
-                            <tr><td><strong>Operador</strong></td><td>${operador}</td></tr>
-                            <tr><td><strong>Tonelaje</strong></td><td>${state.tph} t/h</td></tr>
-                            <tr><td><strong>Agua</strong></td><td>${state.water} m³/h</td></tr>
-                            <tr><td><strong>% Sólidos</strong></td><td>${cp}%</td></tr>
-                            <tr><td><strong>Potencia</strong></td><td>${state.power} MW</td></tr>
-                            <tr><td><strong>Dureza</strong></td><td>${state.wi} kWh/t</td></tr>
-                            <tr><td><strong>Bolas</strong></td><td>${state.ballsAddition} t</td></tr>
-                            <tr><td><strong>Liners</strong></td><td>${state.linerThickness ? state.linerThickness.toFixed(1) : '--'} mm</td></tr>
-                        </table>
-                        <p><strong>Novedades:</strong><br>${novedades}</p>
-                        <p><strong>Alertas:</strong><br>${alertas}</p>
-                        <p style="margin-top:16px;text-align:center;border-top:1px solid #ccc;padding-top:8px;">
-                            Firma: _________________________ &nbsp; Fecha: ${fecha}
-                        </p>
-                    </div>`;
-                reportModal.style.display = 'flex';
-            }
+                const fecha = new Date().toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
+                // Almacenar en localStorage
+                const logs = JSON.parse(localStorage.getItem('optiMill_logs') || '[]');
+                logs.push({ fecha, operador, novedades, cp: calculateCp(state.tph, state.water).toFixed(1), tph: state.tph, power: state.power });
+                localStorage.setItem('optiMill_logs', JSON.stringify(logs));
+                logForm.reset();
+                alert('Registro guardado exitosamente.');
+            });
 
-            closeModalBtn.addEventListener('click', () => { reportModal.style.display = 'none'; });
-            reportModal.addEventListener('click', (e) => { if (e.target === reportModal) reportModal.style.display = 'none'; });
-            printReportBtn.addEventListener('click', () => { window.print(); });
-
-            let touchStartX = 0, touchStartY = 0;
-            const mainContent = $('#mainContent');
-            mainContent.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            }, { passive: true });
-            mainContent.addEventListener('touchend', (e) => {
-                const dx = e.changedTouches[0].clientX - touchStartX;
-                const dy = e.changedTouches[0].clientY - touchStartY;
-                if (Math.abs(dx) > 80 && Math.abs(dy) < 40) {
-                    const tabs = ['proceso','control','activo','diagnostico','bitacora'];
-                    const currentTab = document.querySelector('.tab-panel.active')?.id.replace('panel-','');
-                    const idx = tabs.indexOf(currentTab);
-                    if (dx < 0 && idx < tabs.length-1) switchTab(tabs[idx+1]);
-                    if (dx > 0 && idx > 0) switchTab(tabs[idx-1]);
-                }
-            }, { passive: true });
-
+            // ========== INICIALIZACIÓN ==========
             function init() {
-                sliderTph.value = state.tph;
-                sliderWater.value = state.water;
-                sliderWi.value = state.wi;
-                sliderCpTarget.value = state.cpTarget;
-                sliderPower.value = state.power;
-                sliderBalls.value = state.ballsAddition;
+                inTph.value = state.tph;
+                inWater.value = state.water;
+                inWi.value = state.wi;
+                inCpTarget.value = state.cpTarget;
+                inPower.value = state.power;
+                inBalls.value = state.ballsAddition;
                 updateAll();
-                setInterval(() => {
-                    if (state.linerHoursRemaining > 0) {
-                        state.linerHoursRemaining -= 1;
-                        updateActivo();
-                        saveState();
-                    }
-                }, 60000);
-                setInterval(drawSparkline, 10000);
-                if ('ontouchstart' in window) {
-                    document.body.classList.add('touch-device');
-                }
             }
             init();
-            console.log('OptiMill OS v5.0 "Aurora Industrial" · Diseño premium táctil');
+            console.log('OptiMill OS v6.0 · Consola Técnica Consolidada');
         })();
     </script>
 </body>
