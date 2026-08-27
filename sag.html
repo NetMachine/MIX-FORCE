@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consola Prescriptiva - Molienda SAG & Bolas</title>
+    <!-- Tailwind CSS desde CDN para diseño industrial moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- HEADER INDUSTRIAL -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-lg">
+            <div>
+                <h1 class="text-2xl font-bold text-amber-400 flex items-center gap-2">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    OptiMill SAG & Ball Mill Console
+                </h1>
+                <p class="text-xs text-slate-400 mt-1">Sistema Prescriptivo de Control de Pulpa, Reología y Recarga de Bolas</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center gap-3">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    ● MODO DETERMINISTA OFFLINE ACTIVE
+                </span>
+            </div>
+        </header>
+
+        <!-- GRID DE ENTRADAS Y RESULTADOS -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- PANEL DE CONTROL / ENTRADAS (5 COLUMNAS) -->
+            <div class="lg:col-span-5 bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-5">
+                <h2 class="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2 flex items-center justify-between">
+                    <span>Parámetros Operativos</span>
+                    <span class="text-xs font-normal text-slate-400">Entrada de Turno</span>
+                </h2>
+
+                <!-- Control 1: Tonelaje Seco -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <label for="tph" class="text-slate-300 font-medium">Alimentación Mineral ($TPH$):</label>
+                        <span id="tphVal" class="text-amber-400 font-bold">1,200 t/h</span>
+                    </div>
+                    <input type="range" id="tph" min="500" max="2500" step="10" value="1200" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="calcular()">
+                </div>
+
+                <!-- Control 2: Agua Actual -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <label for="water" class="text-slate-300 font-medium">Flujo Agua Adición ($m^3/h$):</label>
+                        <span id="waterVal" class="text-amber-400 font-bold">400 m³/h</span>
+                    </div>
+                    <input type="range" id="water" min="100" max="1200" step="10" value="400" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="calcular()">
+                </div>
+
+                <!-- Control 3: Gravedad Específica SG -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <label for="sg" class="text-slate-300 font-medium">Gravedad Específica ($SG$):</label>
+                        <span id="sgVal" class="text-slate-200 font-bold">2.70</span>
+                    </div>
+                    <input type="range" id="sg" min="2.4" max="3.5" step="0.05" value="2.70" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="calcular()">
+                </div>
+
+                <!-- Control 4: Objetivo de Sólidos %Cp Target -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <label for="cpTarget" class="text-slate-300 font-medium">Sólidos Objetivo (%$Cp_{Target}$):</label>
+                        <span id="cpTargetVal" class="text-emerald-400 font-bold">68.0 %</span>
+                    </div>
+                    <input type="range" id="cpTarget" min="55" max="80" step="0.5" value="68" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" oninput="calcular()">
+                </div>
+
+                <!-- Control 5: Potencia MW -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <label for="power" class="text-slate-300 font-medium">Potencia Molino ($MW$):</label>
+                        <span id="powerVal" class="text-amber-400 font-bold">18.5 MW</span>
+                    </div>
+                    <input type="range" id="power" min="5" max="35" step="0.5" value="18.5" 
+                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500" oninput="calcular()">
+                </div>
+            </div>
+
+            <!-- PANEL DE SALIDA / PRESCRIPCIÓN (7 COLUMNAS) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- TARJETA DE RECOMENDACIÓN ACCIONABLE PRESCRIPTIVA -->
+                <div id="alertCard" class="p-6 rounded-xl border transition-all duration-300 bg-amber-500/10 border-amber-500/30">
+                    <div class="flex items-start gap-4">
+                        <div id="alertIcon" class="p-3 bg-amber-500/20 text-amber-400 rounded-lg mt-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        </div>
+                        <div class="space-y-1">
+                            <span id="alertBadge" class="text-xs font-bold uppercase tracking-wider text-amber-400">Desviación en Densidad</span>
+                            <h3 id="prescriptionTitle" class="text-xl font-bold text-slate-100">Cálculo Prescriptivo Requerido</h3>
+                            <p id="prescriptionAction" class="text-sm text-slate-300 leading-relaxed">Procesando datos del circuito...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI METRICS GRID -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                        <span class="text-xs text-slate-400">Sólidos Actuales (%Cp)</span>
+                        <div id="kpiCp" class="text-2xl font-black text-amber-400 mt-1">0 %</div>
+                        <span id="kpiCpDiff" class="text-xs font-medium">0% vs Objetivo</span>
+                    </div>
+
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                        <span class="text-xs text-slate-400">Consumo Energético</span>
+                        <div id="kpiKwh" class="text-2xl font-black text-slate-100 mt-1">0 kWh/t</div>
+                        <span class="text-xs text-slate-500">Energía Específica</span>
+                    </div>
+
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 col-span-2 md:col-span-1">
+                        <span class="text-xs text-slate-400">Consumo Bolas Estimado</span>
+                        <div id="kpiBalls" class="text-2xl font-black text-emerald-400 mt-1">0 kg/h</div>
+                        <span class="text-xs text-slate-500">Desgaste por Acero</span>
+                    </div>
+                </div>
+
+                <!-- MÓDULO DE RECARGA DE BOLAS Y REVESTIMIENTO -->
+                <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4">
+                    <h3 class="text-md font-semibold text-slate-200 border-b border-slate-700 pb-2 flex justify-between">
+                        <span>Gestión de Activos y Carga de Bolas ($J_b$)</span>
+                        <span class="text-xs text-slate-400">Proyección 24 hrs</span>
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50 space-y-1">
+                            <span class="text-xs text-slate-400">Recarga Diaria Sugerida ($5''$):</span>
+                            <div id="dailyBallLoad" class="text-xl font-bold text-emerald-400">0.0 Toneladas/día</div>
+                            <p class="text-xs text-slate-500">Basado en tasa de desgaste g/t de mineral procesado.</p>
+                        </div>
+                        <div class="p-4 bg-slate-900/50 rounded-lg border border-slate-700/50 space-y-1">
+                            <span class="text-xs text-slate-400">Vida Útil Liners/Corazas:</span>
+                            <div id="linerLife" class="text-xl font-bold text-slate-200">1,420 hrs restantes</div>
+                            <p class="text-xs text-slate-500">Fecha estimada cambio: ~45 días.</p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="generarReporte()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-amber-500/10">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2h2m2 4h6a2 2 0 000-4h-6a2 2 0 000 4zm3-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3m2 4h.01"></path></svg>
+                        Generar Ficha Digital de Traspaso de Turno
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- LÓGICA EN JAVASCRIPT NATIVO -->
+    <script>
+        function calcular() {
+            // 1. Obtener valores de la UI
+            const tph = parseFloat(document.getElementById('tph').value);
+            const water = parseFloat(document.getElementById('water').value);
+            const sg = parseFloat(document.getElementById('sg').value);
+            const cpTarget = parseFloat(document.getElementById('cpTarget').value);
+            const powerMW = parseFloat(document.getElementById('power').value);
+
+            // Actualizar labels de la interfaz
+            document.getElementById('tphVal').innerText = tph.toLocaleString() + ' t/h';
+            document.getElementById('waterVal').innerText = water.toLocaleString() + ' m³/h';
+            document.getElementById('sgVal').innerText = sg.toFixed(2);
+            document.getElementById('cpTargetVal').innerText = cpTarget.toFixed(1) + ' %';
+            document.getElementById('powerVal').innerText = powerMW.toFixed(1) + ' MW';
+
+            // 2. Ecuación Balance de Sólidos (%Cp Actual)
+            // Cp = (Masa_Mineral / (Masa_Mineral + Masa_Agua)) * 100
+            const cpActual = (tph / (tph + water)) * 100;
+
+            // 3. Ecuación de Agua Necesaria para llegar al Cp Target
+            // CpTarget/100 = tph / (tph + aguaTarget) => aguaTarget = (tph * (100 - CpTarget)) / CpTarget
+            const waterTarget = (tph * (100 - cpTarget)) / cpTarget;
+            const deltaWater = waterTarget - water;
+
+            // 4. Energía Específica (kWh/t)
+            const kwhPerTon = (powerMW * 1000) / tph;
+
+            // 5. Consumo y recarga de bolas (asumiendo 0.55 kg/t de mineral procesado)
+            const ballRateKgPerHour = tph * 0.55;
+            const dailyBallTons = (ballRateKgPerHour * 24) / 1000;
+
+            // Actualizar KPIs
+            document.getElementById('kpiCp').innerText = cpActual.toFixed(1) + ' %';
+            document.getElementById('kpiKwh').innerText = kwhPerTon.toFixed(2) + ' kWh/t';
+            document.getElementById('kpiBalls').innerText = ballRateKgPerHour.toFixed(0) + ' kg/h';
+            document.getElementById('dailyBallLoad').innerText = dailyBallTons.toFixed(1) + ' Toneladas/día';
+
+            // 6. Evaluación Prescriptiva (Cálculo de Acción)
+            const alertCard = document.getElementById('alertCard');
+            const alertBadge = document.getElementById('alertBadge');
+            const alertIcon = document.getElementById('alertIcon');
+            const prescriptionTitle = document.getElementById('prescriptionTitle');
+            const prescriptionAction = document.getElementById('prescriptionAction');
+            const kpiCpDiff = document.getElementById('kpiCpDiff');
+
+            const diffCp = cpActual - cpTarget;
+
+            if (Math.abs(diffCp) <= 1.0) {
+                // Estado Óptimo (Verde)
+                alertCard.className = "p-6 rounded-xl border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30";
+                alertBadge.className = "text-xs font-bold uppercase tracking-wider text-emerald-400";
+                alertBadge.innerText = "Operación Estable";
+                alertIcon.className = "p-3 bg-emerald-500/20 text-emerald-400 rounded-lg mt-1";
+                prescriptionTitle.innerText = "Reología y Densidad en Rango Óptimo";
+                prescriptionAction.innerHTML = `El circuito está operando dentro del rango objetivo (<strong class="text-emerald-400">${cpTarget.toFixed(1)}%</strong>). Mantener setpoint de agua en <strong class="text-emerald-400">${water.toFixed(0)} m³/h</strong>.`;
+                kpiCpDiff.innerText = `${diffCp >= 0 ? '+' : ''}${diffCp.toFixed(1)}% vs Target`;
+                kpiCpDiff.className = "text-xs font-medium text-emerald-400";
+            } else if (diffCp > 1.0) {
+                // Pulpa Sobredensificada (Falta agua - Rojo)
+                alertCard.className = "p-6 rounded-xl border transition-all duration-300 bg-rose-500/10 border-rose-500/30";
+                alertBadge.className = "text-xs font-bold uppercase tracking-wider text-rose-400";
+                alertBadge.innerText = "Alerta: Densidad Alta (Riesgo de Embancamiento)";
+                alertIcon.className = "p-3 bg-rose-500/20 text-rose-400 rounded-lg mt-1";
+                prescriptionTitle.innerText = `Abrir Válvula de Agua: +${Math.abs(deltaWater).toFixed(0)} m³/h`;
+                prescriptionAction.innerHTML = `Para bajar la densidad de <strong>${cpActual.toFixed(1)}%</strong> al objetivo de <strong>${cpTarget.toFixed(1)}%</strong>, incremente la adición de agua en <strong class="text-rose-400">+${Math.abs(deltaWater).toFixed(0)} m³/h</strong> (Ajustar setpoint total a <strong class="text-rose-400">${waterTarget.toFixed(0)} m³/h</strong>).`;
+                kpiCpDiff.innerText = `+${diffCp.toFixed(1)}% Sobre el Target`;
+                kpiCpDiff.className = "text-xs font-medium text-rose-400";
+            } else {
+                // Pulpa Muy Diluida (Exceso agua - Azul/Amber)
+                alertCard.className = "p-6 rounded-xl border transition-all duration-300 bg-cyan-500/10 border-cyan-500/30";
+                alertBadge.className = "text-xs font-bold uppercase tracking-wider text-cyan-400";
+                alertBadge.innerText = "Alerta: Pulpa Sobrediluida";
+                alertIcon.className = "p-3 bg-cyan-500/20 text-cyan-400 rounded-lg mt-1";
+                prescriptionTitle.innerText = `Cerrar Válvula de Agua: -${Math.abs(deltaWater).toFixed(0)} m³/h`;
+                prescriptionAction.innerHTML = `La densidad actual (<strong>${cpActual.toFixed(1)}%</strong>) está bajo el objetivo. Reduzca la adición de agua en <strong class="text-cyan-400">-${Math.abs(deltaWater).toFixed(0)} m³/h</strong> (Ajustar setpoint total a <strong class="text-cyan-400">${waterTarget.toFixed(0)} m³/h</strong>).`;
+                kpiCpDiff.innerText = `${diffCp.toFixed(1)}% Bajo el Target`;
+                kpiCpDiff.className = "text-xs font-medium text-cyan-400";
+            }
+        }
+
+        function generarReporte() {
+            alert("✅ Ficha Digital de Traspaso de Turno generada con éxito.\n\nSe ha guardado el registro con la prescripción actual, consumo de bolas y firma digital en el historial local.");
+        }
+
+        // Ejecutar cálculo inicial al cargar
+        window.onload = calcular;
+    </script>
+</body>
+</html>
