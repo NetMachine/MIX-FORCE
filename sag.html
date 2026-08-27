@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>OptiMill OS | Consola Técnica Interactiva</title>
     <style>
-        /* ========== ESTILOS (se mantienen del v9) ========== */
         :root {
             --bg: #0b0d12;
             --surface: #131720;
@@ -29,7 +28,6 @@
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body { font-family:var(--font); background:var(--bg); color:var(--text2); font-size:14px; line-height:1.5; }
         input, textarea, select { -webkit-user-select:text; user-select:text; }
-
         .header { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
         .brand { display:flex; align-items:center; gap:12px; }
         .brand-icon { width:40px; height:40px; border-radius:10px; background:var(--surface2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.4rem; }
@@ -37,32 +35,23 @@
         .brand-sub { font-size:0.7rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; }
         .status { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); padding:6px 14px; border-radius:20px; font-size:0.75rem; color:var(--positive); font-weight:600; }
         .status-dot { width:8px; height:8px; border-radius:50%; background:var(--positive); }
-
         .dashboard { display:grid; gap:16px; padding:16px; max-width:1600px; margin:0 auto; grid-template-columns:1fr; }
         @media (min-width: 768px) { .dashboard { grid-template-columns:repeat(2, 1fr); } }
         @media (min-width: 1100px) { .dashboard { grid-template-columns:repeat(12, 1fr); } }
-
-        .col-span-3 { grid-column: span 3; }
-        .col-span-4 { grid-column: span 4; }
-        .col-span-5 { grid-column: span 5; }
-        .col-span-6 { grid-column: span 6; }
-        .col-span-7 { grid-column: span 7; }
-        .col-span-8 { grid-column: span 8; }
+        .col-span-3 { grid-column: span 3; } .col-span-4 { grid-column: span 4; } .col-span-5 { grid-column: span 5; }
+        .col-span-6 { grid-column: span 6; } .col-span-7 { grid-column: span 7; } .col-span-8 { grid-column: span 8; }
         .col-span-12 { grid-column: span 12; }
         @media (max-width: 1099px) { .col-span-3, .col-span-4, .col-span-5, .col-span-6, .col-span-7, .col-span-8 { grid-column: span 12; } }
-
         .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; display:flex; flex-direction:column; }
         .card-header { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface2); flex-wrap:wrap; gap:6px; }
         .card-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); }
         .card-body { padding:14px 16px; flex:1; overflow-y:auto; }
-
         .kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; }
         .kpi { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; text-align:center; cursor:help; }
         .kpi:hover { border-color:var(--border2); }
         .kpi-label { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text3); margin-bottom:2px; }
         .kpi-value { font-family:var(--mono); font-weight:700; font-size:1.2rem; color:var(--text); }
         .kpi-unit { font-size:0.6rem; color:var(--text3); }
-
         .slider-group { margin-bottom:10px; }
         .slider-label { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text2); margin-bottom:4px; }
         .slider-val { font-family:var(--mono); color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:2px 8px; font-size:0.8rem; }
@@ -71,46 +60,32 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:var(--accent); border:3px solid var(--surface); margin-top:-9px; cursor:grab; }
         input[type=range]::-moz-range-track { height:6px; border-radius:3px; background:var(--surface2); border:1px solid var(--border); }
         input[type=range]::-moz-range-thumb { width:24px; height:24px; border-radius:50%; background:var(--accent); border:3px solid var(--surface); cursor:grab; }
-
         .action-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 14px; margin-top:10px; border-left:4px solid var(--accent); }
-        .action-box.optimal { border-left-color:var(--positive); }
-        .action-box.danger { border-left-color:var(--negative); }
+        .action-box.optimal { border-left-color:var(--positive); } .action-box.danger { border-left-color:var(--negative); }
         .action-box .action-title { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); }
         .action-box .action-msg { font-family:var(--mono); font-weight:700; color:var(--text); font-size:0.9rem; }
         .action-box .action-detail { font-size:0.75rem; color:var(--text2); }
-
         .mill-container { background:var(--surface2); border-radius:var(--r-sm); border:1px solid var(--border); padding:12px; position:relative; overflow:hidden; }
         .mill-svg { width:100%; height:auto; display:block; }
         .mill-rotating { transform-origin:center; animation:rotateMill linear infinite; }
         @keyframes rotateMill { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         .flow-line { stroke-dasharray:8 5; animation:flowDash 1s linear infinite; }
         @keyframes flowDash { from { stroke-dashoffset:0; } to { stroke-dashoffset:-26; } }
-
         .data-table { width:100%; border-collapse:collapse; font-size:0.72rem; }
         .data-table th { text-align:left; padding:5px 8px; color:var(--text3); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.04em; border-bottom:1px solid var(--border); }
         .data-table td { padding:5px 8px; border-bottom:1px solid var(--border); color:var(--text2); }
         .data-table .mono { font-family:var(--mono); color:var(--text); }
-
         .btn { display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:var(--r-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.04em; min-height:var(--touch); }
-        .btn:active { transform:scale(0.98); }
-        .btn.primary { background:var(--accent); border-color:var(--accent); color:#0b0d12; }
-
+        .btn:active { transform:scale(0.98); } .btn.primary { background:var(--accent); border-color:var(--accent); color:#0b0d12; }
         .info-toggle { width:100%; display:flex; justify-content:space-between; align-items:center; background:none; border:none; color:var(--text2); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; padding:8px 0; min-height:40px; }
         .info-content { display:none; padding:8px 0; font-size:0.72rem; line-height:1.6; border-top:1px solid var(--border); }
-        .info-content.visible { display:block; }
-        .chevron { transition:transform 0.2s; }
-        .chevron.rotated { transform:rotate(180deg); }
-
+        .info-content.visible { display:block; } .chevron { transition:transform 0.2s; } .chevron.rotated { transform:rotate(180deg); }
         .sparkline-container { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:8px; }
         canvas { width:100%; height:50px; display:block; }
-
         .alert-list { display:grid; gap:6px; }
         .alert-item { display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); font-size:0.75rem; }
         .alert-item .severity { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-        .severity.high { background:var(--negative); }
-        .severity.medium { background:var(--warning); }
-        .severity.low { background:var(--positive); }
-
+        .severity.high { background:var(--negative); } .severity.medium { background:var(--warning); } .severity.low { background:var(--positive); }
         .tooltip-trigger { cursor:help; border-bottom:1px dotted var(--text3); }
     </style>
 </head>
@@ -118,52 +93,24 @@
     <header class="header">
         <div class="brand">
             <div class="brand-icon">⚙</div>
-            <div>
-                <div class="brand-name">OptiMill OS</div>
-                <div class="brand-sub">Molienda SAG & Bolas · Consola Técnica Interactiva</div>
-            </div>
+            <div><div class="brand-name">OptiMill OS</div><div class="brand-sub">Molienda SAG & Bolas · Consola Técnica Interactiva</div></div>
         </div>
         <div class="status"><span class="status-dot"></span> OPERATIVO</div>
     </header>
-
     <main class="dashboard">
-        <!-- Panel de Control -->
+        <!-- Panel de control -->
         <div class="card col-span-3">
             <div class="card-header"><span class="card-title">Parámetros</span><span class="card-title" style="color:var(--text2);">Interactivo</span></div>
             <div class="card-body">
-                <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Tonelaje de mineral seco alimentado al molino">Tonelaje (t/h)</span><span class="slider-val" id="vTph">1500</span></div>
-                    <input type="range" id="inTph" min="500" max="3000" step="10" value="1500">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Flujo de agua fresca agregada al circuito">Agua (m³/h)</span><span class="slider-val" id="vWater">400</span></div>
-                    <input type="range" id="inWater" min="100" max="1500" step="5" value="400">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Índice de trabajo de Bond para el mineral">Work Index (kWh/t)</span><span class="slider-val" id="vWi">14.0</span></div>
-                    <input type="range" id="inWi" min="8" max="22" step="0.1" value="14">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Porcentaje de sólidos deseado en la pulpa">Cp Objetivo (%)</span><span class="slider-val" id="vCpTarget">68</span></div>
-                    <input type="range" id="inCpTarget" min="55" max="78" step="1" value="68">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Potencia consumida por el motor del molino">Potencia (MW)</span><span class="slider-val" id="vPower">20</span></div>
-                    <input type="range" id="inPower" min="5" max="35" step="0.5" value="20">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label"><span class="tooltip-trigger" title="Cantidad de bolas de acero agregadas recientemente (afecta tamaño de producto)">Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
-                    <input type="range" id="inBalls" min="0" max="200" step="1" value="50">
-                    <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">↑ Bolas = ↓ P80 (Jb = <span id="jbDisplay">25</span>%)</div>
-                </div>
-                <div class="action-box optimal" id="actionBox">
-                    <div class="action-title">Acción Recomendada</div>
-                    <div class="action-msg" id="actionMsg">OPERACIÓN ÓPTIMA</div>
-                    <div class="action-detail" id="actionDetail">Densidad dentro del rango objetivo.</div>
-                </div>
+                <div class="slider-group"><div class="slider-label"><span class="tooltip-trigger" title="Tonelaje de mineral seco alimentado al molino">Tonelaje (t/h)</span><span class="slider-val" id="vTph">1500</span></div><input type="range" id="inTph" min="500" max="3000" step="10" value="1500"></div>
+                <div class="slider-group"><div class="slider-label"><span class="tooltip-trigger" title="Flujo de agua fresca agregada al circuito">Agua (m³/h)</span><span class="slider-val" id="vWater">400</span></div><input type="range" id="inWater" min="100" max="1500" step="5" value="400"></div>
+                <div class="slider-group"><div class="slider-label"><span class="tooltip-trigger" title="Índice de trabajo de Bond para el mineral">Work Index (kWh/t)</span><span class="slider-val" id="vWi">14.0</span></div><input type="range" id="inWi" min="8" max="22" step="0.1" value="14"></div>
+                <div class="slider-group"><div class="slider-label"><span class="tooltip-trigger" title="Porcentaje de sólidos deseado en la pulpa">Cp Objetivo (%)</span><span class="slider-val" id="vCpTarget">68</span></div><input type="range" id="inCpTarget" min="55" max="78" step="1" value="68"></div>
+                <div class="slider-group"><div class="slider-label"><span class="tooltip-trigger" title="Potencia consumida por el motor del molino">Potencia (MW)</span><span class="slider-val" id="vPower">20</span></div><input type="range" id="inPower" min="5" max="35" step="0.5" value="20"></div>
+                <div class="slider-group"><div class="slider-label"><span class="tooltip-trigger" title="Cantidad de bolas de acero agregadas recientemente">Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div><input type="range" id="inBalls" min="0" max="200" step="1" value="50"><div style="font-size:0.65rem;color:var(--text3);">↑ Bolas = ↓ P80 (Jb = <span id="jbDisplay">25</span>%)</div></div>
+                <div class="action-box optimal" id="actionBox"><div class="action-title">Acción Recomendada</div><div class="action-msg" id="actionMsg">OPERACIÓN ÓPTIMA</div><div class="action-detail" id="actionDetail">Densidad dentro del rango objetivo.</div></div>
             </div>
         </div>
-
         <!-- P&ID -->
         <div class="card col-span-6">
             <div class="card-header"><span class="card-title">Circuito de Molienda</span><span class="card-title" id="pidStatus">Flujo Normal</span></div>
@@ -171,73 +118,44 @@
                 <div class="mill-container">
                     <svg class="mill-svg" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e2a" stroke-width="0.5"/>
-                            </pattern>
-                            <linearGradient id="millBody" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#2a3040"/>
-                                <stop offset="100%" stop-color="#1a1e2a"/>
-                            </linearGradient>
-                            <linearGradient id="millLiner" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#3a3f4a"/>
-                                <stop offset="100%" stop-color="#232936"/>
-                            </linearGradient>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e2a" stroke-width="0.5"/></pattern>
+                            <linearGradient id="millBody" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2a3040"/><stop offset="100%" stop-color="#1a1e2a"/></linearGradient>
+                            <linearGradient id="millLiner" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#3a3f4a"/><stop offset="100%" stop-color="#232936"/></linearGradient>
                         </defs>
                         <rect width="800" height="280" fill="url(#grid)"/>
-                        <!-- Alimentación -->
-                        <rect x="25" y="110" width="50" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                        <text x="50" y="129" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
+                        <rect x="25" y="110" width="50" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/><text x="50" y="129" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
                         <line x1="75" y1="124" x2="135" y2="124" stroke="#2a3040" stroke-width="2"/>
-                        <!-- Molino SAG (cuerpo) -->
                         <g id="millGroup" class="mill-rotating" style="transform-origin:200px 124px;">
                             <circle cx="200" cy="124" r="52" fill="url(#millBody)" stroke="#3a3f4a" stroke-width="2.5"/>
                             <circle cx="200" cy="124" r="46" fill="none" stroke="url(#millLiner)" stroke-width="4" stroke-dasharray="12 8"/>
                             <circle cx="200" cy="124" r="32" fill="none" stroke="#2a3040" stroke-width="1.5"/>
                             <circle cx="200" cy="124" r="40" fill="none" stroke="#4a5060" stroke-width="1" stroke-dasharray="5 3"/>
-                            <circle cx="200" cy="76" r="3" fill="#5a6070"/>
-                            <circle cx="248" cy="124" r="3" fill="#5a6070"/>
-                            <circle cx="200" cy="172" r="3" fill="#5a6070"/>
-                            <circle cx="152" cy="124" r="3" fill="#5a6070"/>
+                            <circle cx="200" cy="76" r="3" fill="#5a6070"/><circle cx="248" cy="124" r="3" fill="#5a6070"/>
+                            <circle cx="200" cy="172" r="3" fill="#5a6070"/><circle cx="152" cy="124" r="3" fill="#5a6070"/>
                             <circle cx="200" cy="124" r="8" fill="#6b7280"/>
                             <line x1="200" y1="72" x2="200" y2="176" stroke="#2a3040" stroke-width="1" opacity="0.4"/>
                             <line x1="148" y1="124" x2="252" y2="124" stroke="#2a3040" stroke-width="1" opacity="0.4"/>
                             <line x1="163" y1="87" x2="237" y2="161" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                             <line x1="163" y1="161" x2="237" y2="87" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
                         </g>
-                        <!-- Grupo interno: carga (se anima con JS) -->
                         <g id="millInternalGroup"></g>
                         <text x="200" y="195" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
-                        <!-- Resto del circuito -->
-                        <rect x="260" y="110" width="48" height="28" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                        <text x="284" y="129" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
+                        <rect x="260" y="110" width="48" height="28" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/><text x="284" y="129" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
                         <line id="p1" x1="308" y1="124" x2="395" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
-                        <rect x="395" y="110" width="55" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                        <text x="422" y="129" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
+                        <rect x="395" y="110" width="55" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/><text x="422" y="129" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
                         <line id="p2" x1="450" y1="124" x2="540" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
-                        <polygon points="540,95 570,95 575,118 540,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                        <polygon points="575,95 605,95 610,118 575,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                        <polygon points="605,95 635,95 640,118 605,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <polygon points="540,95 570,95 575,118 540,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/><polygon points="575,95 605,95 610,118 575,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/><polygon points="605,95 635,95 640,118 605,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
                         <text x="590" y="140" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CICLONES</text>
-                        <line id="p3" x1="640" y1="106" x2="700" y2="55" stroke="#4ade80" stroke-width="3" class="flow-line"/>
-                        <text x="680" y="48" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
-                        <line id="p4" x1="640" y1="110" x2="710" y2="185" stroke="#4ade80" stroke-width="3" class="flow-line"/>
-                        <text x="690" y="200" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
-                        <line x1="135" y1="185" x2="200" y2="176" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/>
-                        <text x="125" y="198" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
+                        <line id="p3" x1="640" y1="106" x2="700" y2="55" stroke="#4ade80" stroke-width="3" class="flow-line"/><text x="680" y="48" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
+                        <line id="p4" x1="640" y1="110" x2="710" y2="185" stroke="#4ade80" stroke-width="3" class="flow-line"/><text x="690" y="200" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
+                        <line x1="135" y1="185" x2="200" y2="176" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/><text x="125" y="198" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
                     </svg>
                 </div>
-                <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; font-size:0.7rem; color:var(--text3);">
-                    <span>Cp: <strong id="pidCp">--</strong></span>
-                    <span>RPM: <strong id="pidRpm">--</strong></span>
-                    <span>Vel. Crítica: <strong id="pidVc">--</strong></span>
-                </div>
-                <div class="sparkline-container" style="margin-top:10px;">
-                    <canvas id="sparklineCp" width="800" height="50"></canvas>
-                </div>
+                <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; font-size:0.7rem; color:var(--text3);"><span>Cp: <strong id="pidCp">--</strong></span><span>RPM: <strong id="pidRpm">--</strong></span><span>Vel. Crítica: <strong id="pidVc">--</strong></span></div>
+                <div class="sparkline-container" style="margin-top:10px;"><canvas id="sparklineCp" width="800" height="50"></canvas></div>
             </div>
         </div>
-
-        <!-- Indicadores y recomendaciones -->
+        <!-- Indicadores -->
         <div class="card col-span-3">
             <div class="card-header"><span class="card-title">Indicadores Calculados</span></div>
             <div class="card-body">
@@ -251,97 +169,27 @@
                     <div class="kpi" title="Consumo de bolas por día"><div class="kpi-label">Bolas</div><div class="kpi-value" id="kBolas">--</div><div class="kpi-unit">t/d</div></div>
                     <div class="kpi" title="Pérdida de acero por tonelada"><div class="kpi-label">Pérdida</div><div class="kpi-value" id="kPerd">--</div><div class="kpi-unit">g/t</div></div>
                 </div>
-                <div style="margin-top:12px;">
-                    <button class="info-toggle" id="toggleFormulas"><span>Fórmulas</span><span class="chevron">▼</span></button>
-                    <div class="info-content" id="formulasContent">
-                        <p><strong>Cp:</strong> M_s / (M_s + M_w) × 100</p>
-                        <p><strong>Ecs:</strong> P / TPH</p>
-                        <p><strong>F80:</strong> 55 / √Wi (mm) → µm</p>
-                        <p><strong>P80:</strong> F80(µm) / (Ecs×10)<sup>0.7</sup> × (1 - 0.8·Jb)<sup>1.5</sup></p>
-                        <p><strong>Jb:</strong> Bolas / 200 (llenado de bolas)</p>
-                        <p><strong>Densidad:</strong> (Ms + Mw) / (Vs + Vw)</p>
-                        <p><strong>Bolas:</strong> Ecs × Wi × 0.3 + 3 (g/t)</p>
-                    </div>
-                </div>
+                <div style="margin-top:12px;"><button class="info-toggle" id="toggleFormulas"><span>Fórmulas</span><span class="chevron">▼</span></button><div class="info-content" id="formulasContent">
+                    <p><strong>Cp:</strong> M_s / (M_s + M_w) × 100</p><p><strong>Ecs:</strong> P / TPH</p><p><strong>F80:</strong> 55 / √Wi (mm) → µm</p><p><strong>P80:</strong> F80(µm) / (Ecs×10)<sup>0.7</sup> × (1 - 0.8·Jb)<sup>1.5</sup></p><p><strong>Jb:</strong> Bolas / 200 (llenado de bolas)</p><p><strong>Densidad:</strong> (Ms + Mw) / (Vs + Vw)</p><p><strong>Bolas:</strong> Ecs × Wi × 0.3 + 3 (g/t)</p>
+                </div></div>
             </div>
         </div>
-
-        <!-- Recomendaciones dinámicas -->
-        <div class="card col-span-12">
-            <div class="card-header"><span class="card-title">Recomendaciones Operativas Dinámicas</span></div>
-            <div class="card-body" id="recommendationsContainer"></div>
-        </div>
-
-        <!-- Tabla de referencia -->
-        <div class="card col-span-6">
-            <div class="card-header"><span class="card-title">Parámetros de Referencia</span></div>
-            <div class="card-body" style="overflow-x:auto;">
-                <table class="data-table">
-                    <tr><th>Parámetro</th><th>Valor Actual</th><th>Rango Óptimo</th><th>Unidad</th><th>Estado</th></tr>
-                    <tr><td>% Sólidos (Cp)</td><td class="mono" id="refCp">--</td><td>65 - 70</td><td>%</td><td id="stCp">--</td></tr>
-                    <tr><td>Consumo Específico</td><td class="mono" id="refEcs">--</td><td>7 - 15</td><td>kWh/t</td><td id="stEcs">--</td></tr>
-                    <tr><td>F80</td><td class="mono" id="refF80">--</td><td>50 - 150</td><td>mm</td><td id="stF80">--</td></tr>
-                    <tr><td>P80</td><td class="mono" id="refP80">--</td><td>150 - 300</td><td>µm</td><td id="stP80">--</td></tr>
-                    <tr><td>Densidad Pulpa</td><td class="mono" id="refDens">--</td><td>1600 - 1800</td><td>kg/m³</td><td id="stDens">--</td></tr>
-                    <tr><td>Adición Bolas</td><td class="mono" id="refBolas">--</td><td>1 - 5</td><td>t/día</td><td id="stBolas">--</td></tr>
-                </table>
-            </div>
-        </div>
-
-        <!-- Diagnóstico -->
-        <div class="card col-span-3">
-            <div class="card-header"><span class="card-title">Diagnóstico</span></div>
-            <div class="card-body">
-                <select id="diagSelect" style="width:100%; padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;">
-                    <option value="presion">Presión hidrociclones</option>
-                    <option value="vibracion">Vibración descanso</option>
-                    <option value="finos">Finos en trommel</option>
-                    <option value="temperatura">Temp. cojinetes</option>
-                    <option value="ruido">Ruido anormal</option>
-                </select>
-                <div id="diagOutput" style="margin-top:8px; font-size:0.8rem; line-height:1.5; color:var(--text2);"></div>
-                <div style="margin-top:10px;">
-                    <button class="info-toggle" id="toggleDiagGuide"><span>Guía de diagnóstico</span><span class="chevron">▼</span></button>
-                    <div class="info-content" id="diagGuideContent">
-                        <p>Seleccione una anomalía para obtener recomendaciones paso a paso.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bitácora -->
-        <div class="card col-span-3">
-            <div class="card-header"><span class="card-title">Bitácora</span></div>
-            <div class="card-body">
-                <form id="logForm" style="display:grid; gap:8px;">
-                    <input type="text" id="logOperador" placeholder="Operador" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;">
-                    <textarea id="logNovedades" placeholder="Novedades..." rows="3" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; resize:vertical;"></textarea>
-                    <button type="submit" class="btn primary">Registrar Turno</button>
-                </form>
-                <div style="margin-top:10px;">
-                    <button class="info-toggle" id="toggleHistory"><span>Historial reciente</span><span class="chevron">▼</span></button>
-                    <div class="info-content" id="historyContent"></div>
-                </div>
-            </div>
-        </div>
-
+        <!-- Recomendaciones -->
+        <div class="card col-span-12"><div class="card-header"><span class="card-title">Recomendaciones Operativas Dinámicas</span></div><div class="card-body" id="recommendationsContainer"></div></div>
+        <!-- Tabla -->
+        <div class="card col-span-6"><div class="card-header"><span class="card-title">Parámetros de Referencia</span></div><div class="card-body" style="overflow-x:auto;"><table class="data-table"><tr><th>Parámetro</th><th>Valor Actual</th><th>Rango Óptimo</th><th>Unidad</th><th>Estado</th></tr><tr><td>% Sólidos (Cp)</td><td class="mono" id="refCp">--</td><td>65 - 70</td><td>%</td><td id="stCp">--</td></tr><tr><td>Consumo Específico</td><td class="mono" id="refEcs">--</td><td>7 - 15</td><td>kWh/t</td><td id="stEcs">--</td></tr><tr><td>F80</td><td class="mono" id="refF80">--</td><td>50 - 150</td><td>mm</td><td id="stF80">--</td></tr><tr><td>P80</td><td class="mono" id="refP80">--</td><td>150 - 300</td><td>µm</td><td id="stP80">--</td></tr><tr><td>Densidad Pulpa</td><td class="mono" id="refDens">--</td><td>1600 - 1800</td><td>kg/m³</td><td id="stDens">--</td></tr><tr><td>Adición Bolas</td><td class="mono" id="refBolas">--</td><td>1 - 5</td><td>t/día</td><td id="stBolas">--</td></tr></table></div></div>
+        <!-- Diagnóstico y Bitácora -->
+        <div class="card col-span-3"><div class="card-header"><span class="card-title">Diagnóstico</span></div><div class="card-body"><select id="diagSelect" style="width:100%; padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;"><option value="presion">Presión hidrociclones</option><option value="vibracion">Vibración descanso</option><option value="finos">Finos en trommel</option><option value="temperatura">Temp. cojinetes</option><option value="ruido">Ruido anormal</option></select><div id="diagOutput" style="margin-top:8px; font-size:0.8rem; line-height:1.5; color:var(--text2);"></div><div style="margin-top:10px;"><button class="info-toggle" id="toggleDiagGuide"><span>Guía de diagnóstico</span><span class="chevron">▼</span></button><div class="info-content" id="diagGuideContent"><p>Seleccione una anomalía para obtener recomendaciones paso a paso.</p></div></div></div></div>
+        <div class="card col-span-3"><div class="card-header"><span class="card-title">Bitácora</span></div><div class="card-body"><form id="logForm" style="display:grid; gap:8px;"><input type="text" id="logOperador" placeholder="Operador" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;"><textarea id="logNovedades" placeholder="Novedades..." rows="3" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; resize:vertical;"></textarea><button type="submit" class="btn primary">Registrar Turno</button></form><div style="margin-top:10px;"><button class="info-toggle" id="toggleHistory"><span>Historial reciente</span><span class="chevron">▼</span></button><div class="info-content" id="historyContent"></div></div></div></div>
         <!-- Alertas -->
-        <div class="card col-span-12">
-            <div class="card-header"><span class="card-title">Alertas del Sistema</span></div>
-            <div class="card-body">
-                <div class="alert-list" id="alertList">
-                    <div class="alert-item"><span class="severity low"></span><span>Sin alertas activas</span></div>
-                </div>
-            </div>
-        </div>
+        <div class="card col-span-12"><div class="card-header"><span class="card-title">Alertas del Sistema</span></div><div class="card-body"><div class="alert-list" id="alertList"><div class="alert-item"><span class="severity low"></span><span>Sin alertas activas</span></div></div></div></div>
     </main>
-
     <script>
         (function() {
             const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720, cpHistory:[] };
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            const STORAGE_KEY = 'optiMill_v11';
+            const STORAGE_KEY = 'optiMill_v12';
             function load() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
             function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
             load();
@@ -349,170 +197,185 @@
             const inTph=$('#inTph'), inWater=$('#inWater'), inWi=$('#inWi'), inCpTarget=$('#inCpTarget'), inPower=$('#inPower'), inBalls=$('#inBalls');
             const vTph=$('#vTph'), vWater=$('#vWater'), vWi=$('#vWi'), vCpTarget=$('#vCpTarget'), vPower=$('#vPower'), vBalls=$('#vBalls');
 
-            // ========== CÁLCULOS ==========
             function cpCalc() { const ms = state.tph*1000; return (ms/(ms+state.water*1000))*100; }
             function ecsCalc() { return (state.power*1000)/state.tph; }
             function f80Calc() { return 55/Math.sqrt(state.wi); }
             function jbCalc() { return Math.min(1, state.balls/200); }
-            function p80Calc(f80_mm, ecs, jb) {
-                const f80_um = f80_mm * 1000;
-                const base = f80_um / Math.pow(ecs * 10, 0.7);
-                const factor = Math.pow(1 - 0.8 * jb, 1.5);
-                return Math.max(50, base * factor);
-            }
+            function p80Calc(f80_mm, ecs, jb) { const f80_um = f80_mm*1000; const base = f80_um / Math.pow(ecs*10,0.7); const factor = Math.pow(1-0.8*jb,1.5); return Math.max(50, base*factor); }
             function densityCalc() { const ms=state.tph*1000, vs=ms/2700, mw=state.water*1000, vw=state.water; return (ms+mw)/(vs+vw); }
             function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; }
             function ballsPerDay(gpt) { return (gpt*state.tph*24)/1000000; }
             function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
             function vcCalc() { return 42.3/Math.sqrt(5.5); }
 
-            // ========== ANIMACIÓN INTERNA CON GRAVEDAD (VISTA LATERAL) ==========
-            const millCenterX = 200, millCenterY = 124, millRadius = 46; // Radio interno
+            // ========== MOTOR DE PARTÍCULAS MEJORADO ==========
+            const millCenterX = 200, millCenterY = 124, millRadius = 46;
             const internalGroup = $('#millInternalGroup');
             const millGroup = $('#millGroup');
             let particles = [];
+            let waterPath = null;
             let animationId = null;
             let lastTime = 0;
             let currentRpm = 0;
 
-            // Ángulo máximo de elevación antes de caer (en radianes, desde la vertical inferior)
-            const maxLiftAngle = Math.PI * 0.6; // ~108° desde abajo (10-11 en punto)
-
             function createParticles() {
                 internalGroup.innerHTML = '';
                 particles = [];
-
-                // Agua (superficie)
-                const water = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                water.setAttribute('fill', 'rgba(96, 165, 250, 0.2)');
-                water.setAttribute('stroke', 'rgba(96, 165, 250, 0.4)');
-                water.setAttribute('stroke-width', '1');
+                // Agua
+                const water = document.createElementNS('http://www.w3.org/2000/svg','path');
+                water.setAttribute('fill','rgba(96,165,250,0.2)');
+                water.setAttribute('stroke','rgba(96,165,250,0.4)');
+                water.setAttribute('stroke-width','1');
                 internalGroup.appendChild(water);
                 waterPath = water;
 
-                const numBalls = Math.floor((state.balls / 200) * 20);
+                // Bolas: número proporcional a toneladas de bolas (0-200 -> 0-30 bolas)
+                const numBalls = Math.floor((state.balls / 200) * 30);
                 for (let i = 0; i < numBalls; i++) {
-                    const ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    const r = 4 + Math.random() * 3;
+                    const ball = document.createElementNS('http://www.w3.org/2000/svg','circle');
+                    const r = 3 + Math.random() * 5; // 3 a 8 px (tamaños variados)
                     ball.setAttribute('r', r);
                     ball.setAttribute('fill', '#8a90a0');
                     ball.setAttribute('stroke', '#4a5060');
-                    ball.setAttribute('stroke-width', '0.5');
+                    ball.setAttribute('stroke-width','0.5');
                     internalGroup.appendChild(ball);
                     particles.push({
                         elem: ball, type: 'ball', size: r,
-                        x: millCenterX, y: millCenterY + millRadius * (0.8 + Math.random() * 0.2),
-                        vx: 0, vy: 0, onWall: false
+                        x: millCenterX + (Math.random()-0.5)*millRadius*0.8,
+                        y: millCenterY + millRadius*0.5 + Math.random()*millRadius*0.4,
+                        vx: 0, vy: 0, onWall: false, mass: r*0.8
                     });
                 }
-
-                const numOre = Math.floor((state.tph / 3000) * 25);
+                // Mineral: número proporcional a tph (500-3000 -> 10-50 partículas)
+                const numOre = Math.floor(10 + (state.tph - 500) / 2500 * 40);
                 for (let i = 0; i < numOre; i++) {
-                    const ore = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    const r = 2 + Math.random() * 2;
+                    const ore = document.createElementNS('http://www.w3.org/2000/svg','circle');
+                    const r = 1.5 + Math.random() * 2.5; // 1.5 a 4 px
                     ore.setAttribute('r', r);
                     ore.setAttribute('fill', '#d4a574');
-                    ore.setAttribute('opacity', '0.8');
+                    ore.setAttribute('opacity','0.7');
                     internalGroup.appendChild(ore);
                     particles.push({
                         elem: ore, type: 'ore', size: r,
-                        x: millCenterX, y: millCenterY + millRadius * (0.7 + Math.random() * 0.3),
-                        vx: 0, vy: 0, onWall: false
+                        x: millCenterX + (Math.random()-0.5)*millRadius*0.8,
+                        y: millCenterY + millRadius*0.5 + Math.random()*millRadius*0.4,
+                        vx: 0, vy: 0, onWall: false, mass: r*0.5
                     });
                 }
             }
 
-            function updateParticles(deltaTime, rpm) {
-                const gravity = 600; // px/s²
-                const wallFriction = 0.98;
-                const omega = rpm * 2 * Math.PI / 60; // rad/s
-                const minRadius = 8;
-                const dt = Math.min(deltaTime, 0.05);
+            function applyPhysics(dt, rpm, cp) {
+                const gravity = 500; // px/s²
+                const omega = rpm * 2 * Math.PI / 60;
+                const viscosity = 1 - (cp / 100) * 0.8; // 1 = fluido, 0.2 = muy espeso
+                const cohesion = (cp / 100) * 2; // mayor cohesión si es espeso
+                const wallFriction = 0.6;
 
+                // Actualizar cada partícula
                 particles.forEach(p => {
-                    if (!p.onWall) {
-                        // Aplicar gravedad
-                        p.vy += gravity * dt;
-                        p.x += p.vx * dt;
-                        p.y += p.vy * dt;
-
-                        // Verificar colisión con pared
-                        const dx = p.x - millCenterX;
-                        const dy = p.y - millCenterY;
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist > millRadius - p.size) {
-                            // Colisión con pared
-                            p.onWall = true;
-                            const nx = dx / dist, ny = dy / dist;
-                            p.x = millCenterX + nx * (millRadius - p.size);
-                            p.y = millCenterY + ny * (millRadius - p.size);
-                            // Rebote tangencial
-                            const tx = -ny, ty = nx;
-                            const vNormal = p.vx * nx + p.vy * ny;
-                            const vTangent = p.vx * tx + p.vy * ty;
-                            p.vx = vTangent * tx * wallFriction;
-                            p.vy = vTangent * ty * wallFriction;
-                            // Añadir velocidad tangencial por rotación (arrastre)
-                            p.vx += -ny * omega * (millRadius - p.size);
-                            p.vy += nx * omega * (millRadius - p.size);
-                        }
-                    } else {
-                        // En la pared, moverse tangencialmente
-                        const dx = p.x - millCenterX;
-                        const dy = p.y - millCenterY;
+                    // Fuerzas
+                    let fx = 0, fy = gravity; // gravedad
+                    // Si está en contacto con la pared (arrastre)
+                    const dx = p.x - millCenterX;
+                    const dy = p.y - millCenterY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist > millRadius - p.size && !p.onWall) {
+                        p.onWall = true;
+                        // Ajustar posición
+                        const nx = dx/dist, ny = dy/dist;
+                        p.x = millCenterX + nx * (millRadius - p.size);
+                        p.y = millCenterY + ny * (millRadius - p.size);
+                        // Velocidad tangencial
+                        const tx = -ny, ty = nx;
+                        const vTang = p.vx * tx + p.vy * ty;
+                        p.vx = vTang * tx * wallFriction;
+                        p.vy = vTang * ty * wallFriction;
+                    }
+                    if (p.onWall) {
+                        // Arrastre tangencial por rotación
                         const angle = Math.atan2(dy, dx);
-                        const dist = Math.sqrt(dx*dx + dy*dy);
-                        // Velocidad angular de arrastre
-                        const vxWall = -Math.sin(angle) * omega * (millRadius - p.size);
-                        const vyWall = Math.cos(angle) * omega * (millRadius - p.size);
-                        p.x += vxWall * dt;
-                        p.y += vyWall * dt;
-
-                        // Mantener en el radio
-                        const dx2 = p.x - millCenterX;
-                        const dy2 = p.y - millCenterY;
-                        const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
-                        if (dist2 > millRadius - p.size) {
-                            p.x = millCenterX + dx2 / dist2 * (millRadius - p.size);
-                            p.y = millCenterY + dy2 / dist2 * (millRadius - p.size);
-                        }
-
-                        // Verificar si debe desprenderse (supera ángulo máximo)
-                        const newAngle = Math.atan2(p.y - millCenterY, p.x - millCenterX);
-                        // Convertir a ángulo desde la vertical inferior (0 abajo, positivo en sentido antihorario)
-                        let liftAngle = newAngle - Math.PI/2;
-                        if (liftAngle < -Math.PI) liftAngle += 2*Math.PI;
-                        if (liftAngle > Math.PI) liftAngle -= 2*Math.PI;
-                        if (Math.abs(liftAngle) > maxLiftAngle) {
+                        const tangSpeed = omega * (millRadius - p.size);
+                        p.vx += -Math.sin(angle) * tangSpeed * 0.5;
+                        p.vy += Math.cos(angle) * tangSpeed * 0.5;
+                        // Si supera ángulo crítico (120° desde abajo), se despega
+                        const liftAngle = Math.atan2(p.y - millCenterY, p.x - millCenterX);
+                        let relAngle = liftAngle - Math.PI/2;
+                        if (relAngle < -Math.PI) relAngle += 2*Math.PI;
+                        if (relAngle > Math.PI) relAngle -= 2*Math.PI;
+                        if (Math.abs(relAngle) > Math.PI * 0.65) {
                             p.onWall = false;
-                            p.vx = vxWall * 0.5;
-                            p.vy = vyWall * 0.5;
+                            p.vx = -Math.sin(angle) * tangSpeed * 0.3;
+                            p.vy = Math.cos(angle) * tangSpeed * 0.3;
                         }
                     }
-
+                    // Fricción con la masa (carga)
+                    if (dist < millRadius * 0.8) {
+                        // Dentro de la zona de carga
+                        fx -= p.vx * viscosity * 2;
+                        fy -= p.vy * viscosity * 2;
+                    }
+                    // Aplicar fuerzas
+                    p.vx += fx * dt;
+                    p.vy += fy * dt;
+                    // Viscosidad general
+                    p.vx *= (1 - viscosity * 0.05);
+                    p.vy *= (1 - viscosity * 0.05);
+                    // Actualizar posición
+                    p.x += p.vx * dt;
+                    p.y += p.vy * dt;
+                    // Mantener dentro del molino (pared)
+                    const dx2 = p.x - millCenterX, dy2 = p.y - millCenterY;
+                    const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                    if (dist2 > millRadius - p.size) {
+                        p.x = millCenterX + (dx2/dist2) * (millRadius - p.size);
+                        p.y = millCenterY + (dy2/dist2) * (millRadius - p.size);
+                        p.onWall = true;
+                    }
                     // Actualizar elemento SVG
                     p.elem.setAttribute('cx', p.x);
                     p.elem.setAttribute('cy', p.y);
                 });
 
-                // Actualizar agua (superficie inclinada según rotación)
+                // Colisiones entre partículas (simple repulsión)
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i+1; j < particles.length; j++) {
+                        const a = particles[i], b = particles[j];
+                        const dx = b.x - a.x, dy = b.y - a.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        const minDist = a.size + b.size;
+                        if (dist < minDist && dist > 0) {
+                            const overlap = (minDist - dist) / 2;
+                            const nx = dx / dist, ny = dy / dist;
+                            a.x -= nx * overlap; a.y -= ny * overlap;
+                            b.x += nx * overlap; b.y += ny * overlap;
+                            // Intercambio de velocidad simplificado
+                            const relVx = a.vx - b.vx, relVy = a.vy - b.vy;
+                            const dot = relVx * nx + relVy * ny;
+                            if (dot > 0) {
+                                const impulse = dot * 0.5;
+                                a.vx -= impulse * nx; a.vy -= impulse * ny;
+                                b.vx += impulse * nx; b.vy += impulse * ny;
+                            }
+                        }
+                    }
+                }
+
+                // Actualizar agua (nivel según water y cp)
                 if (waterPath) {
-                    const waterLevel = 0.3 + (state.water / 1500) * 0.3;
-                    const baseY = millCenterY + millRadius * 0.5;
-                    const x1 = millCenterX - millRadius * 0.6;
-                    const x2 = millCenterX + millRadius * 0.6;
-                    const y1 = baseY - 5;
-                    const y2 = baseY + 5;
-                    waterPath.setAttribute('d', `M ${x1} ${y1} Q ${millCenterX} ${baseY - 12} ${x2} ${y2} L ${x2} ${millCenterY + millRadius} L ${x1} ${millCenterY + millRadius} Z`);
+                    const waterFraction = (state.water / 1500) * 0.5;
+                    const levelY = millCenterY + millRadius * (0.2 + waterFraction);
+                    const x1 = millCenterX - millRadius * 0.7;
+                    const x2 = millCenterX + millRadius * 0.7;
+                    waterPath.setAttribute('d', `M ${x1} ${levelY} Q ${millCenterX} ${levelY-8} ${x2} ${levelY} L ${x2} ${millCenterY + millRadius} L ${x1} ${millCenterY + millRadius} Z`);
                 }
             }
 
             function animate(timestamp) {
                 if (!lastTime) lastTime = timestamp;
-                const deltaTime = (timestamp - lastTime) / 1000;
+                const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
                 lastTime = timestamp;
-                if (deltaTime > 0.1) deltaTime = 0.1;
-                updateParticles(deltaTime, currentRpm);
+                const cp = cpCalc();
+                applyPhysics(dt, currentRpm, cp);
                 animationId = requestAnimationFrame(animate);
             }
 
@@ -552,10 +415,7 @@
 
             function updateRecommendations(recs) {
                 const container = $('#recommendationsContainer');
-                if (recs.length === 0) {
-                    container.innerHTML = '<div style="color:var(--text3);">Sin recomendaciones adicionales.</div>';
-                    return;
-                }
+                if (recs.length === 0) { container.innerHTML = '<div style="color:var(--text3);">Sin recomendaciones adicionales.</div>'; return; }
                 container.innerHTML = recs.map(r => `
                     <div class="action-box ${r.type}" style="margin-bottom:8px;">
                         <div class="action-title">${r.type === 'danger' ? 'Crítico' : r.type === 'warning' ? 'Precaución' : r.type === 'info' ? 'Info' : 'Óptimo'}</div>
