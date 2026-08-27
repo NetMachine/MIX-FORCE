@@ -3,917 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0c0e14">
-    <meta name="description" content="OptiMill OS - Consola Técnica de Molienda SAG & Bolas">
-    <title>OptiMill OS | Consola Técnica</title>
+    <title>OptiMill OS | Dashboard Industrial</title>
     <style>
-        /* ========== SISTEMA DE DISEÑO - SOBRIO Y TÉCNICO ========== */
         :root {
-            --bg: #0c0e14;
-            --bg-panel: #11141c;
-            --bg-elevated: #161a24;
-            --bg-inset: #0a0c10;
-            --border: #1f2430;
-            --border-light: #2a3040;
-            --text-primary: #e8ecf1;
-            --text-secondary: #a0a8b8;
-            --text-muted: #6b7280;
+            --bg: #0b0d12;
+            --surface: #131720;
+            --surface2: #1a1f2b;
+            --border: #232936;
+            --border2: #2e3545;
+            --text: #e8ecf1;
+            --text2: #a0a8b8;
+            --text3: #6b7280;
             --accent: #f0b429;
-            --accent-hover: #f7c948;
             --positive: #4ade80;
-            --warning: #f59e0b;
             --negative: #f87171;
             --info: #60a5fa;
-            --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
-            --radius: 10px;
-            --radius-sm: 6px;
-            --radius-lg: 14px;
-            --touch: 48px;
-            --touch-sm: 40px;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --transition: 0.18s ease;
+            --font: 'Inter', system-ui, sans-serif;
+            --mono: 'SF Mono', 'JetBrains Mono', monospace;
+            --r: 12px;
+            --r-sm: 8px;
+            --touch: 44px;
         }
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        html { scroll-behavior:smooth; }
-        body {
-            font-family:var(--font-body);
-            background:var(--bg);
-            color:var(--text-secondary);
-            min-height:100vh;
-            overflow-x:hidden;
-            overscroll-behavior:none;
-            touch-action:manipulation;
-            -webkit-user-select:none;
-            user-select:none;
-            font-size:14px;
-            line-height:1.5;
-        }
+        body { font-family:var(--font); background:var(--bg); color:var(--text2); font-size:14px; line-height:1.5; }
         input, textarea, select { -webkit-user-select:text; user-select:text; }
-        ::selection { background:var(--accent); color:#0c0e14; }
-        ::-webkit-scrollbar { width:4px; height:4px; }
-        ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
-        /* ========== HEADER ========== */
-        .app-header {
-            background:var(--bg-panel);
-            border-bottom:1px solid var(--border);
-            padding:10px 16px;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            flex-shrink:0;
-            min-height:56px;
-            position:sticky;
-            top:0;
-            z-index:50;
-        }
-        .logo-section { display:flex; align-items:center; gap:12px; }
-        .logo-icon {
-            width:40px; height:40px; border-radius:8px;
-            background:var(--bg-elevated);
-            border:1px solid var(--border-light);
-            display:flex; align-items:center; justify-content:center;
-            font-weight:700; color:var(--accent); font-size:1.2rem;
-        }
-        .app-title { font-weight:700; font-size:1.1rem; color:var(--text-primary); letter-spacing:-0.01em; }
-        .app-subtitle { font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; text-transform:uppercase; }
-        .status-indicator {
-            display:flex; align-items:center; gap:6px;
-            color:var(--positive); font-size:0.7rem; font-weight:600;
-            text-transform:uppercase; letter-spacing:0.05em;
-        }
-        .status-indicator .dot {
-            width:8px; height:8px; border-radius:50%;
-            background:var(--positive);
-        }
+        /* Header */
+        .header { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+        .brand { display:flex; align-items:center; gap:12px; }
+        .brand-icon { width:40px; height:40px; border-radius:10px; background:var(--surface2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:1.4rem; }
+        .brand-name { font-weight:700; font-size:1.2rem; color:var(--text); }
+        .brand-sub { font-size:0.7rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.06em; }
+        .status { display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); padding:6px 14px; border-radius:20px; font-size:0.75rem; color:var(--positive); font-weight:600; }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:var(--positive); }
 
-        /* ========== LAYOUT PRINCIPAL ========== */
-        .main-container {
-            max-width:1400px;
-            margin:0 auto;
-            padding:16px;
-            padding-bottom:calc(80px + var(--safe-bottom));
-            display:grid;
-            gap:16px;
-            grid-template-columns:1fr;
-        }
-        @media (min-width: 900px) {
-            .main-container {
-                grid-template-columns: 380px 1fr;
-                align-items:start;
-            }
-        }
-        @media (min-width: 1200px) {
-            .main-container {
-                grid-template-columns: 400px 1fr 320px;
-            }
-        }
+        /* Dashboard Grid */
+        .dashboard { display:grid; gap:16px; padding:16px; max-width:1600px; margin:0 auto; grid-template-columns:1fr; }
+        @media (min-width: 768px) { .dashboard { grid-template-columns:repeat(2, 1fr); } }
+        @media (min-width: 1100px) { .dashboard { grid-template-columns:repeat(12, 1fr); } }
 
-        /* ========== PANELES ========== */
-        .panel {
-            background:var(--bg-panel);
-            border:1px solid var(--border);
-            border-radius:var(--radius);
-            overflow:hidden;
-        }
-        .panel-header {
-            padding:12px 16px;
-            border-bottom:1px solid var(--border);
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            background:var(--bg-elevated);
-        }
-        .panel-title {
-            font-size:0.7rem;
-            font-weight:700;
-            text-transform:uppercase;
-            letter-spacing:0.08em;
-            color:var(--text-muted);
-        }
-        .panel-body {
-            padding:14px 16px;
-        }
+        .col-span-3 { grid-column: span 3; }
+        .col-span-4 { grid-column: span 4; }
+        .col-span-5 { grid-column: span 5; }
+        .col-span-6 { grid-column: span 6; }
+        .col-span-7 { grid-column: span 7; }
+        .col-span-8 { grid-column: span 8; }
+        .col-span-12 { grid-column: span 12; }
+        @media (max-width: 1099px) { .col-span-3, .col-span-4, .col-span-5, .col-span-6, .col-span-7, .col-span-8 { grid-column: span 12; } }
 
-        /* ========== CONTROLES ========== */
-        .control-group {
-            margin-bottom:14px;
-            position:relative;
-        }
-        .control-label {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:6px;
-            font-size:0.78rem;
-            color:var(--text-secondary);
-            font-weight:500;
-        }
-        .control-value {
-            font-family:var(--font-mono);
-            font-weight:600;
-            color:var(--text-primary);
-            background:var(--bg-inset);
-            border:1px solid var(--border);
-            border-radius:var(--radius-sm);
-            padding:3px 10px;
-            font-size:0.85rem;
-            min-width:70px;
-            text-align:center;
-        }
-        input[type="range"] {
-            -webkit-appearance:none;
-            width:100%;
-            height:36px;
-            background:transparent;
-            cursor:pointer;
-            touch-action:pan-y;
-        }
-        input[type="range"]::-webkit-slider-runnable-track {
-            height:6px;
-            border-radius:3px;
-            background:var(--bg-inset);
-            border:1px solid var(--border);
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance:none;
-            width:28px;
-            height:28px;
-            border-radius:50%;
-            background:var(--accent);
-            border:3px solid var(--bg-panel);
-            margin-top:-11px;
-            cursor:grab;
-            box-shadow:0 1px 4px rgba(0,0,0,0.4);
-        }
-        input[type="range"]::-webkit-slider-thumb:active {
-            cursor:grabbing;
-            transform:scale(1.15);
-        }
-        input[type="range"]::-moz-range-track {
-            height:6px; border-radius:3px;
-            background:var(--bg-inset); border:1px solid var(--border);
-        }
-        input[type="range"]::-moz-range-thumb {
-            width:28px; height:28px; border-radius:50%;
-            background:var(--accent); border:3px solid var(--bg-panel);
-            cursor:grab;
-        }
+        /* Cards */
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; display:flex; flex-direction:column; }
+        .card-header { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface2); }
+        .card-title { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); }
+        .card-body { padding:14px 16px; flex:1; }
 
-        /* ========== RESULTADOS ========== */
-        .result-grid {
-            display:grid;
-            grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
-            gap:8px;
-        }
-        .result-item {
-            background:var(--bg-inset);
-            border:1px solid var(--border);
-            border-radius:var(--radius-sm);
-            padding:10px 12px;
-            text-align:center;
-        }
-        .result-item .label {
-            font-size:0.65rem;
-            text-transform:uppercase;
-            letter-spacing:0.05em;
-            color:var(--text-muted);
-            margin-bottom:4px;
-        }
-        .result-item .value {
-            font-family:var(--font-mono);
-            font-weight:700;
-            font-size:1.1rem;
-            color:var(--text-primary);
-        }
-        .result-item .unit {
-            font-size:0.65rem;
-            color:var(--text-muted);
-        }
+        /* KPI */
+        .kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:10px; }
+        .kpi { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; text-align:center; }
+        .kpi-label { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--text3); margin-bottom:2px; }
+        .kpi-value { font-family:var(--mono); font-weight:700; font-size:1.2rem; color:var(--text); }
+        .kpi-unit { font-size:0.6rem; color:var(--text3); }
 
-        /* ========== ACCIÓN ========== */
-        .action-box {
-            background:var(--bg-inset);
-            border:1px solid var(--negative);
-            border-radius:var(--radius);
-            padding:14px 16px;
-            margin-top:12px;
-            border-left:4px solid var(--negative);
-        }
-        .action-box.optimal {
-            border-color:var(--positive);
-            border-left-color:var(--positive);
-        }
-        .action-box.warning {
-            border-color:var(--warning);
-            border-left-color:var(--warning);
-        }
-        .action-box .action-title {
-            font-size:0.65rem;
-            text-transform:uppercase;
-            letter-spacing:0.1em;
-            color:var(--text-muted);
-            margin-bottom:4px;
-        }
-        .action-box .action-message {
-            font-family:var(--font-mono);
-            font-weight:700;
-            font-size:1rem;
-            color:var(--text-primary);
-        }
-        .action-box .action-detail {
-            font-size:0.8rem;
-            color:var(--text-secondary);
-            margin-top:4px;
-        }
+        /* Slider */
+        .slider-group { margin-bottom:10px; }
+        .slider-label { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text2); margin-bottom:4px; }
+        .slider-val { font-family:var(--mono); color:var(--text); background:var(--surface2); border:1px solid var(--border); border-radius:4px; padding:2px 8px; font-size:0.8rem; }
+        input[type=range] { -webkit-appearance:none; width:100%; height:32px; background:transparent; cursor:pointer; }
+        input[type=range]::-webkit-slider-runnable-track { height:6px; border-radius:3px; background:var(--surface2); border:1px solid var(--border); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:var(--accent); border:3px solid var(--surface); margin-top:-9px; cursor:grab; }
+        input[type=range]::-moz-range-track { height:6px; border-radius:3px; background:var(--surface2); border:1px solid var(--border); }
+        input[type=range]::-moz-range-thumb { width:24px; height:24px; border-radius:50%; background:var(--accent); border:3px solid var(--surface); cursor:grab; }
 
-        /* ========== TABLA TÉCNICA ========== */
-        .data-table {
-            width:100%;
-            border-collapse:collapse;
-            font-size:0.78rem;
-        }
-        .data-table th {
-            text-align:left;
-            padding:6px 8px;
-            color:var(--text-muted);
-            font-weight:600;
-            font-size:0.65rem;
-            text-transform:uppercase;
-            letter-spacing:0.05em;
-            border-bottom:1px solid var(--border);
-        }
-        .data-table td {
-            padding:6px 8px;
-            border-bottom:1px solid var(--border-light);
-            color:var(--text-secondary);
-        }
-        .data-table tr:last-child td { border-bottom:none; }
-        .data-table .highlight {
-            color:var(--text-primary);
-            font-weight:600;
-            font-family:var(--font-mono);
-        }
+        /* Action Box */
+        .action-box { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 14px; margin-top:10px; border-left:4px solid var(--accent); }
+        .action-box.optimal { border-left-color:var(--positive); }
+        .action-box.danger { border-left-color:var(--negative); }
+        .action-box .action-title { font-size:0.6rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); }
+        .action-box .action-msg { font-family:var(--mono); font-weight:700; color:var(--text); font-size:0.9rem; }
+        .action-box .action-detail { font-size:0.75rem; color:var(--text2); }
 
-        /* ========== P&ID ========== */
-        .pid-container {
-            background:var(--bg-inset);
-            border:1px solid var(--border);
-            border-radius:var(--radius-sm);
-            overflow:hidden;
-            position:relative;
-        }
-        .pid-svg { width:100%; height:auto; display:block; pointer-events:none; }
-        .pid-label {
-            position:absolute;
-            background:var(--bg-elevated);
-            border:1px solid var(--border);
-            border-radius:var(--radius-sm);
-            padding:2px 8px;
-            font-size:0.6rem;
-            color:var(--text-secondary);
-            pointer-events:none;
-        }
+        /* P&ID Molino */
+        .mill-container { background:var(--surface2); border-radius:var(--r-sm); border:1px solid var(--border); padding:12px; position:relative; overflow:hidden; }
+        .mill-svg { width:100%; height:auto; display:block; }
+        @keyframes rotateMill { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        .mill-rotating { transform-origin:center; animation:rotateMill 4s linear infinite; }
+        .flow-line { stroke-dasharray:8 5; animation:flowDash 1s linear infinite; }
+        @keyframes flowDash { from { stroke-dashoffset:0; } to { stroke-dashoffset:-26; } }
 
-        /* ========== INFO TÉCNICA EXPANDIBLE ========== */
-        .info-section {
-            margin-top:12px;
-            border-top:1px solid var(--border);
-            padding-top:12px;
-        }
-        .info-toggle {
-            width:100%;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            background:none;
-            border:none;
-            color:var(--text-secondary);
-            font-size:0.75rem;
-            font-weight:600;
-            cursor:pointer;
-            padding:8px 0;
-            text-transform:uppercase;
-            letter-spacing:0.05em;
-            min-height:var(--touch-sm);
-            -webkit-tap-highlight-color:transparent;
-        }
-        .info-toggle:hover { color:var(--text-primary); }
-        .info-toggle .chevron {
-            transition:transform 0.2s;
-            font-size:0.8rem;
-        }
-        .info-toggle.expanded .chevron { transform:rotate(180deg); }
-        .info-content {
-            display:none;
-            padding:8px 0;
-            font-size:0.75rem;
-            line-height:1.6;
-            color:var(--text-secondary);
-            border-top:1px solid var(--border-light);
-            margin-top:4px;
-        }
+        /* Tabla */
+        .data-table { width:100%; border-collapse:collapse; font-size:0.72rem; }
+        .data-table th { text-align:left; padding:5px 8px; color:var(--text3); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.04em; border-bottom:1px solid var(--border); }
+        .data-table td { padding:5px 8px; border-bottom:1px solid var(--border); color:var(--text2); }
+        .data-table .mono { font-family:var(--mono); color:var(--text); }
+
+        /* Botones */
+        .btn { display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:var(--r-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.04em; min-height:var(--touch); }
+        .btn:active { transform:scale(0.98); }
+        .btn.primary { background:var(--accent); border-color:var(--accent); color:#0b0d12; }
+
+        /* Info sections */
+        .info-toggle { width:100%; display:flex; justify-content:space-between; align-items:center; background:none; border:none; color:var(--text2); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; padding:8px 0; min-height:40px; }
+        .info-content { display:none; padding:8px 0; font-size:0.72rem; line-height:1.6; border-top:1px solid var(--border); }
         .info-content.visible { display:block; }
-
-        /* ========== BOTONES ========== */
-        .btn {
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            padding:10px 16px;
-            border-radius:var(--radius-sm);
-            font-weight:600;
-            font-size:0.8rem;
-            cursor:pointer;
-            min-height:var(--touch-sm);
-            transition:var(--transition);
-            border:1px solid var(--border-light);
-            background:var(--bg-elevated);
-            color:var(--text-primary);
-            -webkit-tap-highlight-color:transparent;
-            text-transform:uppercase;
-            letter-spacing:0.04em;
-            width:100%;
-        }
-        .btn:active { transform:scale(0.98); background:var(--bg-inset); }
-        .btn.primary {
-            background:var(--accent);
-            border-color:var(--accent);
-            color:#0c0e14;
-        }
-        .btn.primary:active { background:var(--accent-hover); }
-
-        /* ========== ALERTAS ========== */
-        .alert-list {
-            display:grid;
-            gap:6px;
-        }
-        .alert-item {
-            display:flex;
-            align-items:center;
-            gap:8px;
-            padding:8px 10px;
-            background:var(--bg-inset);
-            border:1px solid var(--border);
-            border-radius:var(--radius-sm);
-            font-size:0.75rem;
-            color:var(--text-secondary);
-        }
-        .alert-item .severity {
-            width:8px; height:8px; border-radius:50%;
-            flex-shrink:0;
-        }
-        .severity.high { background:var(--negative); }
-        .severity.medium { background:var(--warning); }
-        .severity.low { background:var(--positive); }
-
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 899px) {
-            .main-container { padding:10px; gap:10px; }
-            .panel-body { padding:10px 12px; }
-            .result-grid { grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); }
-        }
-        @media (max-width: 480px) {
-            .app-header { padding:6px 10px; min-height:48px; }
-            .logo-icon { width:32px; height:32px; font-size:1rem; }
-            .app-title { font-size:0.95rem; }
-            .result-item .value { font-size:0.95rem; }
-        }
-        @media (orientation: landscape) and (max-width: 900px) {
-            .main-container { grid-template-columns:1fr 1fr; }
-        }
+        .chevron { transition:transform 0.2s; }
+        .chevron.rotated { transform:rotate(180deg); }
     </style>
 </head>
 <body>
-    <header class="app-header">
-        <div class="logo-section">
-            <div class="logo-icon">⚙</div>
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">⚙</div>
             <div>
-                <div class="app-title">OptiMill OS</div>
-                <div class="app-subtitle">Consola Técnica · Molienda SAG & Bolas</div>
+                <div class="brand-name">OptiMill OS</div>
+                <div class="brand-sub">Molienda SAG & Bolas · Dashboard Técnico</div>
             </div>
         </div>
-        <div class="status-indicator">
-            <span class="dot"></span>
-            <span>Operativo</span>
-        </div>
+        <div class="status"><span class="status-dot"></span> OPERATIVO</div>
     </header>
 
-    <main class="main-container">
-        <!-- COLUMNA IZQUIERDA: CONTROLES -->
-        <div class="panel" id="controlPanel">
-            <div class="panel-header">
-                <span class="panel-title">Parámetros de Entrada</span>
-            </div>
-            <div class="panel-body">
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Tonelaje Seco</span>
-                        <span class="control-value" id="valTph">1500</span>
-                    </div>
+    <main class="dashboard">
+        <!-- Panel de Control -->
+        <div class="card col-span-3">
+            <div class="card-header"><span class="card-title">Parámetros</span></div>
+            <div class="card-body">
+                <div class="slider-group">
+                    <div class="slider-label"><span>Tonelaje (t/h)</span><span class="slider-val" id="vTph">1500</span></div>
                     <input type="range" id="inTph" min="500" max="3000" step="10" value="1500">
                 </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Agua de Adición</span>
-                        <span class="control-value" id="valWater">400</span>
-                    </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Agua (m³/h)</span><span class="slider-val" id="vWater">400</span></div>
                     <input type="range" id="inWater" min="100" max="1500" step="5" value="400">
                 </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Work Index (W<sub>i</sub>)</span>
-                        <span class="control-value" id="valWi">14.0</span>
-                    </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Work Index (kWh/t)</span><span class="slider-val" id="vWi">14.0</span></div>
                     <input type="range" id="inWi" min="8" max="22" step="0.1" value="14">
                 </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Cp Objetivo (%)</span>
-                        <span class="control-value" id="valCpTarget">68</span>
-                    </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Cp Objetivo (%)</span><span class="slider-val" id="vCpTarget">68</span></div>
                     <input type="range" id="inCpTarget" min="55" max="78" step="1" value="68">
                 </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Potencia Molino (MW)</span>
-                        <span class="control-value" id="valPower">20</span>
-                    </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Potencia (MW)</span><span class="slider-val" id="vPower">20</span></div>
                     <input type="range" id="inPower" min="5" max="35" step="0.5" value="20">
                 </div>
-                <div class="control-group">
-                    <div class="control-label">
-                        <span>Adición de Bolas (t)</span>
-                        <span class="control-value" id="valBalls">50</span>
-                    </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Bolas (t)</span><span class="slider-val" id="vBalls">50</span></div>
                     <input type="range" id="inBalls" min="0" max="200" step="1" value="50">
                 </div>
-
                 <div class="action-box optimal" id="actionBox">
-                    <div class="action-title">Estado del Circuito</div>
-                    <div class="action-message" id="actionMessage">OPERACIÓN ÓPTIMA</div>
+                    <div class="action-title">Acción Recomendada</div>
+                    <div class="action-msg" id="actionMsg">OPERACIÓN ÓPTIMA</div>
                     <div class="action-detail" id="actionDetail">Densidad dentro del rango objetivo.</div>
                 </div>
             </div>
         </div>
 
-        <!-- COLUMNA CENTRAL: RESULTADOS Y P&ID -->
-        <div style="display:grid; gap:16px;">
-            <!-- P&ID -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Diagrama de Proceso</span>
-                    <span class="panel-title" style="color:var(--text-muted);" id="pidStatus">Flujo Normal</span>
+        <!-- P&ID -->
+        <div class="card col-span-6">
+            <div class="card-header"><span class="card-title">Circuito de Molienda</span><span class="card-title" id="pidStatus" style="color:var(--text2);">Flujo Normal</span></div>
+            <div class="card-body">
+                <div class="mill-container">
+                    <svg class="mill-svg" viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e2a" stroke-width="0.5"/>
+                            </pattern>
+                            <linearGradient id="millBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#2a3040"/>
+                                <stop offset="100%" stop-color="#1a1e2a"/>
+                            </linearGradient>
+                            <linearGradient id="millLiner" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#3a3f4a"/>
+                                <stop offset="100%" stop-color="#232936"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="280" fill="url(#grid)"/>
+                        <!-- Alimentación -->
+                        <rect x="25" y="110" width="50" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <text x="50" y="129" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
+                        <line x1="75" y1="124" x2="135" y2="124" stroke="#2a3040" stroke-width="2"/>
+                        <!-- Molino SAG con detalle -->
+                        <g id="millGroup" class="mill-rotating" style="transform-origin:200px 124px;">
+                            <!-- Cuerpo principal -->
+                            <circle cx="200" cy="124" r="52" fill="url(#millBody)" stroke="#3a3f4a" stroke-width="2.5"/>
+                            <!-- Revestimientos -->
+                            <circle cx="200" cy="124" r="46" fill="none" stroke="url(#millLiner)" stroke-width="4" stroke-dasharray="12 8"/>
+                            <!-- Anillo interior -->
+                            <circle cx="200" cy="124" r="32" fill="none" stroke="#2a3040" stroke-width="1.5"/>
+                            <!-- Engranajes -->
+                            <circle cx="200" cy="124" r="40" fill="none" stroke="#4a5060" stroke-width="1" stroke-dasharray="5 3"/>
+                            <!-- Pernos -->
+                            <circle cx="200" cy="76" r="3" fill="#5a6070"/>
+                            <circle cx="248" cy="124" r="3" fill="#5a6070"/>
+                            <circle cx="200" cy="172" r="3" fill="#5a6070"/>
+                            <circle cx="152" cy="124" r="3" fill="#5a6070"/>
+                            <!-- Eje -->
+                            <line x1="200" y1="124" x2="200" y2="124" stroke="none"/>
+                            <circle cx="200" cy="124" r="8" fill="#6b7280"/>
+                            <!-- Líneas de carga -->
+                            <line x1="200" y1="72" x2="200" y2="176" stroke="#2a3040" stroke-width="1" opacity="0.4"/>
+                            <line x1="148" y1="124" x2="252" y2="124" stroke="#2a3040" stroke-width="1" opacity="0.4"/>
+                            <line x1="163" y1="87" x2="237" y2="161" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
+                            <line x1="163" y1="161" x2="237" y2="87" stroke="#2a3040" stroke-width="1" opacity="0.3"/>
+                        </g>
+                        <text x="200" y="195" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">MOLINO SAG</text>
+                        <!-- Trommel -->
+                        <rect x="260" y="110" width="48" height="28" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <text x="284" y="129" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
+                        <!-- Tubería 1 -->
+                        <line id="p1" x1="308" y1="124" x2="395" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
+                        <!-- Cajón -->
+                        <rect x="395" y="110" width="55" height="28" rx="5" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <text x="422" y="129" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
+                        <!-- Tubería 2 -->
+                        <line id="p2" x1="450" y1="124" x2="540" y2="124" stroke="#4ade80" stroke-width="4" class="flow-line"/>
+                        <!-- Ciclones -->
+                        <polygon points="540,95 570,95 575,118 540,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <polygon points="575,95 605,95 610,118 575,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <polygon points="605,95 635,95 640,118 605,118" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
+                        <text x="590" y="140" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CICLONES</text>
+                        <!-- Overflow -->
+                        <line id="p3" x1="640" y1="106" x2="700" y2="55" stroke="#4ade80" stroke-width="3" class="flow-line"/>
+                        <text x="680" y="48" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
+                        <!-- Underflow -->
+                        <line id="p4" x1="640" y1="110" x2="710" y2="185" stroke="#4ade80" stroke-width="3" class="flow-line"/>
+                        <text x="690" y="200" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
+                        <!-- Agua -->
+                        <line x1="135" y1="185" x2="200" y2="176" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/>
+                        <text x="125" y="198" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
+                    </svg>
                 </div>
-                <div class="panel-body">
-                    <div class="pid-container">
-                        <svg class="pid-svg" viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                                <pattern id="gridPid" width="20" height="20" patternUnits="userSpaceOnUse">
-                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1e2a" stroke-width="0.5"/>
-                                </pattern>
-                            </defs>
-                            <rect width="800" height="240" fill="url(#gridPid)"/>
-                            <!-- Alimentación -->
-                            <rect x="30" y="95" width="45" height="26" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                            <text x="52" y="112" fill="#6b7280" font-size="9" text-anchor="middle" font-family="monospace">ALIM</text>
-                            <line x1="75" y1="108" x2="130" y2="108" stroke="#2a3040" stroke-width="2"/>
-                            <!-- Molino SAG -->
-                            <g id="millGroup" style="transform-origin:190px 108px;">
-                                <circle cx="190" cy="108" r="42" fill="#1a1e2a" stroke="#3a3f4a" stroke-width="2"/>
-                                <circle cx="190" cy="108" r="28" fill="none" stroke="#2a3040" stroke-width="1.5"/>
-                                <line x1="190" y1="66" x2="190" y2="150" stroke="#2a3040" stroke-width="1" opacity="0.5"/>
-                                <line x1="148" y1="108" x2="232" y2="108" stroke="#2a3040" stroke-width="1" opacity="0.5"/>
-                                <circle cx="190" cy="108" r="6" fill="#6b7280"/>
-                            </g>
-                            <text x="190" y="170" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">SAG</text>
-                            <!-- Trommel -->
-                            <rect x="240" y="95" width="45" height="26" rx="3" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                            <text x="262" y="112" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">TROM</text>
-                            <!-- Tubería 1 -->
-                            <line id="pipe1" x1="285" y1="108" x2="370" y2="108" stroke="#4ade80" stroke-width="4" class="flow-line" stroke-dasharray="10 6"/>
-                            <!-- Cajón -->
-                            <rect x="370" y="95" width="50" height="26" rx="4" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                            <text x="395" y="112" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CAJÓN</text>
-                            <!-- Tubería 2 -->
-                            <line id="pipe2" x1="420" y1="108" x2="510" y2="108" stroke="#4ade80" stroke-width="4" class="flow-line" stroke-dasharray="10 6"/>
-                            <!-- Ciclones -->
-                            <polygon points="510,82 540,82 545,105 510,105" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                            <polygon points="545,82 575,82 580,105 545,105" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                            <polygon points="575,82 605,82 610,105 575,105" fill="#1a1e2a" stroke="#2a3040" stroke-width="1.5"/>
-                            <text x="560" y="125" fill="#6b7280" font-size="8" text-anchor="middle" font-family="monospace">CICLONES</text>
-                            <!-- Overflow -->
-                            <line id="overflow" x1="610" y1="93" x2="670" y2="48" stroke="#4ade80" stroke-width="3" class="flow-line" stroke-dasharray="8 5"/>
-                            <text x="650" y="42" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">OVF</text>
-                            <!-- Underflow -->
-                            <line id="underflow" x1="610" y1="96" x2="680" y2="165" stroke="#4ade80" stroke-width="3" class="flow-line" stroke-dasharray="8 5"/>
-                            <text x="660" y="180" fill="#6b7280" font-size="7" text-anchor="middle" font-family="monospace">UDF</text>
-                            <!-- Agua -->
-                            <line x1="130" y1="165" x2="190" y2="155" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 3"/>
-                            <text x="120" y="178" fill="#60a5fa" font-size="8" font-family="monospace">AGUA</text>
-                        </svg>
-                    </div>
+                <!-- Mini indicadores -->
+                <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; font-size:0.7rem; color:var(--text3);">
+                    <span>Cp: <strong id="pidCp" style="color:var(--text);">--</strong></span>
+                    <span>RPM: <strong id="pidRpm" style="color:var(--text);">--</strong></span>
+                    <span>Vel. Crítica: <strong id="pidVc" style="color:var(--text);">--</strong></span>
                 </div>
             </div>
+        </div>
 
-            <!-- Resultados Técnicos -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Resultados del Cálculo</span>
+        <!-- KPIs y Resultados -->
+        <div class="card col-span-3">
+            <div class="card-header"><span class="card-title">Indicadores Calculados</span></div>
+            <div class="card-body">
+                <div class="kpi-row">
+                    <div class="kpi"><div class="kpi-label">Cp</div><div class="kpi-value" id="kCp">--</div><div class="kpi-unit">%</div></div>
+                    <div class="kpi"><div class="kpi-label">Ecs</div><div class="kpi-value" id="kEcs">--</div><div class="kpi-unit">kWh/t</div></div>
+                    <div class="kpi"><div class="kpi-label">F80</div><div class="kpi-value" id="kF80">--</div><div class="kpi-unit">µm</div></div>
+                    <div class="kpi"><div class="kpi-label">P80</div><div class="kpi-value" id="kP80">--</div><div class="kpi-unit">µm</div></div>
+                    <div class="kpi"><div class="kpi-label">RR</div><div class="kpi-value" id="kRR">--</div><div class="kpi-unit">F/P</div></div>
+                    <div class="kpi"><div class="kpi-label">Densidad</div><div class="kpi-value" id="kDens">--</div><div class="kpi-unit">kg/m³</div></div>
+                    <div class="kpi"><div class="kpi-label">Bolas</div><div class="kpi-value" id="kBolas">--</div><div class="kpi-unit">t/d</div></div>
+                    <div class="kpi"><div class="kpi-label">Pérdida</div><div class="kpi-value" id="kPerd">--</div><div class="kpi-unit">g/t</div></div>
                 </div>
-                <div class="panel-body">
-                    <div class="result-grid" id="resultsGrid">
-                        <div class="result-item">
-                            <div class="label">% Sólidos</div>
-                            <div class="value" id="resCp">--</div>
-                            <div class="unit">%</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">Consumo Específico</div>
-                            <div class="value" id="resEcs">--</div>
-                            <div class="unit">kWh/t</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">F80 Estimado</div>
-                            <div class="value" id="resF80">--</div>
-                            <div class="unit">µm</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">P80 Estimado</div>
-                            <div class="value" id="resP80">--</div>
-                            <div class="unit">µm</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">Ratio de Reducción</div>
-                            <div class="value" id="resRR">--</div>
-                            <div class="unit">F80/P80</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">Adición Bolas</div>
-                            <div class="value" id="resBalls">--</div>
-                            <div class="unit">t/día</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">Pérdida Bolas</div>
-                            <div class="value" id="resLoss">--</div>
-                            <div class="unit">g/t</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="label">Densidad Pulpa</div>
-                            <div class="value" id="resDensity">--</div>
-                            <div class="unit">kg/m³</div>
-                        </div>
-                    </div>
-
-                    <!-- Info técnica expandible -->
-                    <div class="info-section">
-                        <button class="info-toggle" id="toggleFormulas">
-                            <span>Fórmulas y Cálculos</span>
-                            <span class="chevron">▼</span>
-                        </button>
-                        <div class="info-content" id="formulasContent">
-                            <p><strong>% Sólidos (Cp):</strong> Cp = M_sólidos / (M_sólidos + M_agua) × 100</p>
-                            <p><strong>Consumo Específico:</strong> E = P / TPH (kWh/t)</p>
-                            <p><strong>F80 Estimado:</strong> F80 ≈ 55 / √(W_i) (mm) → convertido a µm</p>
-                            <p><strong>P80 Estimado:</strong> P80 ≈ F80 / (E × 10)^0.25 (µm)</p>
-                            <p><strong>Densidad Pulpa:</strong> ρ = (M_sólidos + M_agua) / (V_sólidos + V_agua)</p>
-                            <p><strong>Adición de Bolas:</strong> Consumo = E × W_i × 0.3 + 3 (g/t)</p>
-                            <p><strong>Work Index (Bond):</strong> W_i = 10 / √(P80) - 10 / √(F80) (kWh/t)</p>
-                        </div>
-                    </div>
-                    <div class="info-section" style="margin-top:4px;">
-                        <button class="info-toggle" id="toggleParams">
-                            <span>Parámetros de Referencia</span>
-                            <span class="chevron">▼</span>
-                        </button>
-                        <div class="info-content" id="paramsContent">
-                            <table class="data-table">
-                                <tr><th>Parámetro</th><th>Rango Óptimo</th><th>Unidad</th></tr>
-                                <tr><td>% Sólidos (Cp)</td><td class="highlight">65 - 70</td><td>%</td></tr>
-                                <tr><td>F80 (alimentación)</td><td class="highlight">50 - 150</td><td>mm</td></tr>
-                                <tr><td>P80 (producto)</td><td class="highlight">150 - 300</td><td>µm</td></tr>
-                                <tr><td>Consumo Específico</td><td class="highlight">7 - 15</td><td>kWh/t</td></tr>
-                                <tr><td>Work Index</td><td class="highlight">10 - 16</td><td>kWh/t</td></tr>
-                                <tr><td>Densidad Pulpa</td><td class="highlight">1600 - 1800</td><td>kg/m³</td></tr>
-                            </table>
-                        </div>
+                <div style="margin-top:12px;">
+                    <button class="info-toggle" id="toggleFormulas"><span>Fórmulas</span><span class="chevron">▼</span></button>
+                    <div class="info-content" id="formulasContent">
+                        <p><strong>Cp:</strong> M_s / (M_s + M_w) × 100</p>
+                        <p><strong>Ecs:</strong> P / TPH</p>
+                        <p><strong>F80:</strong> 55 / √Wi (mm)</p>
+                        <p><strong>P80:</strong> F80 / (Ecs × 10)^0.25 (µm)</p>
+                        <p><strong>Densidad:</strong> (Ms + Mw) / (Vs + Vw)</p>
+                        <p><strong>Bolas:</strong> Ecs × Wi × 0.3 + 3 (g/t)</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: DIAGNÓSTICO Y BITÁCORA -->
-        <div style="display:grid; gap:16px;">
-            <!-- Diagnóstico -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Diagnóstico Rápido</span>
-                </div>
-                <div class="panel-body">
-                    <select id="diagSelect" style="width:100%; padding:8px; background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; margin-bottom:8px; min-height:40px;">
-                        <option value="presion">Presión hidrociclones</option>
-                        <option value="vibracion">Vibración descanso</option>
-                        <option value="finos">Finos en trommel</option>
-                        <option value="temperatura">Temp. cojinetes</option>
-                        <option value="ruido">Ruido anormal</option>
-                    </select>
-                    <div id="diagOutput" style="font-size:0.78rem; line-height:1.6; color:var(--text-secondary);">
-                        <!-- Contenido dinámico -->
-                    </div>
-                </div>
+        <!-- Tabla técnica -->
+        <div class="card col-span-12">
+            <div class="card-header"><span class="card-title">Parámetros de Referencia</span></div>
+            <div class="card-body" style="overflow-x:auto;">
+                <table class="data-table">
+                    <tr><th>Parámetro</th><th>Valor Actual</th><th>Rango Óptimo</th><th>Unidad</th><th>Estado</th></tr>
+                    <tr><td>% Sólidos (Cp)</td><td class="mono" id="refCp">--</td><td>65 - 70</td><td>%</td><td id="stCp">--</td></tr>
+                    <tr><td>Consumo Específico</td><td class="mono" id="refEcs">--</td><td>7 - 15</td><td>kWh/t</td><td id="stEcs">--</td></tr>
+                    <tr><td>F80</td><td class="mono" id="refF80">--</td><td>50 - 150</td><td>mm</td><td id="stF80">--</td></tr>
+                    <tr><td>P80</td><td class="mono" id="refP80">--</td><td>150 - 300</td><td>µm</td><td id="stP80">--</td></tr>
+                    <tr><td>Densidad Pulpa</td><td class="mono" id="refDens">--</td><td>1600 - 1800</td><td>kg/m³</td><td id="stDens">--</td></tr>
+                    <tr><td>Adición Bolas</td><td class="mono" id="refBolas">--</td><td>1 - 5</td><td>t/día</td><td id="stBolas">--</td></tr>
+                </table>
             </div>
+        </div>
 
-            <!-- Bitácora -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Bitácora de Turno</span>
-                </div>
-                <div class="panel-body">
-                    <form id="logForm" style="display:grid; gap:8px;">
-                        <input type="text" id="logOperador" placeholder="Operador" style="padding:8px; background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; min-height:40px;">
-                        <textarea id="logNovedades" placeholder="Novedades..." rows="2" style="padding:8px; background:var(--bg-inset); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.8rem; resize:vertical;"></textarea>
-                        <button type="submit" class="btn primary">Registrar Turno</button>
-                    </form>
-                </div>
+        <!-- Diagnóstico y Bitácora -->
+        <div class="card col-span-6">
+            <div class="card-header"><span class="card-title">Diagnóstico</span></div>
+            <div class="card-body">
+                <select id="diagSelect" style="width:100%; padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;">
+                    <option value="presion">Presión hidrociclones</option>
+                    <option value="vibracion">Vibración descanso</option>
+                    <option value="finos">Finos en trommel</option>
+                    <option value="temperatura">Temp. cojinetes</option>
+                    <option value="ruido">Ruido anormal</option>
+                </select>
+                <div id="diagOutput" style="margin-top:8px; font-size:0.8rem; line-height:1.5; color:var(--text2);"></div>
             </div>
-
-            <!-- Alertas -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Alertas del Sistema</span>
-                </div>
-                <div class="panel-body">
-                    <div class="alert-list" id="alertList">
-                        <div class="alert-item">
-                            <span class="severity low"></span>
-                            <span>Sin alertas activas</span>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        <div class="card col-span-6">
+            <div class="card-header"><span class="card-title">Bitácora</span></div>
+            <div class="card-body">
+                <form id="logForm" style="display:grid; gap:8px;">
+                    <input type="text" id="logOperador" placeholder="Operador" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; min-height:40px;">
+                    <textarea id="logNovedades" placeholder="Novedades..." rows="3" style="padding:8px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--r-sm); color:var(--text); font-size:0.8rem; resize:vertical;"></textarea>
+                    <button type="submit" class="btn primary">Registrar Turno</button>
+                </form>
             </div>
         </div>
     </main>
 
     <script>
         (function() {
-            'use strict';
-            // ========== ESTADO ==========
-            const state = {
-                tph: 1500, water: 400, wi: 14.0, cpTarget: 68, power: 20,
-                ballsAddition: 50, linerHoursRemaining: 720
-            };
-            const STORAGE_KEY = 'optiMill_v6';
-            function loadState() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
-            function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
-            loadState();
-
+            const state = { tph:1500, water:400, wi:14.0, cpTarget:68, power:20, balls:50, linerHours:720 };
             const $ = s => document.querySelector(s);
             const $$ = s => document.querySelectorAll(s);
-            
-            // Inputs
-            const inTph = $('#inTph'), inWater = $('#inWater'), inWi = $('#inWi'), inCpTarget = $('#inCpTarget'), inPower = $('#inPower'), inBalls = $('#inBalls');
-            const valTph = $('#valTph'), valWater = $('#valWater'), valWi = $('#valWi'), valCpTarget = $('#valCpTarget'), valPower = $('#valPower'), valBalls = $('#valBalls');
-            
-            // Results
-            const resCp = $('#resCp'), resEcs = $('#resEcs'), resF80 = $('#resF80'), resP80 = $('#resP80'), resRR = $('#resRR'), resBalls = $('#resBalls'), resLoss = $('#resLoss'), resDensity = $('#resDensity');
-            
-            // Action
-            const actionBox = $('#actionBox'), actionMessage = $('#actionMessage'), actionDetail = $('#actionDetail');
-            const pidStatus = $('#pidStatus');
-            const pipe1 = $('#pipe1'), pipe2 = $('#pipe2'), overflow = $('#overflow'), underflow = $('#underflow');
+            const STORAGE_KEY = 'optiMill_v7';
+            function load() { try { const s = localStorage.getItem(STORAGE_KEY); if (s) Object.assign(state, JSON.parse(s)); } catch(e){} }
+            function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+            load();
 
-            // ========== FUNCIONES DE CÁLCULO ==========
-            function calculateCp(tph, water) {
-                const solidsMass = tph * 1000; // kg/h
-                return (solidsMass / (solidsMass + water * 1000)) * 100;
-            }
+            const inTph=$('#inTph'), inWater=$('#inWater'), inWi=$('#inWi'), inCpTarget=$('#inCpTarget'), inPower=$('#inPower'), inBalls=$('#inBalls');
+            const vTph=$('#vTph'), vWater=$('#vWater'), vWi=$('#vWi'), vCpTarget=$('#vCpTarget'), vPower=$('#vPower'), vBalls=$('#vBalls');
 
-            function calculateDensity(tph, water) {
-                const solidsMass = tph * 1000; // kg/h
-                const solidsVolume = solidsMass / 2700; // m³/h (densidad mineral 2.7 t/m³)
-                const waterVolume = water; // m³/h
-                return (solidsMass + water * 1000) / (solidsVolume + waterVolume); // kg/m³
-            }
+            function cpCalc() { const ms = state.tph*1000; return (ms/(ms+state.water*1000))*100; }
+            function ecsCalc() { return (state.power*1000)/state.tph; }
+            function f80Calc() { return 55/Math.sqrt(state.wi); } // mm
+            function p80Calc(f80, ecs) { return (f80*1000)/Math.pow(ecs*10, 0.25); } // µm
+            function densityCalc() { const ms=state.tph*1000, vs=ms/2700, mw=state.water*1000, vw=state.water; return (ms+mw)/(vs+vw); }
+            function ballsCalc(ecs, wi) { return ecs*wi*0.3+3; } // g/t
+            function ballsPerDay(gpt) { return (gpt*state.tph*24)/1000000; }
 
-            function calculateEcs(power, tph) {
-                return (power * 1000) / tph; // kWh/t
-            }
+            function rpmCalc() { return Math.min(20, (state.power/state.tph)*100); }
+            function vcCalc() { return 42.3/Math.sqrt(5.5); } // velocidad crítica aprox
 
-            function estimateF80(wi) {
-                return 55 / Math.sqrt(wi); // mm
-            }
+            function update() {
+                const cp = cpCalc(), ecs = ecsCalc(), f80 = f80Calc(), p80 = p80Calc(f80, ecs);
+                const dens = densityCalc(), gpt = ballsCalc(ecs, state.wi), bpd = ballsPerDay(gpt);
+                const rpm = rpmCalc(), vc = vcCalc();
 
-            function estimateP80(f80_mm, ecs) {
-                return f80_mm * 1000 / Math.pow(ecs * 10, 0.25); // µm
-            }
+                // Valores sliders
+                vTph.textContent = state.tph; vWater.textContent = state.water; vWi.textContent = state.wi.toFixed(1);
+                vCpTarget.textContent = state.cpTarget; vPower.textContent = state.power; vBalls.textContent = state.balls;
 
-            function calculateBallConsumption(ecs, wi) {
-                return ecs * wi * 0.3 + 3; // g/t
-            }
+                // KPIs
+                $('#kCp').textContent = cp.toFixed(1);
+                $('#kEcs').textContent = ecs.toFixed(2);
+                $('#kF80').textContent = (f80*1000).toFixed(0);
+                $('#kP80').textContent = p80.toFixed(0);
+                $('#kRR').textContent = ((f80*1000)/p80).toFixed(2);
+                $('#kDens').textContent = dens.toFixed(0);
+                $('#kBolas').textContent = bpd.toFixed(1);
+                $('#kPerd').textContent = gpt.toFixed(1);
 
-            // ========== ACTUALIZACIÓN ==========
-            function updateAll() {
-                const tph = state.tph, water = state.water, wi = state.wi, cpTarget = state.cpTarget, power = state.power;
-                const cp = calculateCp(tph, water);
-                const ecs = calculateEcs(power, tph);
-                const f80_mm = estimateF80(wi);
-                const p80_um = estimateP80(f80_mm, ecs);
-                const rr = (f80_mm * 1000) / p80_um;
-                const ballsConsumption = calculateBallConsumption(ecs, wi);
-                const ballsPerDay = (ballsConsumption * tph * 24) / 1000000;
-                const density = calculateDensity(tph, water);
-                const deviation = cp - cpTarget;
-
-                // Actualizar valores mostrados
-                valTph.textContent = tph;
-                valWater.textContent = water;
-                valWi.textContent = wi.toFixed(1);
-                valCpTarget.textContent = cpTarget;
-                valPower.textContent = power;
-                valBalls.textContent = state.ballsAddition;
-
-                // Resultados
-                resCp.textContent = cp.toFixed(1);
-                resEcs.textContent = ecs.toFixed(2);
-                resF80.textContent = (f80_mm * 1000).toFixed(0);
-                resP80.textContent = p80_um.toFixed(0);
-                resRR.textContent = rr.toFixed(2);
-                resBalls.textContent = ballsPerDay.toFixed(1);
-                resLoss.textContent = ballsConsumption.toFixed(1);
-                resDensity.textContent = density.toFixed(0);
+                // P&ID
+                $('#pidCp').textContent = cp.toFixed(1)+'%';
+                $('#pidRpm').textContent = rpm.toFixed(1);
+                $('#pidVc').textContent = vc.toFixed(1);
 
                 // Acción
-                if (Math.abs(deviation) < 0.5) {
+                const dev = cp - state.cpTarget;
+                const actionBox = $('#actionBox');
+                const actionMsg = $('#actionMsg');
+                const actionDetail = $('#actionDetail');
+                const pidStatus = $('#pidStatus');
+                if (Math.abs(dev) < 0.5) {
                     actionBox.className = 'action-box optimal';
-                    actionMessage.textContent = 'OPERACIÓN ÓPTIMA';
-                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% ≈ Objetivo ${cpTarget}%`;
+                    actionMsg.textContent = 'OPERACIÓN ÓPTIMA';
+                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% ≈ Objetivo ${state.cpTarget}%`;
                     pidStatus.textContent = 'Óptima';
-                } else if (deviation > 0) {
-                    const sm = tph * 1000;
-                    const wnm = sm * (100/cpTarget - 1);
-                    const add = Math.max(0, wnm/1000 - water);
-                    actionBox.className = 'action-box';
-                    actionMessage.textContent = `ABRIR AGUA +${add.toFixed(1)} m³/h`;
-                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% > Objetivo ${cpTarget}% (sobredensificada)`;
+                } else if (dev > 0) {
+                    const add = Math.max(0, (state.tph*1000)*(100/state.cpTarget-1)/1000 - state.water);
+                    actionBox.className = 'action-box danger';
+                    actionMsg.textContent = `ABRIR AGUA +${add.toFixed(1)} m³/h`;
+                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% > Objetivo (sobredensificada)`;
                     pidStatus.textContent = 'Sobredensificada';
                 } else {
-                    const sm = tph * 1000;
-                    const wnm = sm * (100/cpTarget - 1);
-                    const red = Math.max(0, water - wnm/1000);
-                    actionBox.className = 'action-box warning';
-                    actionMessage.textContent = `REDUCIR AGUA -${red.toFixed(1)} m³/h`;
-                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% < Objetivo ${cpTarget}% (diluida)`;
+                    const red = Math.max(0, state.water - (state.tph*1000)*(100/state.cpTarget-1)/1000);
+                    actionBox.className = 'action-box';
+                    actionMsg.textContent = `REDUCIR AGUA -${red.toFixed(1)} m³/h`;
+                    actionDetail.textContent = `Cp ${cp.toFixed(1)}% < Objetivo (diluida)`;
                     pidStatus.textContent = 'Diluida';
                 }
 
-                // Color de tuberías
+                // Color tuberías
                 const color = cp < 60 ? '#60a5fa' : (cp > 72 ? '#f87171' : '#4ade80');
-                pipe1.setAttribute('stroke', color);
-                pipe2.setAttribute('stroke', color);
-                overflow.setAttribute('stroke', color);
-                underflow.setAttribute('stroke', color);
+                ['#p1','#p2','#p3','#p4'].forEach(id => { const el = $(id); if(el) el.setAttribute('stroke', color); });
 
-                // Alertas
-                updateAlerts(cp, ecs, deviation);
-                saveState();
+                // Tabla referencia
+                $('#refCp').textContent = cp.toFixed(1);
+                $('#refEcs').textContent = ecs.toFixed(2);
+                $('#refF80').textContent = (f80*1000).toFixed(0);
+                $('#refP80').textContent = p80.toFixed(0);
+                $('#refDens').textContent = dens.toFixed(0);
+                $('#refBolas').textContent = bpd.toFixed(1);
+
+                function setStatus(el, val, min, max, unit) {
+                    const el2 = $(el);
+                    if (val >= min && val <= max) { el2.textContent = '✓'; el2.style.color = 'var(--positive)'; }
+                    else { el2.textContent = '✗'; el2.style.color = 'var(--negative)'; }
+                }
+                setStatus('#stCp', cp, 65, 70);
+                setStatus('#stEcs', ecs, 7, 15);
+                setStatus('#stF80', f80, 50, 150);
+                setStatus('#stP80', p80, 150, 300);
+                setStatus('#stDens', dens, 1600, 1800);
+                setStatus('#stBolas', bpd, 1, 5);
+
+                save();
             }
 
-            function updateAlerts(cp, ecs, deviation) {
-                const alertList = $('#alertList');
-                let html = '';
-                if (Math.abs(deviation) > 2) {
-                    html += `<div class="alert-item"><span class="severity high"></span><span>Desviación Cp: ${deviation.toFixed(1)}%</span></div>`;
-                }
-                if (ecs > 18) {
-                    html += `<div class="alert-item"><span class="severity medium"></span><span>Consumo específico alto: ${ecs.toFixed(1)} kWh/t</span></div>`;
-                }
-                if (cp > 72) {
-                    html += `<div class="alert-item"><span class="severity high"></span><span>Pulpa sobredensificada (${cp.toFixed(1)}%)</span></div>`;
-                }
-                if (cp < 58) {
-                    html += `<div class="alert-item"><span class="severity medium"></span><span>Pulpa muy diluida (${cp.toFixed(1)}%)</span></div>`;
-                }
-                if (html === '') {
-                    html = `<div class="alert-item"><span class="severity low"></span><span>Sin alertas activas</span></div>`;
-                }
-                alertList.innerHTML = html;
-            }
-
-            // ========== EVENTOS ==========
-            [inTph, inWater, inWi, inCpTarget, inPower, inBalls].forEach(input => {
-                input.addEventListener('input', () => {
+            // Eventos
+            [inTph,inWater,inWi,inCpTarget,inPower,inBalls].forEach(el => {
+                el.addEventListener('input', () => {
                     state.tph = parseFloat(inTph.value);
                     state.water = parseFloat(inWater.value);
                     state.wi = parseFloat(inWi.value);
                     state.cpTarget = parseFloat(inCpTarget.value);
                     state.power = parseFloat(inPower.value);
-                    state.ballsAddition = parseFloat(inBalls.value);
-                    updateAll();
+                    state.balls = parseFloat(inBalls.value);
+                    update();
                 });
             });
 
-            // ========== DIAGNÓSTICO ==========
+            // Fórmulas
+            const toggleFormulas = $('#toggleFormulas');
+            const formulasContent = $('#formulasContent');
+            toggleFormulas.addEventListener('click', () => {
+                toggleFormulas.querySelector('.chevron').classList.toggle('rotated');
+                formulasContent.classList.toggle('visible');
+            });
+
+            // Diagnóstico
             const diagData = {
-                presion: { text: 'Obstrucción en ciclón o falla en bomba. Verificar presión de descarga y válvulas.', severity: 'high' },
-                vibracion: { text: 'Desgaste en pads del descanso o desalineación. Revisar lubricación.', severity: 'medium' },
-                finos: { text: 'Alta generación de finos. Aumentar agua de lavado y revisar mallas.', severity: 'medium' },
-                temperatura: { text: 'Falla en lubricación o carga excesiva. Verificar aceite y reducir carga.', severity: 'high' },
-                ruido: { text: 'Bolas rotas o desgaste de liners. Inspección auditiva requerida.', severity: 'medium' }
+                presion: 'Obstrucción en ciclón o falla en bomba. Verificar presión de descarga.',
+                vibracion: 'Desgaste en pads del descanso. Revisar lubricación y alineación.',
+                finos: 'Alta generación de finos. Aumentar agua de lavado.',
+                temperatura: 'Falla en lubricación o carga excesiva. Verificar aceite.',
+                ruido: 'Bolas rotas o desgaste de liners. Inspección auditiva.'
             };
-            const diagSelect = $('#diagSelect');
-            const diagOutput = $('#diagOutput');
-            function renderDiag() {
-                const key = diagSelect.value;
-                const data = diagData[key];
-                if (data) {
-                    diagOutput.innerHTML = `<strong style="color:var(--text-primary);">${data.text}</strong>`;
-                }
-            }
-            diagSelect.addEventListener('change', renderDiag);
-            renderDiag();
+            $('#diagSelect').addEventListener('change', (e) => {
+                $('#diagOutput').textContent = diagData[e.target.value] || '';
+            });
+            $('#diagOutput').textContent = diagData.presion;
 
-            // ========== INFO EXPANDIBLE ==========
-            function setupToggle(toggleId, contentId) {
-                const toggle = $(toggleId);
-                const content = $(contentId);
-                if (!toggle || !content) return;
-                toggle.addEventListener('click', () => {
-                    toggle.classList.toggle('expanded');
-                    content.classList.toggle('visible');
-                });
-            }
-            setupToggle('#toggleFormulas', '#formulasContent');
-            setupToggle('#toggleParams', '#paramsContent');
-
-            // ========== BITÁCORA ==========
-            const logForm = $('#logForm');
-            logForm.addEventListener('submit', (e) => {
+            // Bitácora
+            $('#logForm').addEventListener('submit', (e) => {
                 e.preventDefault();
                 const operador = $('#logOperador').value.trim() || 'No especificado';
                 const novedades = $('#logNovedades').value.trim() || 'Sin novedades';
-                const fecha = new Date().toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' });
-                // Almacenar en localStorage
                 const logs = JSON.parse(localStorage.getItem('optiMill_logs') || '[]');
-                logs.push({ fecha, operador, novedades, cp: calculateCp(state.tph, state.water).toFixed(1), tph: state.tph, power: state.power });
+                logs.push({ fecha: new Date().toISOString(), operador, novedades });
                 localStorage.setItem('optiMill_logs', JSON.stringify(logs));
-                logForm.reset();
-                alert('Registro guardado exitosamente.');
+                e.target.reset();
+                alert('Registro guardado.');
             });
 
-            // ========== INICIALIZACIÓN ==========
-            function init() {
-                inTph.value = state.tph;
-                inWater.value = state.water;
-                inWi.value = state.wi;
-                inCpTarget.value = state.cpTarget;
-                inPower.value = state.power;
-                inBalls.value = state.ballsAddition;
-                updateAll();
-            }
-            init();
-            console.log('OptiMill OS v6.0 · Consola Técnica Consolidada');
+            // Init
+            inTph.value = state.tph; inWater.value = state.water; inWi.value = state.wi;
+            inCpTarget.value = state.cpTarget; inPower.value = state.power; inBalls.value = state.balls;
+            update();
         })();
     </script>
 </body>
